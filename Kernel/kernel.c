@@ -2,7 +2,9 @@
 #include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
-#include <naiveConsole.h>
+#include <drivers/console.h>
+#include <drivers/rtc.h>
+#include <interruptions/idt.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -11,22 +13,15 @@ extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
 
-void IO_OUT(void * destination, void * origin);
-void * IO_IN(void * destination);
-void * IO_IN(void * destination);
-
-uint64_t RTC(uint64_t mode);
-char readKey();
-
-int pindonga();
-
-
 static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
 
 typedef int (*EntryPoint)();
+
+void pruebaSysCallWrite();
+
 
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
@@ -47,100 +42,104 @@ void * initializeKernelBinary()
 {
 	char buffer[10];
 
-	ncPrint("[x64BareBones]");
-	ncNewline();
+	printString("[x64BareBones]");
+	incLine(1);;
 
-	ncPrint("CPU Vendor:");
-	ncPrint(cpuVendor(buffer));
-	ncNewline();
+	printString("CPU Vendor:");
+	printString(cpuVendor(buffer));
+	incLine(1);
 
-	ncPrint("[Loading modules]");
-	ncNewline();
+	printString("[Loading modules]");
+	incLine(1);
 	void * moduleAddresses[] = {
 		sampleCodeModuleAddress,
 		sampleDataModuleAddress
 	};
 
 	loadModules(&endOfKernelBinary, moduleAddresses);
-	ncPrint("[Done]");
-	ncNewline();
-	ncNewline();
+	printString("[Done]");
+	incLine(1);
+	incLine(1);
 
-	ncPrint("[Initializing kernel's binary]");
-	ncNewline();
+	printString("[Initializing kernel's binary]");
+	incLine(1);
 
 	clearBSS(&bss, &endOfKernel - &bss);
 
-	ncPrint("  text: 0x");
-	ncPrintHex((uint64_t)&text);
-	ncNewline();
-	ncPrint("  rodata: 0x");
-	ncPrintHex((uint64_t)&rodata);
-	ncNewline();
-	ncPrint("  data: 0x");
-	ncPrintHex((uint64_t)&data);
-	ncNewline();
-	ncPrint("  bss: 0x");
-	ncPrintHex((uint64_t)&bss);
-	ncNewline();
+	printString("  text: 0x");
+	printBase((uint64_t)&text, 16);
+	incLine(1);
+	printString("  rodata: 0x");
+	printBase((uint64_t)&rodata, 16);
+	incLine(1);
+	printString("  data: 0x");
+	printBase((uint64_t)&data, 16);
+	incLine(1);
+	printString("  bss: 0x");
+	printBase((uint64_t)&bss, 16);
+	incLine(1);
 
-	ncPrint("[Done]");
+	printString("[Done]");
 
-	ncNewline();
-	ncNewline();
+	incLine(1);
+	incLine(1);
 	return getStackBase();
 }
 
+void todesputes() {
+	printString("LOS MUCHACHOS PERONISTAS! TODOS UNIDOS TRIUNFAREMOS!");
+}
+
+void _halt();
+
 int main()
-{	
+{
+
+	writeIDT();
+
+	clearScreen();
+
+	pruebaSysCallWrite();
+	incLine(1);
+
+/*
 	ncPrint("[Kernel Main]");
-	ncNewline();
+	incLine(1);
 	ncPrint("  Sample code module at 0x");
 	ncPrintHex((uint64_t)sampleCodeModuleAddress);
-	ncNewline();
+	incLine(1);
 	ncPrint("  Calling the sample code module returned: ");
 	ncPrintHex(((EntryPoint)sampleCodeModuleAddress)());
-	ncNewline();
-	ncNewline();
+	incLine(1);
+	incLine(1);
 
 	ncPrint("  Sample data module at 0x");
 	ncPrintHex((uint64_t)sampleDataModuleAddress);
-	ncNewline();
+	incLine(1);
 	ncPrint("  Sample data module contents: ");
 	ncPrint((char*)sampleDataModuleAddress);
-	ncNewline();
+	incLine(1);
 
 	ncPrint("[Finished]");
 
 
 
 
-	ncNewline();
+	incLine(1);
+	incLine(1);
 
 	/*IO_OUT( (char*)0x90, 0 );
 	int * sec = IO_IN( (char*)0x71 );*/
 
-
-	ncPrintBase(RTC(7), 16);
-	ncPrintChar('/');
-	ncPrintBase(RTC(8), 16);
-	ncPrintChar('/');
-	ncPrintBase(RTC(9), 16);
-
-	ncPrintChar(' ');
-
-	ncPrintBase(RTC(4), 16);
-	ncPrintChar(':');
-	ncPrintBase(RTC(2), 16);
-	ncPrintChar(':');
-	ncPrintBase(RTC(0), 16);
+	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
 
 	//ncPrintHex( (*sec >> 8) );
 
-	ncNewline();
-	ncNewline();
+	while(1) {
+		_halt();
+	}
 		
-	ncPrintDec(readKey());
+	//ncPrintDec(readKey());
 
 	return 0;
 }
