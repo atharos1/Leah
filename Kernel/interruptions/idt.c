@@ -2,6 +2,7 @@
 #include <interruptions/defs.h>
 #include <interruptions/intHandlers.h>
 #include <drivers/kb_driver.h>
+#include <drivers/console.h>
 
 /* Assembly functions */
 void _sti();
@@ -40,6 +41,8 @@ void writeIDT() {
 	_cli();
 
 	setup_IDT_entry (0x20, (uint64_t)&_irq00Handler);
+	timerRestart(); //Inicializa el timer_Tick
+	
 	setup_IDT_entry (0x21, (uint64_t)&_irq01Handler);
 	setup_IDT_entry (0x80, (uint64_t)&_int80handler);
   	//setup_IDT_entry (0x00, (uint64_t)&_exception0Handler);
@@ -47,6 +50,8 @@ void writeIDT() {
 	//Habilita 1 y 2 (Timer_Tick y teclado)
 	picMasterMask(0xFC); 
 	picSlaveMask(0xFF);
+
+	appendFunctionToTimer(cursorTick, 10); //Esto no va acá, bue
         
 	_sti();
 }

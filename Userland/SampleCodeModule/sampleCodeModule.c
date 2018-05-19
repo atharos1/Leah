@@ -151,8 +151,6 @@ int sign(int n) {
 
 int main() {
 
-	return;
-
 	clearScreen();
 	setFontColor(MAGENTA);
 	printf("%s\n%s. Numero: %d", "HOLA", "MUNDO!", -357);

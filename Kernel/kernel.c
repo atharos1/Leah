@@ -21,8 +21,7 @@ static void * const sampleDataModuleAddress = (void*)0x500000;
 typedef int (*EntryPoint)();
 
 void pruebaSysCallWrite();
-
-
+void _halt();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -40,6 +39,7 @@ void * getStackBase()
 
 void * initializeKernelBinary()
 {
+	
 	char buffer[10];
 
 	printString("[x64BareBones]");
@@ -55,7 +55,7 @@ void * initializeKernelBinary()
 		sampleCodeModuleAddress,
 		sampleDataModuleAddress
 	};
-
+	
 	loadModules(&endOfKernelBinary, moduleAddresses);
 	printString("[Done]");
 	incLine(1);
@@ -83,55 +83,41 @@ void * initializeKernelBinary()
 
 	incLine(1);
 	incLine(1);
+	
 	return getStackBase();
 }
 
-void todesputes() {
-	printString("LOS MUCHACHOS PERONISTAS! TODOS UNIDOS TRIUNFAREMOS!");
-}
-
-void _halt();
-
 int main()
 {
-
 	writeIDT();
+	
 
-	clearScreen();
+	//clearScreen();
 
-	pruebaSysCallWrite();
-	incLine(1);
+	//pruebaSysCallWrite();
 
-/*
-	ncPrint("[Kernel Main]");
+
+	printString("[Kernel Main]");
 	incLine(1);
-	ncPrint("  Sample code module at 0x");
-	ncPrintHex((uint64_t)sampleCodeModuleAddress);
-	incLine(1);
-	ncPrint("  Calling the sample code module returned: ");
-	ncPrintHex(((EntryPoint)sampleCodeModuleAddress)());
+	printString("  Sample code module at 0x");
+	printBase((uint64_t)sampleCodeModuleAddress, 16);
 	incLine(1);
 	incLine(1);
-
-	ncPrint("  Sample data module at 0x");
-	ncPrintHex((uint64_t)sampleDataModuleAddress);
+	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	incLine(1);
-	ncPrint("  Sample data module contents: ");
-	ncPrint((char*)sampleDataModuleAddress);
+	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
+
+	printString("  Sample data module at 0x");
+	printBase((uint64_t)sampleDataModuleAddress, 16);
 	incLine(1);
-
-	ncPrint("[Finished]");
-
-
-
-
-	incLine(1);
+	printString("  Sample data module contents: ");
+	printString((char*)sampleDataModuleAddress);
 	incLine(1);
 
-	/*IO_OUT( (char*)0x90, 0 );
-	int * sec = IO_IN( (char*)0x71 );*/
+	printString("[Finished]");
 
-	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
+
+	//printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
 
 	//ncPrintHex( (*sec >> 8) );
 

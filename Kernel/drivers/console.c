@@ -1,6 +1,7 @@
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
 #include <drivers/console.h>
+#include <drivers/kb_layout.h>
 
 #define NUMCOLORS 16
 #define NUM_COLS 80
@@ -13,9 +14,54 @@ short int curScreenRow = 0;
 short int curScreenCol = 0;
 enum COLOR backgroundColor = BLACK;
 enum COLOR fontColor = WHITE;
+short int cursorStatus = 0;
 
 static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
+char getNextChar() {
+	return 0;
+}
+
+void resetCursor() {
+	if(cursorStatus == 0)
+		cursorTick();
+}
+
+char * getCursorPos() {
+	return firstScreenPos + (curScreenRow*160) + (curScreenCol*2);
+}
+
+void cursorTick() {
+	char * cursorPosColor = getCursorPos() + 1;
+	if( cursorStatus == 0 )
+		*cursorPosColor = WHITE + (16 * BLACK);
+	else
+		*cursorPosColor = BLACK + (16 * WHITE);
+
+	cursorStatus = !cursorStatus;
+}
+
+void setCursor(unsigned short int x, unsigned short int y) {
+	if( x >= NUM_COLS || y >= NUM_ROWS )
+		return;
+
+	curScreenCol = x;
+	curScreenRow = y;
+
+}
+
+void shiftCursor(int cant) {
+	
+	short int shiftRows = (cant + curScreenCol) / NUM_COLS;
+	short int shiftCols = (cant + curScreenCol) % NUM_COLS;
+
+	setCursor(shiftCols, curScreenRow + shiftRows); //ARREGLAR QUE VUELVA 
+
+}
+
+void incLine(int cant) {
+	setCursor(0, curScreenRow + cant);
+}
 
 //Librería screen
 void printf(char * format, ...) {
@@ -66,26 +112,43 @@ void setBackgroundColor(enum COLOR c) {
 	if(c < NUMCOLORS) backgroundColor = c;
 }
 
-void incLine(int cant) {
-	if(curScreenRow + cant > NUM_ROWS || curScreenRow + cant < 0) return;
-	curScreenRow += cant;
-	curScreenCol = 0;
-}
-
 void printChar(char c) {
-	char * pos = firstScreenPos + (curScreenRow*160) + (curScreenCol*2);
-	*pos = c;
-	pos++;
-	*pos = fontColor + (16 * backgroundColor);
-	curScreenCol += 1;
+	char * pos = getCursorPos();
 
-	if (curScreenCol >= NUM_COLS)
-		incLine(1);
+	if(c == KLEFT)
+		printf("hola\n");
+
+	switch(c) {
+		case ENTER:
+			resetCursor();
+			incLine(1);
+			break;
+		case BACKSPACE:
+			resetCursor();
+			shiftCursor(-1);
+			pos = getCursorPos();
+			*pos = 0;
+			break;
+		case KLEFT:
+			shiftCursor(-1);
+			break;
+		case KRIGHT:
+			if(getNextChar != 0)
+				shiftCursor(1);
+			break;
+		default:
+			*pos = c;
+			pos++;
+			*pos = fontColor + (16 * backgroundColor);
+			shiftCursor(1);
+			break;
+	}
+
 }
 
 void clearScreen() {
 	char * pos = firstScreenPos;
-	for(int i = 0; i < 25 * 80; i++) {
+	for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
 		*pos = 0;
 		pos++;
 		*pos = 0;
