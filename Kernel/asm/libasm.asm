@@ -15,6 +15,8 @@ GLOBAL _halt
 
 GLOBAL pruebaSysCallWrite
 
+GLOBAL s
+
 EXTERN irqDispatcher
 EXTERN todesputes
 EXTERN int80Handler
@@ -24,6 +26,28 @@ section .data ;prueba para int 80h
 	helloLen:  equ $-hello
 
 section .text
+
+s:
+	push rbp
+	mov rbp, rsp
+
+	push rdi
+	push rsi
+	push rcx
+	push rdx
+
+	mov rax, rdi
+	add rax, 50
+
+	pop rdx
+	pop rcx
+	pop rsi
+	pop rdi
+
+	mov rsp, rbp
+	pop rbp
+
+	ret
 
 %macro pushState 0
 	push rax
@@ -101,7 +125,6 @@ _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una di
 
 	push rdi
 	push rsi
-	push rax
 	push rcx
 	push rdx
 
@@ -115,11 +138,8 @@ _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una di
 
 	pop rdx
 	pop rcx
-	pop rax
 	pop rsi
 	pop rdi
-
-	;popState
 
 	mov rsp, rbp
 	pop rbp
@@ -208,6 +228,6 @@ picSlaveMask:
 	push    rbp
     mov     rbp, rsp
     mov     ax, di  ; ax = mascara de 16 bits
-    out	0A1h,al
+    out		0A1h,al
     pop     rbp
     retn

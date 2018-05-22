@@ -1,6 +1,6 @@
 #include <stdarg.h> //Parámetros ilimitados
 
-static const enum COLOR {BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY, DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE} COLOR;
+/*static const enum COLOR {BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GRAY, DARK_GRAY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE} COLOR;
 #define NUMCOLORS 16
 #define NUM_COLS 80
 #define NUM_ROWS 25
@@ -117,4 +117,4 @@ void printInt(int i) {
 		printChar('-');
 	
 	printIntR(abs(i));
-}
+}*/

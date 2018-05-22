@@ -91,12 +91,6 @@ int main()
 {
 	writeIDT();
 	
-
-	//clearScreen();
-
-	//pruebaSysCallWrite();
-
-
 	printString("[Kernel Main]");
 	incLine(1);
 	printString("  Sample code module at 0x");
@@ -116,14 +110,15 @@ int main()
 
 	printString("[Finished]");
 
+	appendFunctionToTimer(cursorTick, 10);
+
+	while(1)
+		_halt();
+
 
 	//printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
 
 	//ncPrintHex( (*sec >> 8) );
-
-	while(1) {
-		_halt();
-	}
 		
 	//ncPrintDec(readKey());
 

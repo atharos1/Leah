@@ -29,18 +29,19 @@ void timerTick() {
 
 }
 
-void appendFunctionToTimer(function f, unsigned long int ticks) {
+int appendFunctionToTimer(function f, unsigned long int ticks) {
 	for(int i = 0; i < MAX_FUNCTIONS; i++) {
 		if( timerFunctions[i].f == 0 ) {
 			timerFunctions[i].f = f;
 			timerFunctions[i].ticks = ticks;
-			return;
+			return 0;
 		}
 			
-	}	
+	}
+	return -1;	
 }
 
-void removeFunctionFromTimer(function f) {
+int removeFunctionFromTimer(function f) {
 	int i, j;
 	for(i = 0; i < MAX_FUNCTIONS; i++) {
 		if( timerFunctions[i].f == f ) {
@@ -50,9 +51,10 @@ void removeFunctionFromTimer(function f) {
 				timerFunctions[j - 1].f = timerFunctions[j].f;
 				timerFunctions[j - 1].ticks = timerFunctions[j].ticks;
 			}			
-			break;
+			return 0;
 		}
 	}
+	return -1;
 }
 
 int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
@@ -75,9 +77,19 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 				setFontColor(RED);
 
 			char * str = (char*)rcx;
-			for(int i = 0; i < rdx; i++) {
-				printf("%c", str[i]);
-			}
+			int i;
+			for(i = 0; i < rdx; i++)
+				printChar(str[i]);
+
+			return i;
+			break;
+
+		case 100: //timerAppend, return 0 if successful, -1 if error
+			return appendFunctionToTimer( (function)rbx, rcx );
+			break;
+
+		case 101: //timerRemove, return 0 if successful, -1 if error
+			return removeFunctionFromTimer( (function)rbx );
 			break;
 	}
 	return 0;

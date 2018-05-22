@@ -37,11 +37,14 @@ static void setup_IDT_entry (int index, uint64_t offset) {
   idt[index].other_cero = (uint64_t) 0;
 }
 
+int s(int i);
+
 void writeIDT() {
-	_cli();
+	_cli();	
 
 	setup_IDT_entry (0x20, (uint64_t)&_irq00Handler);
 	timerRestart(); //Inicializa el timer_Tick
+
 	
 	setup_IDT_entry (0x21, (uint64_t)&_irq01Handler);
 	setup_IDT_entry (0x80, (uint64_t)&_int80handler);
@@ -51,8 +54,7 @@ void writeIDT() {
 	picMasterMask(0xFC); 
 	picSlaveMask(0xFF);
 
-	appendFunctionToTimer(cursorTick, 10); //Esto no va acá, bue
-        
+	//appendFunctionToTimer(cursorTick, 10); //Esto no va acá, bue
 	_sti();
 }
 

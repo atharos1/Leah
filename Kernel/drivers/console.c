@@ -73,10 +73,7 @@ void printf(char * format, ...) {
 
 		if( *format != '%' ) {
 
-			if(*format == '\n')
-				incLine(1);
-			else
-				printChar(*format);
+			printChar(*format);
 
 			format++;
 			continue;
@@ -154,7 +151,7 @@ void clearScreen() {
 		*pos = 0;
 		pos++;
 	}
-	curScreenRow = 0;
+	setCursor(0, 0);
 }
 
 void printString(char * str) {
