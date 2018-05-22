@@ -10,9 +10,12 @@
 
 int _read(int fileDescriptor, char * buffer, int count);
 int _write(int fileDescriptor, char * buffer, int count);
-int _timerApprend(function f, unsigned long int ticks);
-int _timerRemove(function f);
 void _halt();
+void _clearScreen();
+
+void clearScreen() {
+	_clearScreen();
+}
 
 static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	char *p = buffer;
@@ -44,6 +47,26 @@ static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	}
 
 	return buffer;
+}
+
+void printInt(int i) {
+	if(i < 0)
+		putchar('-');
+	
+	printIntR(abs(i));
+}
+
+void printIntR(int i) {
+
+	if( !( i/10 ) ) {
+		putchar(i + '0');
+		return;
+	}
+	
+	printIntR(i/10);
+
+	putchar( (i % 10) + '0');
+
 }
 
 int isDigit(char c) {
@@ -158,7 +181,7 @@ int scanf(char * fmt, ...) {
 				*va_arg(pa, char*) = getchar();
 				break;
 			case 's':
-				getString( *va_arg(pa, int*), *(format + 1) );
+				getString( *va_arg(pa, char*), *(format + 1) );
 				break;
 			case 'X':
 				//read hexa
@@ -217,7 +240,7 @@ int printf(char * fmt, ...) {
 
 		switch(*format) {
 			case 'd':
-				puts(  itoa(va_arg(pa, int), buffer, 10)  );
+				printInt(va_arg(pa, int));
 				break;
 			case 'c':
 				putchar( va_arg(pa, int) ); //NOTA: en parámatros ilimitados, char promociona a int SIEMPRE.

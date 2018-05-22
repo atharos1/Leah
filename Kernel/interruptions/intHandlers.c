@@ -60,7 +60,7 @@ int removeFunctionFromTimer(function f) {
 int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 	switch(rax) {
 		case 3: //Read
-			if( rbx == 0 ) { //stdin
+			if( rbx == 1 ) { //stdin
 				char * buff = (char*)rcx;
 				char r;
 				int i;
@@ -84,7 +84,13 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			return i;
 			break;
 
+		case 5: //ClearScreen
+			clearScreen();
+			return 0;
+			break;
+
 		case 100: //timerAppend, return 0 if successful, -1 if error
+			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);
 			return appendFunctionToTimer( (function)rbx, rcx );
 			break;
 

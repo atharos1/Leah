@@ -90,7 +90,7 @@ static void insert(unsigned char c){
 		buff.not_read=0;
 	}
 
-	printChar(c); //ARMAR UN FOCUS_HANDLER PARA DECIDIR QUIEN RECIBE LA DATA
+	//printChar(c); //ARMAR UN FOCUS_HANDLER PARA DECIDIR QUIEN RECIBE LA DATA
 
 }
 
