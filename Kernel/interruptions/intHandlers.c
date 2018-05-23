@@ -71,10 +71,10 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			}
 			break;
 		case 4: //Write
-			if( rbx == 1 )
-				setFontColor(WHITE);
-			else if( rbx == 2)
-				setFontColor(RED);
+			if( rbx == 2) { //STD_ERR
+				setFontColor(BLACK);
+				setBackgroundColor(RED);
+			}
 
 			char * str = (char*)rcx;
 			int i;
@@ -88,6 +88,15 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			clearScreen();
 			return 0;
 			break;
+		case 6: //setFontColor
+			setFontColor(rbx);
+			//printf("color: %d", rbx);
+			return;
+			break;
+		case 7: //setBackgroundColor
+			setBackgroundColor(rbx);
+			return;
+			break;
 
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);
@@ -97,6 +106,9 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 		case 101: //timerRemove, return 0 if successful, -1 if error
 			return removeFunctionFromTimer( (function)rbx );
 			break;
+
+		case 200: //RTC
+			return RTC(rbx);
 	}
 	return 0;
 }

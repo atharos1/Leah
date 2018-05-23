@@ -104,16 +104,18 @@ void printf(char * format, ...) {
 
 void setFontColor(enum COLOR c) {
 	if(c < NUMCOLORS) fontColor = c;
+	char * pos = getCursorPos() + 1;
+	*pos = fontColor + (16 * backgroundColor);
 }
 void setBackgroundColor(enum COLOR c) {
 	if(c < NUMCOLORS) backgroundColor = c;
+	char * pos = getCursorPos() + 1;
+	*pos = fontColor + (16 * backgroundColor);
 }
 
 void printChar(char c) {
-	char * pos = getCursorPos();
 
-	if(c == KLEFT)
-		printf("hola\n");
+	char * pos = getCursorPos();
 
 	switch(c) {
 		case ENTER:

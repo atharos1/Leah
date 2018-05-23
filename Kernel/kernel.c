@@ -97,7 +97,15 @@ int main()
 	printBase((uint64_t)sampleCodeModuleAddress, 16);
 	incLine(1);
 	incLine(1);
+
+
+
+	//appendFunctionToTimer(setRed, 5);
+
+	//appendFunctionToTimer(cursorTick, 10);
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	//removeFunctionFromTimer(cursorTick);
+	
 	incLine(1);
 	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 
@@ -109,11 +117,6 @@ int main()
 	incLine(1);
 
 	printString("[Finished]");
-
-	appendFunctionToTimer(cursorTick, 10);
-
-	while(1)
-		_halt();
 
 
 	//printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));

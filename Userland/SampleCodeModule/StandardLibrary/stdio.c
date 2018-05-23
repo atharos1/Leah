@@ -1,20 +1,32 @@
-#include "my_stdio.h"
+#include "stdio.h"
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
 #include <limits.h>
+#include "math.h"
 
 #define STD_OUT 1
 #define STD_IN 0 
 #define SYSCALL_WRITE 4
 
-
 int _read(int fileDescriptor, char * buffer, int count);
 int _write(int fileDescriptor, char * buffer, int count);
 void _halt();
 void _clearScreen();
+void _setBackgroundColor(enum COLOR backgroundColor, char * buffer, int count);
+void _setFontColor(enum COLOR fontColor, char * buffer, int count);
 
 void clearScreen() {
 	_clearScreen();
+}
+
+void setBackgroundColor(enum COLOR backgroundColor) {
+	char c;
+	_setBackgroundColor(backgroundColor, &c, 1);
+}
+
+void setFontColor(enum COLOR fontColor) {
+	char c;
+	_setFontColor(fontColor, &c, 1);
 }
 
 static char * itoa(uint64_t value, char * buffer, uint32_t base) {
@@ -79,19 +91,6 @@ int isAlpha(char c) {
 
 int isAlphanumeric(char c) {
 	return ( isAlpha(c) || isDigit(c) );
-}
-
-long long int pow(int base, int exp) {
-    if( exp == 0 )
-        return 1;
-
-    int num = base;
-
-    for(int i = 2; i <= exp; i++)
-        num *= base;
-
-    return num;
-
 }
 
 int getString(char * buff, char limit)  {
