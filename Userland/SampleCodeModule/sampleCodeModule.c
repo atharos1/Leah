@@ -9,7 +9,7 @@ void echo(char * args) {
 	printf(args);
 }
 
-typedef (*function)();
+typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
 
@@ -23,7 +23,7 @@ typedef struct command {
 	char name[30];
 	char desc[300];
 	function f;
-};
+} command;
 
 struct command commandList[MAX_COMMANDS];
 

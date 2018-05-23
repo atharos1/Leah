@@ -15,6 +15,8 @@ void _clearScreen();
 void _setBackgroundColor(enum COLOR backgroundColor, char * buffer, int count);
 void _setFontColor(enum COLOR fontColor, char * buffer, int count);
 
+void printIntR(int i);
+
 void clearScreen() {
 	_clearScreen();
 }
@@ -180,7 +182,7 @@ int scanf(char * fmt, ...) {
 				*va_arg(pa, char*) = getchar();
 				break;
 			case 's':
-				getString( *va_arg(pa, char*), *(format + 1) );
+				getString( va_arg(pa, char*), *(format + 1) );
 				break;
 			case 'X':
 				//read hexa
