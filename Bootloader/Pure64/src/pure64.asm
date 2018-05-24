@@ -56,8 +56,12 @@ clearcs:
 	mov ax, 0000000011100011b	; 9600 baud, no parity, 1 stop bit, 8 data bits
 	int 0x14
 
-; Make sure the screen is set to 80x25 color text mode
-	mov ax, 0x0003			; Set to normal (80x25 text) video mode
+; Make sure the screen is set to 80x25 color text mode MODDED
+	;mov ax, 0x0003			; Set to normal (80x25 text) video mode
+	;mov ah, 10h ;http://www.ctyme.com/intr/rb-0275.htm VER!!! D:
+	;mov al, 10h
+	mov ax, 04F02h      ; Set VESA Video Mode
+    mov bx, 101h        ; 640x480x256
 	int 0x10
 
 ; Disable blinking

@@ -13,6 +13,9 @@ GLOBAL _irq00Handler
 GLOBAL _irq01Handler
 GLOBAL _halt
 
+GLOBAL _in
+GLOBAL _out
+
 GLOBAL pruebaSysCallWrite
 
 GLOBAL s
@@ -231,3 +234,17 @@ picSlaveMask:
     out		0A1h,al
     pop     rbp
     retn
+
+_in:
+	mov rax,0
+	mov rdx,rdi
+	in ax,dx
+	ret
+
+;rdi port
+;rsi value
+_out:
+	mov rdx,rdi
+	mov rax,rsi
+	out dx,ax
+	ret

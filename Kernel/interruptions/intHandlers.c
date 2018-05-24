@@ -91,11 +91,11 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 		case 6: //setFontColor
 			setFontColor(rbx);
 			//printf("color: %d", rbx);
-			return;
+			return 0;
 			break;
 		case 7: //setBackgroundColor
 			setBackgroundColor(rbx);
-			return;
+			return 0;
 			break;
 
 		case 100: //timerAppend, return 0 if successful, -1 if error
