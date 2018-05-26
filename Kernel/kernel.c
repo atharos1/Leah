@@ -6,10 +6,7 @@
 #include <drivers/rtc.h>
 #include <interruptions/idt.h>
 #include <drivers/video_access.h>
-
-#define WIDTH 640
-#define HEIGHT 480
-#define bPP 1
+#include <drivers/video_vm.h>
 
 
 extern uint8_t text;
@@ -93,23 +90,18 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-void printRedDot(int x, int y) {
-
-	uint8_t * fb = (uint8_t *)(*(uint32_t *)0x5080);
-
-	unsigned where = (x+WIDTH*y)*3; //DESPUES EZE ME EXPLICA
-
-	fb[where] = 0xC0;
-
-}
-
 int main()
 {
 
 	//set_video_mode(1, 1, 2);
 
-	for(int i = 0; i < 1000; i++)
-		printRedDot(i, 100);
+	/*for(int i = 0; i < 10*60; i+=50)
+		drawChar(34, i, 100);*/
+
+	for(int i = 0; i < 200; i++)
+		for(int j = 0; j < 200; j++)
+			drawPixel(i, j, 0xFFFFFF);
+
 
 	return 0;
 
