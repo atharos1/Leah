@@ -4,6 +4,7 @@
 #include <drivers/kb_layout.h>
 #include <drivers/video_vm.h>
 
+
 #define NUMCOLORS 16
 #define NUM_COLS 128
 #define NUM_ROWS 96
@@ -35,7 +36,7 @@ char * getCursorPos() {
 }
 
 void cursorTick() {
-	invertChar(curScreenCol*8, curScreenRow*8*NUM_COLS);
+	invertChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT*NUM_COLS);
 	// char * cursorPosColor = getCursorPos() + 1;
 	// if( cursorStatus == 0 )
 	// 	*cursorPosColor = WHITE + (16 * BLACK);
@@ -130,7 +131,7 @@ void printChar(char c) {
 			case BACKSPACE:
 				resetCursor();
 				shiftCursor(-1);
-				drawChar(curScreenCol*8, curScreenRow*8, ' ', fontColor, backgroundColor);
+				drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, ' ', fontColor, backgroundColor);
 				break;
 			case KLEFT:
 				shiftCursor(-1);
@@ -140,7 +141,7 @@ void printChar(char c) {
 					shiftCursor(1);
 				break;
 			default:
-				drawChar(curScreenCol*8, curScreenRow*8, c, fontColor, backgroundColor);
+				drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, c, fontColor, backgroundColor);
 				shiftCursor(1);
 				break;
 		}
@@ -179,23 +180,13 @@ void printChar(char c) {
 // }
 
 void clearScreen() {
-	char * pos = firstScreenPos;
-	for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-		*pos = 0;
-		pos++;
-		*pos = 0;
-		pos++;
-	}
+	clearDisplay();
 	setCursor(0, 0);
 }
 
 void printString(char * str) {
-	for(int i = 0; str[i] != '\0'; i++) {
-		if(str[i] == '\n')
-			incLine(1);
-		else
-			printChar(str[i]);
-	}
+	for(int i = 0; str[i] != '\0'; i++)
+		printChar(str[i]);
 }
 
 void printIntR(int i) {

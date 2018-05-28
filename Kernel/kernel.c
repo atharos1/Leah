@@ -5,7 +5,6 @@
 #include <drivers/console.h>
 #include <drivers/rtc.h>
 #include <interruptions/idt.h>
-#include <drivers/video_access.h>
 #include <drivers/video_vm.h>
 
 extern uint8_t text;
@@ -89,28 +88,8 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-
 int main()
 {
-
-	//set_video_mode(1, 1, 2);
-
-	/*for(int i = 0; i < 10*60; i+=50)
-		drawChar(34, i, 100);*/
-
-	for(int i = 0; i < 200; i++)
-		for(int j = 0; j < 200; j++)
-			drawPixel(i, j, 0xFFFFFF);
-
-	char string[] = "hola mundo milei manda y si no estas de acuerdo sos un keynesiano repugnante";
-	char string1[] = "Son todos keynesianos de mierda!!!!!!!!";
-	printString(string);
-	incLine(1);
-	setFontColor(0xFF00FF);
-	setBackgroundColor(0xFFCF00);
-	printString(string1);
-	//writeStringToScreen(x, y, string1);
-	return 0;
 
 	writeIDT();
 

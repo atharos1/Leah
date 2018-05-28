@@ -228,11 +228,12 @@ void drawChar(int x, int y, char character, int fontColor, int backgroundColor) 
 	int aux_x = x;
 	int aux_y = y;
 
-	char bitIsPresent;
+	char bitIsPresent;	
+
 	char* toDraw = font8x8_basic[character];
 
-	for(int i = 0; i < 8; i++) {
-		for(int j = 0; j < 8; j++) {
+	for(int i = 0; i < CHAR_HEIGHT; i++) {
+		for(int j = 0; j < CHAR_WIDTH; j++) {
 			bitIsPresent = (1 << j) & toDraw[i];
 			if(bitIsPresent)
 				drawPixel(aux_x, aux_y, fontColor);
@@ -256,6 +257,18 @@ void invertChar(int x, int y) {
 		}
 		aux_x = x;
 		aux_y++;
+	}
+}
+
+void clearDisplay() {
+	char * pos = screenData->framebuffer;
+	for(int i = 0; i < WIDTH * HEIGHT; i++) {
+		*pos = 0;
+		pos++;
+		*pos = 0;
+		pos++;
+		*pos = 0;
+		pos++;
 	}
 }
 

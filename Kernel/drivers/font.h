@@ -1,5 +1,5 @@
-#define CHAR_HEIGHT 16
 #define CHAR_WIDTH 8
+#define CHAR_HEIGHT 8
 
 #define ________ 0x00
 #define _______X 0x01

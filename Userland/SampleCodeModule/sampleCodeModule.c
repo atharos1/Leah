@@ -110,7 +110,7 @@ int parseCommand(char * cmd, int l) {
 	
 	f(args);
 
-	printf("\n");
+	puts("\n\n");
 			
 	return 0;
 }
@@ -121,11 +121,11 @@ int commandListener() {
 	int cursor = 0;
 	int lastChar = 0;
 
-	setFontColor(LIGHT_MAGENTA);
+	setFontColor(0xFF00FF);
 	puts("Leah> ");
-	setFontColor(WHITE);
+	setFontColor(0xFFFFFF);
 
-	_timerAppend(cursorTick, 10);
+	//_timerAppend(cursorTick, 10);
 
 	while(c = getchar(), c != '\n') {
 
@@ -141,7 +141,6 @@ int commandListener() {
 						cmd[lastChar] = '\0';
 						lastChar--;
 						cursor--;
-						setBackgroundColor(BLACK);
 						putchar(c);
 					}
 					break;
@@ -149,14 +148,13 @@ int commandListener() {
 					cmd[cursor] = c;
 					cursor++;
 					lastChar++;
-					setBackgroundColor(BLACK);
 					putchar(c);
 					break;
 			}
 		}
 	}
 	setBackgroundColor(BLACK);
-	_timerRemove(cursorTick);
+	//_timerRemove(cursorTick);
 
 	cmd[lastChar] = '\0';
 
@@ -176,9 +174,9 @@ void time(char * args) {
 
 void help() {
 	for(int i = 0; i < commandsNum; i++) {
-		setFontColor(RED);
+		setFontColor(0xFF0000);
 		printf("%s\n", commandList[i].name);
-		setFontColor(WHITE);
+		setFontColor(0xFFFFFF);
 			if(commandList[i].desc != '\0') {
 				printf("  %s", commandList[i].desc);
 				if( i < commandsNum - 1)
@@ -193,13 +191,16 @@ void exit() {
 
 void clear() {
 	clearScreen();
+	printf("Leah v0.1\nInterprete de comandos. Digite 'help' para mas informacion.\n");
 }
 
 void _enableCursor();
 
 int main() {
 
-	clearScreen();
+	clear();
+
+	putchar('\n');
 
 	//_enableCursor();
 
@@ -210,7 +211,6 @@ int main() {
 	command_register("clear", clear, "Limpia la pantalla");
 	command_register("exit", exit, "Cierra la Shell");
 
-	printf("Leah v0.1\nInterprete de comandos. Digite 'help' para mas informacion.\n");
 
 	int status = 0;
 	while(status != 1) {
