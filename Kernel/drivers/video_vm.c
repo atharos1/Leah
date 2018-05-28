@@ -62,6 +62,18 @@ void invertPixel(unsigned int x, unsigned int y) {
 	screen[where + 2] = 255 - screen[where + 2];  // RED
 }
 
+void scrollUp(int cant){
+	char* screen = screenData->framebuffer;
+	for (int i = 0; i < SCREEN_HEIGHT - cant; i++)
+		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
+			screen[j + i * SCREEN_WIDTH * SCREEN_bPP] = screen[j + (i + cant) * SCREEN_WIDTH * SCREEN_bPP];
+
+	for (int i = SCREEN_HEIGHT - cant; i < SCREEN_HEIGHT; i++)
+		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
+			drawPixel(j, i, 0x0);
+			//screen[j + i * SCREEN_WIDTH * SCREEN_bPP] = screen[j + (i + cant) * SCREEN_WIDTH * SCREEN_bPP];
+}
+
 // void drawChar(char c, unsigned int x, unsigned int y) {
 //
 //     char * charData = charBitmap(c);

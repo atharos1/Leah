@@ -118,7 +118,6 @@ int main()
 
 	printString("[Finished]");
 
-
 	//printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
 
 	//ncPrintHex( (*sec >> 8) );

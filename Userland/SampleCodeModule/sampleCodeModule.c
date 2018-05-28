@@ -5,9 +5,16 @@
 
 #define MAX_COMMANDS 255
 
+#define HISTORY_LENGHT 20
+#define COMMAND_LENGHT 255
+
+int lastHistoryPos = 0;
+
 void echo(char * args) {
 	printf(args);
 }
+
+char comandHistory[HISTORY_LENGHT][COMMAND_LENGHT];
 
 typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);

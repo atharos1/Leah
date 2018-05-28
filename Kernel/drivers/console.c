@@ -46,7 +46,9 @@ void cursorTick() {
 	// cursorStatus = !cursorStatus;
 }
 
+
 void setCursor(unsigned short int x, unsigned short int y) {
+
 	if( x >= NUM_COLS || y >= NUM_ROWS )
 		return;
 
@@ -62,7 +64,14 @@ void shiftCursor(int cant) {
 }
 
 void incLine(int cant) {
+
+	if( curScreenRow + cant >= NUM_ROWS ) {
+		scrollUp(CHAR_HEIGHT);
+		cant--;
+	}
+	
 	setCursor(0, curScreenRow + cant);
+
 }
 
 //Librería screen
@@ -123,28 +132,28 @@ void setBackgroundColor(int color) {
 }
 
 void printChar(char c) {
-		switch(c) {
-			case ENTER:
-				resetCursor();
-				incLine(1);
-				break;
-			case BACKSPACE:
-				resetCursor();
-				shiftCursor(-1);
-				drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, ' ', fontColor, backgroundColor);
-				break;
-			case KLEFT:
-				shiftCursor(-1);
-				break;
-			case KRIGHT:
-				if(getNextChar != 0)
-					shiftCursor(1);
-				break;
-			default:
-				drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, c, fontColor, backgroundColor);
+	switch(c) {
+		case ENTER:
+			resetCursor();
+			incLine(1);
+			break;
+		case BACKSPACE:
+			resetCursor();
+			shiftCursor(-1);
+			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, ' ', fontColor, backgroundColor);
+			break;
+		case KLEFT:
+			shiftCursor(-1);
+			break;
+		case KRIGHT:
+			if(getNextChar != 0)
 				shiftCursor(1);
-				break;
-		}
+			break;
+		default:
+			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, c, fontColor, backgroundColor);
+			shiftCursor(1);
+			break;
+	}
 }
 
 // void printChar(char c) {

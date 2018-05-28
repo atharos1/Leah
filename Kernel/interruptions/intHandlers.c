@@ -97,6 +97,10 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			setBackgroundColor(rbx);
 			return 0;
 			break;
+		case 8: //drawPixel
+			drawPixel(rbx, rcx, rdx);
+			return 0;
+			break;
 
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);

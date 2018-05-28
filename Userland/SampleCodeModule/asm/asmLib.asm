@@ -8,6 +8,7 @@ GLOBAL _rtc
 GLOBAL _setFontColor
 GLOBAL _setBackgroundColor
 GLOBAL _enableCursor
+GLOBAL _drawPixel
 
 section .text
 
@@ -120,6 +121,29 @@ _read:
     mov rbx, rdx    ; file descriptor
     mov rcx, rsi    ; buffer
     mov rdx, rdi    ; count
+    int 80h
+
+    pop rdx
+    pop rcx
+    pop rbx
+
+    mov rsp, rbp
+    pop rbp
+
+	ret
+
+_drawPixel:
+    push rbp
+    mov rbp, rsp
+
+    push rbx
+    push rcx
+    push rdx
+
+    mov rax, 8      ; syscall 8
+    mov rbx, rdx    ; x
+    mov rcx, rsi    ; y
+    mov rdx, rdi    ; color
     int 80h
 
     pop rdx
