@@ -1,2 +1,4 @@
 void drawPixel(unsigned int x, unsigned int y, int color);
-void drawChar(char c, unsigned int x, unsigned int y);
+void drawChar(unsigned int x, unsigned int y, char c, int fontColor, int backgroundColor);
+void invertPixel(unsigned int x, unsigned int y);
+void invertChar(int x, int y);

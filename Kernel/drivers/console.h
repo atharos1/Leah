@@ -6,8 +6,9 @@ static const enum COLOR {BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GR
 //Librería screen
 void setCursor(unsigned short int x, unsigned short int y);
 void moveCursor(int cant);
-void setFontColor(enum COLOR c);
-void setBackgroundColor(enum COLOR c);
+void setFontColor(int color);
+void setBackgroundColor(int color);
+void writeStringToScreen(int x, int y, char* string);
 void printf(char * format, ...);
 void printChar(char c);
 void printInt(int i);
