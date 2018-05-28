@@ -6,8 +6,8 @@
 
 
 #define NUMCOLORS 16
-#define NUM_COLS 128
-#define NUM_ROWS 96
+#define NUM_COLS (SCREEN_WIDTH / CHAR_WIDTH)
+#define NUM_ROWS (SCREEN_HEIGHT / CHAR_HEIGHT)
 
 
 //Librería screen
@@ -36,7 +36,7 @@ char * getCursorPos() {
 }
 
 void cursorTick() {
-	invertChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT*NUM_COLS);
+	//invertChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT*NUM_COLS);
 	// char * cursorPosColor = getCursorPos() + 1;
 	// if( cursorStatus == 0 )
 	// 	*cursorPosColor = WHITE + (16 * BLACK);
