@@ -3,12 +3,20 @@
 #include "StandardLibrary/stdio.h"
 #include "StandardLibrary/string.h"
 
+#include "programs/digitalClock.h"
+
 #define MAX_COMMANDS 255
 
+
+//VER SI SE USA O NO
 #define HISTORY_LENGHT 20
 #define COMMAND_LENGHT 255
 
 int lastHistoryPos = 0;
+
+void invalidArgument(char * args) {
+	printf("Argumento '%s' invalido", args);
+}
 
 void echo(char * args) {
 	printf(args);
@@ -19,6 +27,8 @@ char comandHistory[HISTORY_LENGHT][COMMAND_LENGHT];
 typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
+int _setFontSize(unsigned int size);
+void _setGraphicCursorStatus(unsigned int status);
 
 int _rtc(int fetch);
 
@@ -111,7 +121,7 @@ int parseCommand(char * cmd, int l) {
 
 	function f = getCommandFunction(cmd);
 	if( f == 0 ) {
-		printf("Comando '%s' desconocido.\n", cmd);
+		printf("Comando '%s' desconocido.\n\n", cmd);
 		return -1;
 	}
 	
@@ -123,8 +133,9 @@ int parseCommand(char * cmd, int l) {
 }
 
 int commandListener() {
+
 	char c;
-	char cmd[255];
+	char cmd[100];
 	int cursor = 0;
 	int lastChar = 0;
 
@@ -132,7 +143,7 @@ int commandListener() {
 	puts("Leah> ");
 	setFontColor(0xFFFFFF);
 
-	//_timerAppend(cursorTick, 10);
+	_setGraphicCursorStatus(1);
 
 	while(c = getchar(), c != '\n') {
 
@@ -160,7 +171,10 @@ int commandListener() {
 			}
 		}
 	}
-	setBackgroundColor(BLACK);
+
+	_setGraphicCursorStatus(0);
+
+	setBackgroundColor(0x000000);
 	//_timerRemove(cursorTick);
 
 	cmd[lastChar] = '\0';
@@ -198,16 +212,40 @@ void exit() {
 
 void clear() {
 	clearScreen();
-	printf("Leah v0.1\nInterprete de comandos. Digite 'help' para mas informacion.\n");
+	printf("Leah v0.1\nInterprete de comandos. Digite 'help' para mas informacion.");
 }
 
-void _enableCursor();
+void setFontSize(char * args) {
+	int num = atoi(args);
+
+	if( num <= 0 ) {
+		invalidArgument(args);
+		return;
+	}
+
+	_setFontSize(num);
+	clear();
+		
+}
+
+void digitalClock_exec() {
+	digitalClock();
+	_setFontSize(1);
+	setFontColor(0xFFFFFF);
+	clear();
+}
+
+void div100(char * args) {
+	int num = atoi(args);
+
+	printf("100 / %d = %d", num, 100/num);
+}
 
 int main() {
 
 	clear();
 
-	putchar('\n');
+	puts("\n\n");
 
 	//_enableCursor();
 
@@ -216,8 +254,10 @@ int main() {
 	command_register("help", help, "Despliega informacion sobre los comandos disponibles");
 	command_register("prueba", prueba, "Comando de prueba");
 	command_register("clear", clear, "Limpia la pantalla");
+	command_register("font-size", setFontSize, "Establece el tamano de la fuente y limpia la consola");
+	command_register("digital-clock", digitalClock_exec, "Muestra un reloj digital en pantalla");
+	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0)");
 	command_register("exit", exit, "Cierra la Shell");
-
 
 	int status = 0;
 	while(status != 1) {
@@ -227,6 +267,6 @@ int main() {
 	
 
 
-	return 300;
+	return 0;
 
 }

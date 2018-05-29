@@ -98,11 +98,8 @@ int main()
 	printString("  Sample code module at 0x");
 	printBase((uint64_t)sampleCodeModuleAddress, 16);
 	incLine(1);
-	incLine(1);
+	incLine(1);	
 
-	//appendFunctionToTimer(setRed, 5);
-
-	//appendFunctionToTimer(cursorTick, 10);
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
 

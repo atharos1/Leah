@@ -9,6 +9,10 @@ GLOBAL _setFontColor
 GLOBAL _setBackgroundColor
 GLOBAL _enableCursor
 GLOBAL _drawPixel
+GLOBAL _setFontSize
+GLOBAL _setCursor
+GLOBAL _setGraphicCursorStatus
+
 
 section .text
 
@@ -52,6 +56,26 @@ _timerAppend:
 
 	ret
 
+_setCursor:
+    push rbp
+    mov rbp, rsp
+
+    push rbx
+    push rcx
+
+    mov rax, 10    ; syscall 10
+    mov rbx, rdi    ; function pointer
+    mov rcx, rsi    ; ticks
+    int 80h
+
+    pop rcx
+    pop rbx
+
+    mov rsp, rbp
+    pop rbp
+
+	ret
+
 _timerRemove:
     push rbp
     mov rbp, rsp
@@ -60,6 +84,23 @@ _timerRemove:
 
     mov rax, 101    ; syscall 101
     mov rbx, rdi    ; function pointer
+    int 80h
+
+    pop rbx
+
+    mov rsp, rbp
+    pop rbp
+
+	ret
+
+_setGraphicCursorStatus:
+    push rbp
+    mov rbp, rsp
+
+    push rbx
+
+    mov rax, 11    ; syscall 11
+    mov rbx, rdi    ; status
     int 80h
 
     pop rbx
@@ -140,10 +181,10 @@ _drawPixel:
     push rcx
     push rdx
 
-    mov rax, 8      ; syscall 8
-    mov rbx, rdx    ; x
+    mov rax, 9      ; syscall 9
+    mov rbx, rdi    ; x
     mov rcx, rsi    ; y
-    mov rdx, rdi    ; color
+    mov rdx, rdx    ; color
     int 80h
 
     pop rdx
@@ -193,6 +234,23 @@ _setBackgroundColor:
 
     mov rax, 7    ; syscall 7
     mov rbx, rdi    ; backColor
+    int 80h
+
+    pop rbx
+
+    mov rsp, rbp
+    pop rbp
+
+	ret
+
+_setFontSize:
+    push rbp
+    mov rbp, rsp
+
+    push rbx
+
+    mov rax, 8    ; syscall 8
+    mov rbx, rdi    ; fontSize
     int 80h
 
     pop rbx

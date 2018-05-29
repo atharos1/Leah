@@ -94,6 +94,57 @@ int isAlpha(char c) {
 int isAlphanumeric(char c) {
 	return ( isAlpha(c) || isDigit(c) );
 }
+/*
+int getString(char * str, char * buff, char limit)  {
+    char c;
+    int i;
+    for( i = 0; c = str[i], c != limit; i++ ) {
+        
+        if( c == EOF  )
+            return EOF; //ERROR
+
+        buff[i] = c;
+        
+    }
+
+    return i;
+
+}
+
+unsigned int getInt(char * str, char limit) {
+
+    char c;
+    char buff[INT_MAX];
+    int i, num;
+
+    int chars_int = 11;
+
+    for(i = 0; i < chars_int ; i++) {
+        c = str[i];
+        if( c == EOF  )
+            return EOF; //ERROR
+
+        if( c == limit )
+            break;
+
+        buff[chars_int - i] = c;
+
+    }
+
+    if(c != limit) //OVERFLOW
+        return EOF;
+
+    for(int j = 0; j < i; j++)
+        num += (buff[j + chars_int - (i + 1)] - '0') * pow(10, j);
+
+    if( buff[chars_int] == '-' )
+        num *= -1;
+    else
+        num += buff[chars_int] * pow(10, i);
+
+    return num;
+}*/
+
 
 int getString(char * buff, char limit)  {
     char c;
@@ -152,7 +203,7 @@ unsigned int getchar() {
 
     return (unsigned int)c;
 }
-
+/*
 int scanf(char * fmt, ...) {
 
     int rc = 0;
@@ -168,6 +219,54 @@ int scanf(char * fmt, ...) {
 			if( getchar() != *format )
                 return ( rc > 0 ? rc : EOF );
 
+			format++;
+			continue;
+		}
+
+		format++;
+
+		switch(*format) {
+			case 'd':
+				*va_arg(pa, int*) = getInt( *(format + 1) );
+				break;
+			case 'c':
+				*va_arg(pa, char*) = getchar();
+				break;
+			case 's':
+				getString( va_arg(pa, char*), *(format + 1) );
+				break;
+			case 'X':
+				//read hexa
+                break;
+		}
+        rc++;
+
+		format++;
+
+	}
+
+	va_end(pa);
+
+    return rc;
+
+}
+*/
+int sscanf(char * str, char * fmt, ...) {
+
+    int rc = 0;
+
+    va_list pa; //Lista de parámetros
+    va_start(pa, fmt);
+    char * format = fmt;
+
+    while( *format != '\0' ) {
+
+		if( *format != '%' ) {
+
+			if( str != *format )
+                return ( rc > 0 ? rc : EOF );
+
+			str++;
 			format++;
 			continue;
 		}

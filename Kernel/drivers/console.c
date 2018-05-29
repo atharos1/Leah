@@ -9,6 +9,11 @@
 #define NUM_COLS (SCREEN_WIDTH / CHAR_WIDTH)
 #define NUM_ROWS (SCREEN_HEIGHT / CHAR_HEIGHT)
 
+int fontSize = 1;
+int num_Cols = (SCREEN_WIDTH / CHAR_WIDTH);
+int num_Rows = (SCREEN_HEIGHT / CHAR_HEIGHT);
+int char_Height = CHAR_HEIGHT;
+int char_Width = CHAR_WIDTH;
 
 //Librería screen
 static char * firstScreenPos = (char*)0xB8000;
@@ -22,12 +27,28 @@ short int cursorStatus = 0;
 
 static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
+void setGraphicCursorStatus(unsigned int status) {
+	if( status == 1 )
+		appendFunctionToTimer(cursorTick, 18);
+
+	if( status == 0 )
+		removeFunctionFromTimer(cursorTick);
+} 
+
+void setFontSize(unsigned int size) {
+	fontSize = size;
+	char_Height = CHAR_HEIGHT * fontSize;
+	char_Width = CHAR_WIDTH * fontSize;
+	num_Cols = SCREEN_WIDTH / (CHAR_WIDTH * fontSize);
+	num_Rows = SCREEN_HEIGHT / (CHAR_HEIGHT * fontSize);
+}
+
 char getNextChar() {
 	return 0;
 }
 
 void resetCursor() {
-	if(cursorStatus == 0)
+	if(cursorStatus == 1)
 		cursorTick();
 }
 
@@ -36,7 +57,15 @@ char * getCursorPos() {
 }
 
 void cursorTick() {
-	//invertChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT*NUM_COLS);
+
+	if(cursorStatus == 0)
+		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, fontColor);
+	else
+		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, backgroundColor);
+
+	cursorStatus = !cursorStatus;
+
+	//invertChar(curScreenCol*char_Width, curScreenRow*char_Height*num_Cols);
 	// char * cursorPosColor = getCursorPos() + 1;
 	// if( cursorStatus == 0 )
 	// 	*cursorPosColor = WHITE + (16 * BLACK);
@@ -49,24 +78,26 @@ void cursorTick() {
 
 void setCursor(unsigned short int x, unsigned short int y) {
 
-	if( x >= NUM_COLS || y >= NUM_ROWS )
+	if( x >= num_Cols || y >= num_Rows )
 		return;
 
 	curScreenCol = x;
 	curScreenRow = y;
 
+	//printf("HOLA\n");
+
 }
 
 void shiftCursor(int cant) {
-	int newPos = curScreenCol + curScreenRow*NUM_COLS + cant;
+	int newPos = curScreenCol + curScreenRow*num_Cols + cant;
 	if (newPos >= 0)
-		setCursor(newPos%NUM_COLS, newPos/NUM_COLS);
+		setCursor(newPos%num_Cols, newPos/num_Cols);
 }
 
 void incLine(int cant) {
 
-	if( curScreenRow + cant >= NUM_ROWS ) {
-		scrollUp(CHAR_HEIGHT);
+	if( curScreenRow + cant >= num_Rows ) {
+		scrollUp(char_Height);
 		cant--;
 	}
 	
@@ -140,7 +171,7 @@ void printChar(char c) {
 		case BACKSPACE:
 			resetCursor();
 			shiftCursor(-1);
-			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, ' ', fontColor, backgroundColor);
+			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, ' ', fontSize, fontColor, backgroundColor);
 			break;
 		case KLEFT:
 			shiftCursor(-1);
@@ -150,7 +181,7 @@ void printChar(char c) {
 				shiftCursor(1);
 			break;
 		default:
-			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, c, fontColor, backgroundColor);
+			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
 			shiftCursor(1);
 			break;
 	}
@@ -189,7 +220,7 @@ void printChar(char c) {
 // }
 
 void clearScreen() {
-	clearDisplay();
+	clearDisplay(backgroundColor);
 	setCursor(0, 0);
 }
 

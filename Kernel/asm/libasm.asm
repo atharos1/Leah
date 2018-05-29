@@ -16,11 +16,14 @@ GLOBAL _halt
 GLOBAL _in
 GLOBAL _out
 
+GLOBAL _ex00Handler
+
 GLOBAL pruebaSysCallWrite
 
 GLOBAL s
 
 EXTERN irqDispatcher
+EXTERN exDispatcher
 EXTERN todesputes
 EXTERN int80Handler
 
@@ -102,6 +105,20 @@ s:
 	iretq
 %endmacro
 
+%macro exHandlerMaster 1
+	pushState
+
+	mov rdi, %1 ; pasaje de parametro
+	call exDispatcher
+
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
+
+	popState
+	iretq
+%endmacro
+
 _halt:
 	hlt
 	ret
@@ -121,6 +138,9 @@ pruebaSysCallWrite:
 ;Keyboard
 _irq01Handler:
 	irqHandlerMaster 1
+
+_ex00Handler:
+	exHandlerMaster 0
 	
 _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una direccion de memoria no entra en uno de 32 bits?
 	push rbp

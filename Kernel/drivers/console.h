@@ -18,6 +18,8 @@ void incLine(int cant);
 void clearScreen();
 static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 void cursorTick(); //No tendría que estar acá, pero bue...
+void setFontSize(unsigned int size);
+void setGraphicCursorStatus(unsigned int status);
 
 //Librería screen
 

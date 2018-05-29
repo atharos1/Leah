@@ -54,6 +54,16 @@ void drawPixel(unsigned int x, unsigned int y, int color)
     screen[where + 2] = (color >> 16) & 255;  // RED
 }
 
+void drawRectangle(unsigned int x, unsigned int y, int b, int h, int color) {
+    for(int i = 0; i < b; i++)
+		for(int j = 0; j < h; j++)
+			drawPixel(x + i, y + j, color);
+}
+
+void drawSquare(unsigned int x, unsigned int y, int l, int color) {
+    drawRectangle(x, y, l, l, color);
+}
+
 void invertPixel(unsigned int x, unsigned int y) {
 	char* screen = screenData->framebuffer;
 	unsigned where = (x + y*SCREEN_WIDTH) * SCREEN_bPP;
@@ -71,36 +81,9 @@ void scrollUp(int cant){
 	for (int i = SCREEN_HEIGHT - cant; i < SCREEN_HEIGHT; i++)
 		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
 			drawPixel(j, i, 0x0);
-			//screen[j + i * SCREEN_WIDTH * SCREEN_bPP] = screen[j + (i + cant) * SCREEN_WIDTH * SCREEN_bPP];
 }
 
-// void drawChar(char c, unsigned int x, unsigned int y) {
-//
-//     char * charData = charBitmap(c);
-//
-//     /*for(int j = 0; j < 16; j++) {
-//         for(int i = 0; i < 8; i++) {
-//             //if( charData[ (j*8) + i ] == 1 )
-//                 drawPixel(x+i, y+j, fColor);
-//         }
-// 	}*/
-//
-// 	int shifted = 0;
-//
-// 	for(int i = 0; i<16;i++) {
-// 		for(int j = 0; j<8; j++) {
-//
-// 			shifted = 1<<(7-j) & charData[ j ];
-//
-// 			if( shifted > 0 )
-// 				drawPixel(8-1-j+x,i+y,fColor);
-// 			else
-// 				drawPixel(8-1-j+x,i+y,bgColor);
-// 		}
-// 	}
-// }
-
-void drawChar(int x, int y, char character, int fontColor, int backgroundColor) {
+void drawChar(int x, int y, char character, int fontSize, int fontColor, int backgroundColor) {
 
 	int aux_x = x;
 	int aux_y = y;
@@ -112,14 +95,22 @@ void drawChar(int x, int y, char character, int fontColor, int backgroundColor) 
 	for(int i = 0; i < CHAR_HEIGHT; i++) {
 		for(int j = 0; j < CHAR_WIDTH; j++) {
 			bitIsPresent = (1 << (CHAR_WIDTH - j)) & toDraw[i];
+
 			if(bitIsPresent)
+				drawSquare(aux_x, aux_y, fontSize, fontColor);
+			else
+				drawSquare(aux_x, aux_y, fontSize, backgroundColor);
+				
+			aux_x+=fontSize;
+
+			/*if(bitIsPresent)
 				drawPixel(aux_x, aux_y, fontColor);
 			else
 				drawPixel(aux_x, aux_y, backgroundColor);
-			aux_x++;
+			aux_x++;*/
 		}
 		aux_x = x;
-		aux_y++;
+		aux_y+=fontSize;
 	}
 }
 
@@ -137,15 +128,18 @@ void invertChar(int x, int y) {
 	}
 }
 
-void clearDisplay() {
+void clearDisplay(unsigned int backgroundColor) {
 	char * pos = screenData->framebuffer;
-	for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
-		*pos = 0;
+	for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * SCREEN_bPP; i+=SCREEN_bPP) {
+		pos[i] = backgroundColor & 255;              // BLUE
+    	pos[i + 1] = (backgroundColor >> 8) & 255;   // GREEN
+    	pos[i + 2] = (backgroundColor >> 16) & 255;  // RED
+		/**pos = 0;
 		pos++;
 		*pos = 0;
 		pos++;
 		*pos = 0;
-		pos++;
+		pos++;*/
 	}
 }
 

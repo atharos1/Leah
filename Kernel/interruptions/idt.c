@@ -11,6 +11,8 @@ void picMasterMask(uint8_t mask);
 void picSlaveMask(uint8_t mask);
 
 /* Handlers (Assembly) */
+void _ex00Handler();
+
 void _irq00Handler();
 void _irq01Handler();
 void _int80handler();
@@ -42,6 +44,8 @@ int s(int i);
 void writeIDT() {
 	_cli();	
 
+	setup_IDT_entry (0x0, (uint64_t)&_ex00Handler);
+
 	setup_IDT_entry (0x20, (uint64_t)&_irq00Handler);
 	timerRestart(); //Inicializa el timer_Tick
 
@@ -65,6 +69,17 @@ void irqDispatcher(int n) {
 			break;
 		case 1: //Keyboard
 			kb_fetch();
+			break;
+	}
+}
+
+void exDispatcher(int n) {
+	switch(n) {
+		case 0: //Division by 0
+			clearScreen();
+			printf("\n\nEXCEPTION: DIVISION BY ZERO\n\n");
+			while(1)
+				_halt();
 			break;
 	}
 }
