@@ -15,6 +15,8 @@ void _clearScreen();
 void _setBackgroundColor(enum COLOR backgroundColor, char * buffer, int count);
 void _setFontColor(enum COLOR fontColor, char * buffer, int count);
 
+extern uint64_t stackPointerBackup;
+
 void printIntR(int i);
 
 void clearScreen() {
@@ -250,7 +252,7 @@ int scanf(char * fmt, ...) {
     return rc;
 
 }
-*/
+
 int sscanf(char * str, char * fmt, ...) {
 
     int rc = 0;
@@ -298,7 +300,7 @@ int sscanf(char * str, char * fmt, ...) {
     return rc;
 
 }
-
+*/
 unsigned int putchar(char c) {
     if( _write(STD_OUT, &c, 1) == 1 )
         return 1;

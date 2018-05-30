@@ -6,6 +6,7 @@
 #include <drivers/rtc.h>
 #include <interruptions/idt.h>
 #include <drivers/video_vm.h>
+#include <include/global_variables.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -16,13 +17,9 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-static void * const sampleCodeModuleAddress = (void*)0x400000;
-static void * const sampleDataModuleAddress = (void*)0x500000;
-
-typedef int (*EntryPoint)();
-
 void pruebaSysCallWrite();
 void _halt();
+uint64_t _rsp();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -92,6 +89,7 @@ int main()
 {
 
 	writeIDT();
+	init_VM_Driver();
 
 	printString("[Kernel Main]");
 	incLine(1);
@@ -100,6 +98,7 @@ int main()
 	incLine(1);
 	incLine(1);	
 
+	//stackPointerBackup = _rsp();
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
 
@@ -114,12 +113,6 @@ int main()
 	incLine(1);
 
 	printString("[Finished]");
-
-	//printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X\n\n", RTC(MONTH_DAY), RTC(MONTH), RTC(YEAR), RTC(HOURS), RTC(MINUTES), RTC(SECONDS));
-
-	//ncPrintHex( (*sec >> 8) );
-
-	//ncPrintDec(readKey());
 
 	return 0;
 }

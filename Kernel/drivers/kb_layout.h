@@ -8,6 +8,7 @@
 
 #define NULL 0
 #define ESC    27
+#define BELL      '\7'
 #define BACKSPACE '\b'
 #define TAB       '\t'
 #define ENTER     '\n'

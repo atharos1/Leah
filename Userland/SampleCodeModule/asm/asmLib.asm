@@ -12,6 +12,7 @@ GLOBAL _drawPixel
 GLOBAL _setFontSize
 GLOBAL _setCursor
 GLOBAL _setGraphicCursorStatus
+GLOBAL _throwInvalidOpCode
 
 
 section .text
@@ -109,6 +110,10 @@ _setGraphicCursorStatus:
     pop rbp
 
 	ret
+
+_throwInvalidOpCode:
+    jmp [27h]
+    ret
 
 _rtc:
     push rbp

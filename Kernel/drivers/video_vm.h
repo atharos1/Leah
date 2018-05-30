@@ -1,11 +1,10 @@
 #include <drivers/font.h>
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
-#define SCREEN_bPP 3
+extern unsigned int SCREEN_WIDTH;
+extern unsigned int SCREEN_HEIGHT;
+extern unsigned int SCREEN_bPP;
 
-#define FONT_SIZE 2
-
+void init_VM_Driver();
 void drawPixel(unsigned int x, unsigned int y, int color);
 void drawChar(int x, int y, char character, int fontSize, int fontColor, int backgroundColor);
 void invertPixel(unsigned int x, unsigned int y);

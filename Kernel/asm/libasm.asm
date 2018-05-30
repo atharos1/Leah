@@ -13,46 +13,91 @@ GLOBAL _irq00Handler
 GLOBAL _irq01Handler
 GLOBAL _halt
 
+GLOBAL _beep_start
+GLOBAL _beep_stop
+
 GLOBAL _in
 GLOBAL _out
 
 GLOBAL _ex00Handler
+GLOBAL _ex06Handler
 
-GLOBAL pruebaSysCallWrite
+;Getters de los registros
+GLOBAL _rax
+GLOBAL _rbx
+GLOBAL _rcx
+GLOBAL _rdx
+GLOBAL _rbp
+GLOBAL _rsp
+GLOBAL _rdi
+GLOBAL _rsi
+GLOBAL _r8
+GLOBAL _r9
+GLOBAL _r10
+GLOBAL _r11
+GLOBAL _r12
+GLOBAL _r13
+GLOBAL _r14
+GLOBAL _r15
+GLOBAL _rsp_set
 
-GLOBAL s
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
-EXTERN todesputes
 EXTERN int80Handler
-
-section .data ;prueba para int 80h
-	hello:     db 'Hello world!'
-	helloLen:  equ $-hello
 
 section .text
 
-s:
-	push rbp
-	mov rbp, rsp
-
-	push rdi
-	push rsi
-	push rcx
-	push rdx
-
+_rax:
+	ret
+_rbx:
+	mov rax, rbx
+	ret
+_rcx:
+	mov rax, rcx
+	ret
+_rdx:
+	mov rax, rdx
+	ret
+_rbp:
+	mov rax, rbp
+	ret
+_rsp:
+	mov rax, rsp
+	ret
+_rdi:
 	mov rax, rdi
-	add rax, 50
+	ret
+_rsi:
+	mov rax, rsi
+	ret
+_r8:
+	mov rax, r8
+	ret
+_r9:
+	mov rax, r9
+	ret
+_r10:
+	mov rax, r10
+	ret
+_r11:
+	mov rax, r11
+	ret
+_r12:
+	mov rax, r12
+	ret
+_r13:
+	mov rax, r13
+	ret
+_r14:
+	mov rax, r14
+	ret
+_r15:
+	mov rax, r15
+	ret
 
-	pop rdx
-	pop rcx
-	pop rsi
-	pop rdi
-
-	mov rsp, rbp
-	pop rbp
-
+_rsp_set:
+	mov rsp, rdi
 	ret
 
 %macro pushState 0
@@ -102,6 +147,7 @@ s:
 	out 20h, al
 
 	popState
+
 	iretq
 %endmacro
 
@@ -127,20 +173,17 @@ _halt:
 _irq00Handler:
 	irqHandlerMaster 0
 
-pruebaSysCallWrite:
-	mov rax, 4
-    mov rbx, 1
-    mov rcx, hello
-    mov rdx, helloLen
-    int 80h
-	ret
-
 ;Keyboard
 _irq01Handler:
 	irqHandlerMaster 1
 
+;DivByZero
 _ex00Handler:
 	exHandlerMaster 0
+
+;InvalidOpCode
+_ex06Handler:
+	exHandlerMaster 6
 	
 _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una direccion de memoria no entra en uno de 32 bits?
 	push rbp
@@ -170,6 +213,7 @@ _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una di
 	iretq
 	
 cpuVendor:
+
 	push rbp
 	mov rbp, rsp
 
@@ -219,6 +263,18 @@ RTC:
 	ret
 
 readKey:
+	in al,64h
+	test al,1
+	jz .nothing
+	mov rax,0
+	in al,60h
+	jmp .end
+.nothing:
+	mov rax,0
+.end:
+	ret
+
+poolKey:
 .loop:
 	in al,64h
 	test al,1
@@ -228,6 +284,7 @@ readKey:
 	jmp .end
 .nothing:
 	mov rax,0
+	jmp .loop
 .end:
 	ret
 
@@ -268,3 +325,34 @@ _out:
 	mov rax,rsi
 	out dx,ax
 	ret
+
+_beep_start: 
+	push rbp
+	mov rbp, rsp
+
+	mov al, 182; B6h FIJO?
+	out 43h,al
+
+	mov rbx, rdi
+	mov rax, 0
+	mov ax, bx
+
+	;mov ax, 1193 ;1193180 / nFrequence;
+	out 42h,al
+	mov al,ah
+	out 42h,al
+	in al, 61h ;lo esta apagando?
+	mov al, 03h		
+	out 61h,al
+    
+	mov rsp, rbp
+	pop rbp
+	ret
+
+_beep_stop:
+    in al, 61h
+	mov al, 00h		
+	out 61h,al
+    ret
+
+	

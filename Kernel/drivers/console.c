@@ -6,12 +6,15 @@
 
 
 #define NUMCOLORS 16
-#define NUM_COLS (SCREEN_WIDTH / CHAR_WIDTH)
-#define NUM_ROWS (SCREEN_HEIGHT / CHAR_HEIGHT)
 
 int fontSize = 1;
-int num_Cols = (SCREEN_WIDTH / CHAR_WIDTH);
+/*int num_Cols = SCREEN_WIDTH / CHAR_WIDTH;
 int num_Rows = (SCREEN_HEIGHT / CHAR_HEIGHT);
+int char_Height = CHAR_HEIGHT;
+int char_Width = CHAR_WIDTH;*/
+
+int num_Cols = 128;
+int num_Rows = 48;
 int char_Height = CHAR_HEIGHT;
 int char_Width = CHAR_WIDTH;
 
@@ -25,7 +28,9 @@ int backgroundColor = 0x0;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
-static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
+void _beep_start(uint16_t freq);
+
+uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 void setGraphicCursorStatus(unsigned int status) {
 	if( status == 1 )
@@ -33,7 +38,7 @@ void setGraphicCursorStatus(unsigned int status) {
 
 	if( status == 0 )
 		removeFunctionFromTimer(cursorTick);
-} 
+}
 
 void setFontSize(unsigned int size) {
 	fontSize = size;
@@ -144,22 +149,18 @@ void printf(char * format, ...) {
 	va_end(pa);
 }
 
-// void setFontColor(enum COLOR c) {
-// 	if(c < NUMCOLORS) fontColor = c;
-// 	char * pos = getCursorPos() + 1;
-// 	*pos = fontColor + (16 * backgroundColor);
-// }
-// void setBackgroundColor(enum COLOR c) {
-// 	if(c < NUMCOLORS) backgroundColor = c;
-// 	char * pos = getCursorPos() + 1;
-// 	*pos = fontColor + (16 * backgroundColor);
-// }
-
 void setFontColor(int color) {
 	fontColor = color;
 }
 void setBackgroundColor(int color) {
 	backgroundColor = color;
+}
+
+int getFontColor() {
+	return fontColor;
+}
+int getBackgroundColor() {
+	return backgroundColor;
 }
 
 void printChar(char c) {
@@ -173,12 +174,15 @@ void printChar(char c) {
 			shiftCursor(-1);
 			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, ' ', fontSize, fontColor, backgroundColor);
 			break;
-		case KLEFT:
+		/*case KLEFT:
 			shiftCursor(-1);
 			break;
 		case KRIGHT:
 			if(getNextChar != 0)
 				shiftCursor(1);
+			break;*/
+		case BELL:
+			_beep_start(1193);
 			break;
 		default:
 			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
@@ -259,7 +263,7 @@ void printBase(int i, int base) {
 
 
 
-static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {
+uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {
 	char *p = buffer;
 	char *p1, *p2;
 	uint32_t digits = 0;

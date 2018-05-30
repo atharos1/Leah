@@ -1,6 +1,6 @@
-#include <drivers/kb_layout.h>
 #include <stdint.h>
 #include <drivers/console.h>
+#include <drivers/kb_driver.h>
 
 #define BUFF_SIZE 0xFF
 
@@ -32,31 +32,31 @@ char kb_fetch(){
 	switch (c){
 		case KRRIGHT_SHIFT:
 			rshift=1;
-			return;
+			return 0;
 			break;
 		case KRRIGHT_SHIFT_BK:
 			rshift=0;
-			return;
+			return 0;
 			break;
 		case KRLEFT_CTRL:
 			ctrl=1;
-			return;
+			return 0;
 			break;
 		case KRLEFT_CTRL_BK:
 			ctrl=0;
-			return;
+			return 0;
 			break;
 		case KRLEFT_SHIFT:
 			lshift=1;
-			return;
+			return 0;
 			break;
 		case KRLEFT_SHIFT_BK:
 			lshift=0;
-			return;
+			return 0;
 			break;
 		case KRCAPS_LOCK:
 			blockm=!blockm;
-			return;
+			return 0;
 			break;
 		default:
 			break;

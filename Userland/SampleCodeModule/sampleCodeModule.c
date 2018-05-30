@@ -29,6 +29,7 @@ int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
 int _setFontSize(unsigned int size);
 void _setGraphicCursorStatus(unsigned int status);
+void _throwInvalidOpCode();
 
 int _rtc(int fetch);
 
@@ -139,8 +140,8 @@ int commandListener() {
 	int cursor = 0;
 	int lastChar = 0;
 
-	setFontColor(0xFF00FF);
-	puts("Leah> ");
+	setFontColor(0xFFA500);
+	puts("Terminalator> ");
 	setFontColor(0xFFFFFF);
 
 	_setGraphicCursorStatus(1);
@@ -195,7 +196,7 @@ void time(char * args) {
 
 void help() {
 	for(int i = 0; i < commandsNum; i++) {
-		setFontColor(0xFF0000);
+		setFontColor(0xFF6347);
 		printf("%s\n", commandList[i].name);
 		setFontColor(0xFFFFFF);
 			if(commandList[i].desc != '\0') {
@@ -211,8 +212,10 @@ void exit() {
 }
 
 void clear() {
+	setFontColor(0xFFFFFF);
+	setBackgroundColor(0x000000);
 	clearScreen();
-	printf("Leah v0.1\nInterprete de comandos. Digite 'help' para mas informacion.");
+	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
 }
 
 void setFontSize(char * args) {
@@ -231,14 +234,17 @@ void setFontSize(char * args) {
 void digitalClock_exec() {
 	digitalClock();
 	_setFontSize(1);
-	setFontColor(0xFFFFFF);
 	clear();
 }
 
 void div100(char * args) {
 	int num = atoi(args);
+	int r = 100 / num;
+	printf("100 / %d = %d", num, r);
+}
 
-	printf("100 / %d = %d", num, 100/num);
+void throwInvalidOpCode() {
+	_throwInvalidOpCode();
 }
 
 int main() {
@@ -257,6 +263,7 @@ int main() {
 	command_register("font-size", setFontSize, "Establece el tamano de la fuente y limpia la consola");
 	command_register("digital-clock", digitalClock_exec, "Muestra un reloj digital en pantalla");
 	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0)");
+	command_register("invopcode", throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
 	command_register("exit", exit, "Cierra la Shell");
 
 	int status = 0;

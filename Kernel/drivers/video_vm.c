@@ -5,6 +5,10 @@
 unsigned int bgColor = 0x0;
 unsigned int fColor = 0xFFFFFF;
 
+unsigned int SCREEN_WIDTH = 1024;
+unsigned int SCREEN_HEIGHT = 768;
+unsigned int SCREEN_bPP = 3;
+
 struct vbe_mode_info_structure {
 	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
 	uint8_t window_a;			// deprecated
@@ -44,6 +48,12 @@ struct vbe_mode_info_structure {
 } __attribute__ ((packed));
 
 struct vbe_mode_info_structure * screenData = (void*)0x5C00;
+
+void init_VM_Driver() {
+	SCREEN_bPP = screenData->bpp / 8;
+	SCREEN_HEIGHT = screenData->height;
+	SCREEN_WIDTH = screenData->width;
+}
 
 void drawPixel(unsigned int x, unsigned int y, int color)
 {

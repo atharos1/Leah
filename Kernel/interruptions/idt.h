@@ -5,5 +5,6 @@ void writeIDT();
 void _sti();
 void _cli();
 void irqDispatcher(int n);
+void kernelPanic();
 
 #endif

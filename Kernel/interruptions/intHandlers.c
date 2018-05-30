@@ -72,8 +72,8 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			break;
 		case 4: //Write
 			if( rbx == 2) { //STD_ERR
-				setFontColor(BLACK);
-				setBackgroundColor(RED);
+				setFontColor(0x000000);
+				setBackgroundColor(0xDC143C);
 			}
 
 			char * str = (char*)rcx;

@@ -1,7 +1,7 @@
 #include "../StandardLibrary/stdio.h"
 #include "../StandardLibrary/string.h"
 
-#define CANTCOLORS 4
+#define CANTCOLORS 5
 
 typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
@@ -16,7 +16,8 @@ int color[CANTCOLORS] = {
     0xFFFFFF,
     0xFF0000,
     0x00FF00,
-    0x0000FF
+    0x0000FF,
+    0xFFA500
 };
 
 int currColor = 0;
@@ -51,10 +52,10 @@ void digitalClock() {
     while(c = getchar(), c != 27) { //Esc
         
         if(c == '\n') {
-            if(currColor == CANTCOLORS)
-                currColor = 0;
-            else
+            if(currColor < CANTCOLORS - 1)
                 currColor++;
+            else
+                currColor = 0;
 
             setFontColor(color[currColor]);
             drawMe();
