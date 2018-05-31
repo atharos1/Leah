@@ -101,21 +101,22 @@ int main()
 	incLine(1);
 	incLine(1);	
 
+	clearScreen();
+
 	extern uint64_t * instructionPointerBackup;
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
-	stackPointerBackup = _rsp();
+	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
-
-
 
 	incLine(1);
 	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 
 	printString("  Sample data module at 0x");
 	printBase((uint64_t)sampleDataModuleAddress, 16);
+
 	incLine(1);
 	printString("  Sample data module contents: ");
 	printString((char*)sampleDataModuleAddress);

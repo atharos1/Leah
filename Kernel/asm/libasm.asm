@@ -44,6 +44,9 @@ GLOBAL _r15
 GLOBAL _rsp_set
 GLOBAL _rdi_set
 
+GLOBAL _popState
+GLOBAL _pushState
+
 GLOBAL stackPointerBackup
 GLOBAL instructionPointerBackup
 
@@ -133,6 +136,7 @@ _rdi_set:
 	push r13
 	push r14
 	push r15
+	mov rax, 15*8 ;cantidad de bytes que agrego al stackpointer
 %endmacro
 
 %macro popState 0
@@ -173,8 +177,10 @@ _rdi_set:
 	pushState
 
 	mov rsi, rsp
+	add rsi, rax ; RSI APUNTE A LA DIRECCION DE RETORNO A LA FUNCION QUE FALLO
 	mov rdx, rsp
-	add rdx, 24
+	add rdx, rax
+	add rdx, 3*8 ; RDX APUNTE A LA DIRECCION DE STACK DE LA FUNCION QUE FALLO
 
 	mov rdi, %1 ; pasaje de parametro
 	call exDispatcher
@@ -183,6 +189,12 @@ _rdi_set:
 
 	iretq
 %endmacro
+
+_popState:
+	popState
+
+_pushState:
+	pushState
 
 _halt:
 	hlt
@@ -294,14 +306,11 @@ readKey:
 	ret
 
 poolKey:
-	mov rax, 100
-	ret
 .loop:
 	in al,64h
 	test al,1
-	jz .nothing
-	mov rax,0
-	;in al,60h
+	jnz .nothing
+	in al,60h
 	jmp .end
 .nothing:
 	mov rax,0

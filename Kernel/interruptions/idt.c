@@ -124,17 +124,20 @@ uint64_t _r15();
 void _rsp_set(uint64_t address);
 void _rdi_set(uint64_t address);
 
+void _popState();
+void _pushState();
+
 void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP) {
 
-	uint64_t raxBackup = _rax();
+	uint64_t * oldRSP = RIP + 8; //Apunta al RAX pusheado por el pushState
 
 	printf("Origen del error: %s\n\n", msg);
 
 	printf("Direccion del instruction pointer: %X\n", RIP);
 	printf("Direccion del stack pointer: %X\n", RSP);
 	printString("Registros:\n");
-	printf("RDI: %X, RSI: %X, RAX: %X, RBX: %X, RCX: %X, RDX: %X\n", _rdi(), _rsi(), raxBackup, _rbx(), _rcx(), _rdx());
-	printf("R8: %X, R9: %X, R10: %X, R11: %X, R12: %X, R13: %X, R14: %X, R15: %X\n", _r8(), _r9(), _r10(), _r11(), _r12(), _r13(), _r14(), _r15());
+	printf("RDI: %X, RSI: %X, RAX: %X, RBX: %X, RCX: %X, RDX: %X\n", oldRSP[8*5], oldRSP[8*6], oldRSP[8*0], oldRSP[8*1], oldRSP[8*2], oldRSP[8*3]);
+	printf("R8: %X, R9: %X, R10: %X, R11: %X, R12: %X, R13: %X, R14: %X, R15: %X\n", oldRSP[8*7], oldRSP[8*8], oldRSP[8*9], oldRSP[8*10], oldRSP[8*11], oldRSP[8*12], oldRSP[8*13], oldRSP[8*14]);
 
 }
 
@@ -145,8 +148,12 @@ void awaitKeyPress() {
 	incLine(2);
 	printf("Presione una tecla para continuar.");
 
-	while(1)
-		_halt();
+	printf("\n\n");
+
+	unsigned char c;
+	c = poolKey();
+	printChar(c);
+
 }
 
 void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
@@ -160,15 +167,15 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 	extern uint64_t * instructionPointerBackup;
 	extern void * stackPointerBackup;
 
-	uint64_t RIP_Back = RIP;
-	uint64_t RSP_Back = RSP;
+	uint64_t RIP_Back = &RIP;
+	uint64_t RSP_Back = &RSP;
 
 	switch(n) {
 		case 0: //Division by 0
 			*RIP = instructionPointerBackup;
 			*RSP = stackPointerBackup;
 			dumpData("EXCEPCION (DIVISION POR CERO)", RIP_Back, RSP_Back); //ARREGLAR: QUE MUESTRE LAS DIRECCIONES PREVIAS, NO LAS NUEVAS!
-			awaitKeyPress();
+			printf("\n\n");
 			break;
 
 		case 6: //InvalidOpCode

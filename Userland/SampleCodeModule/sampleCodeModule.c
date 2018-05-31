@@ -215,6 +215,12 @@ void clear() {
 	setFontColor(0xFFFFFF);
 	setBackgroundColor(0x000000);
 	clearScreen();
+	printWelcome();
+}
+
+void printWelcome() {
+	setFontColor(0xFFFFFF);
+	setBackgroundColor(0x000000);
 	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
 }
 
@@ -254,7 +260,7 @@ void throwInvalidOpCode() {
 
 int main() {
 
-	clear();
+	printWelcome();
 
 	//div100("0\0");
 
