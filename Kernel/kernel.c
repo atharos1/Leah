@@ -101,12 +101,15 @@ int main()
 	incLine(1);
 	incLine(1);	
 
-	//stackPointerBackup = _rsp();
-	//instructionPointerBackup = _rip();
-	//printf("\nACTUAL SP: %X\n", _rsp());
+	extern uint64_t * instructionPointerBackup;
+	instructionPointerBackup = sampleCodeModuleAddress;
+	extern void * stackPointerBackup;
+	stackPointerBackup = _rsp();
 
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
+
+
 
 	incLine(1);
 	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);

@@ -2,6 +2,7 @@ GLOBAL cpuVendor
 
 GLOBAL RTC
 GLOBAL readKey
+GLOBAL poolKey
 
 GLOBAL _sti
 GLOBAL picMasterMask
@@ -43,10 +44,17 @@ GLOBAL _r15
 GLOBAL _rsp_set
 GLOBAL _rdi_set
 
+GLOBAL stackPointerBackup
+GLOBAL instructionPointerBackup
+
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
+
+section .bss
+	stackPointerBackup:  resq 1
+	instructionPointerBackup: resq 1
 
 section .text
 
@@ -110,6 +118,7 @@ _rdi_set:
 	ret
 
 %macro pushState 0
+	push rax
 	push rbx
 	push rcx
 	push rdx
@@ -141,10 +150,10 @@ _rdi_set:
 	pop rdx
 	pop rcx
 	pop rbx
+	pop rax
 %endmacro
 
 %macro irqHandlerMaster 1
-	push rax
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro
@@ -155,29 +164,22 @@ _rdi_set:
 	out 20h, al
 
 	popState
-	pop rax
 
 	iretq
 %endmacro
 
 %macro exHandlerMaster 1
 
-	pop rsi ; pop de la direccion de retorno
-	pop rdi
-
 	pushState
+
+	mov rsi, rsp
+	mov rdx, rsp
+	add rdx, 24
 
 	mov rdi, %1 ; pasaje de parametro
 	call exDispatcher
 
-	; signal pic EOI (End of Interrupt)
-	;mov al, 20h
-	;out 20h, al
-
 	popState
-
-	push rdi
-	push rax ; push de la direccion de retorno
 
 	iretq
 %endmacro
@@ -292,12 +294,14 @@ readKey:
 	ret
 
 poolKey:
+	mov rax, 100
+	ret
 .loop:
 	in al,64h
 	test al,1
 	jz .nothing
 	mov rax,0
-	in al,60h
+	;in al,60h
 	jmp .end
 .nothing:
 	mov rax,0

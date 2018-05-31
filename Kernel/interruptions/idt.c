@@ -43,7 +43,7 @@ static void setup_IDT_entry (int index, uint64_t offset) {
 
 int s(int i);
 
-void kernelPanic() {
+void kernelPanic(char * msg, uint64_t * RIP, uint64_t * RSP) {
 	setFontColor(0x000000);
 	setBackgroundColor(0xDC143C);
 
@@ -62,8 +62,8 @@ void kernelPanic() {
 	printf("Nada, eso.\n");
 
 	setFontSize(1);
-	incLine(30);
-	dumpData();
+	incLine(31);
+	dumpData(msg, RIP, RSP);
 	
 	while(1)
 		_halt();	
@@ -124,19 +124,32 @@ uint64_t _r15();
 void _rsp_set(uint64_t address);
 void _rdi_set(uint64_t address);
 
-void dumpData() {
+void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP) {
 
 	uint64_t raxBackup = _rax();
 
-	printf("\nDireccion del stack pointer: %X\n", _rsp());
-	printf("Direccion del base pointer: %X\n", _rbp());
-	printString("\nRegistros:\n");
+	printf("Origen del error: %s\n\n", msg);
+
+	printf("Direccion del instruction pointer: %X\n", RIP);
+	printf("Direccion del stack pointer: %X\n", RSP);
+	printString("Registros:\n");
 	printf("RDI: %X, RSI: %X, RAX: %X, RBX: %X, RCX: %X, RDX: %X\n", _rdi(), _rsi(), raxBackup, _rbx(), _rcx(), _rdx());
 	printf("R8: %X, R9: %X, R10: %X, R11: %X, R12: %X, R13: %X, R14: %X, R15: %X\n", _r8(), _r9(), _r10(), _r11(), _r12(), _r13(), _r14(), _r15());
 
 }
 
-uint64_t exDispatcher(int n, uint64_t retAddress) {
+unsigned char poolKey();
+unsigned char readKey();
+
+void awaitKeyPress() {
+	incLine(2);
+	printf("Presione una tecla para continuar.");
+
+	while(1)
+		_halt();
+}
+
+void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 	
 	int fColor = getFontColor();
 	int bColor = getBackgroundColor();
@@ -144,25 +157,28 @@ uint64_t exDispatcher(int n, uint64_t retAddress) {
 	setFontColor(0x000000);
 	setBackgroundColor(0xDC143C);
 
+	extern uint64_t * instructionPointerBackup;
+	extern void * stackPointerBackup;
+
+	uint64_t RIP_Back = RIP;
+	uint64_t RSP_Back = RSP;
+
 	switch(n) {
 		case 0: //Division by 0
-			printf("\n\nEXCEPCION: DIVISION POR CERO\n\n");
-			retAddress += 4;
+			*RIP = instructionPointerBackup;
+			*RSP = stackPointerBackup;
+			dumpData("EXCEPCION (DIVISION POR CERO)", RIP_Back, RSP_Back); //ARREGLAR: QUE MUESTRE LAS DIRECCIONES PREVIAS, NO LAS NUEVAS!
+			awaitKeyPress();
 			break;
 
 		case 6: //InvalidOpCode
-			printf("\n\nEXCEPTION: CODIGO DE OPERACION INVALIDO\n\n");
-			kernelPanic();
+			kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP);
 			break;
 	}
-
-	dumpData();
 
 	setFontColor(fColor);
 	setBackgroundColor(bColor);
 
 	//_rdi_set(stackPointerBackup);
-
-	return retAddress;
 
 }
