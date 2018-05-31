@@ -6,17 +6,10 @@
 
 
 #define NUMCOLORS 16
-
-int fontSize = 1;
-/*int num_Cols = SCREEN_WIDTH / CHAR_WIDTH;
-int num_Rows = (SCREEN_HEIGHT / CHAR_HEIGHT);
-int char_Height = CHAR_HEIGHT;
-int char_Width = CHAR_WIDTH;*/
-
-int num_Cols = 128;
-int num_Rows = 48;
-int char_Height = CHAR_HEIGHT;
-int char_Width = CHAR_WIDTH;
+#define NUM_COLS (SCREEN_WIDTH / CHAR_WIDTH)
+#define NUM_ROWS (SCREEN_HEIGHT / CHAR_HEIGHT)
+#define isDigit(a) ('0'<a<'9')
+#define charToDigit(a) (a - '0')
 
 //Librería screen
 static char * firstScreenPos = (char*)0xB8000;
@@ -28,32 +21,14 @@ int backgroundColor = 0x0;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
-void _beep_start(uint16_t freq);
-
-uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
-
-void setGraphicCursorStatus(unsigned int status) {
-	if( status == 1 )
-		appendFunctionToTimer(cursorTick, 18);
-
-	if( status == 0 )
-		removeFunctionFromTimer(cursorTick);
-}
-
-void setFontSize(unsigned int size) {
-	fontSize = size;
-	char_Height = CHAR_HEIGHT * fontSize;
-	char_Width = CHAR_WIDTH * fontSize;
-	num_Cols = SCREEN_WIDTH / (CHAR_WIDTH * fontSize);
-	num_Rows = SCREEN_HEIGHT / (CHAR_HEIGHT * fontSize);
-}
+static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 char getNextChar() {
 	return 0;
 }
 
 void resetCursor() {
-	if(cursorStatus == 1)
+	if(cursorStatus == 0)
 		cursorTick();
 }
 
@@ -62,15 +37,7 @@ char * getCursorPos() {
 }
 
 void cursorTick() {
-
-	if(cursorStatus == 0)
-		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, fontColor);
-	else
-		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, backgroundColor);
-
-	cursorStatus = !cursorStatus;
-
-	//invertChar(curScreenCol*char_Width, curScreenRow*char_Height*num_Cols);
+	//invertChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT*NUM_COLS);
 	// char * cursorPosColor = getCursorPos() + 1;
 	// if( cursorStatus == 0 )
 	// 	*cursorPosColor = WHITE + (16 * BLACK);
@@ -83,26 +50,24 @@ void cursorTick() {
 
 void setCursor(unsigned short int x, unsigned short int y) {
 
-	if( x >= num_Cols || y >= num_Rows )
+	if( x >= NUM_COLS || y >= NUM_ROWS )
 		return;
 
 	curScreenCol = x;
 	curScreenRow = y;
 
-	//printf("HOLA\n");
-
 }
 
 void shiftCursor(int cant) {
-	int newPos = curScreenCol + curScreenRow*num_Cols + cant;
+	int newPos = curScreenCol + curScreenRow*NUM_COLS + cant;
 	if (newPos >= 0)
-		setCursor(newPos%num_Cols, newPos/num_Cols);
+		setCursor(newPos%NUM_COLS, newPos/NUM_COLS);
 }
 
 void incLine(int cant) {
 
-	if( curScreenRow + cant >= num_Rows ) {
-		scrollUp(char_Height);
+	if( curScreenRow + cant >= NUM_ROWS ) {
+		scrollUp(CHAR_HEIGHT);
 		cant--;
 	}
 	
@@ -111,6 +76,108 @@ void incLine(int cant) {
 }
 
 //Librería screen
+void vscanf(char* source, char* format, va_list pa) {
+	va_list pa;
+	int cantArgs = 0;
+	while((*source) != '\0' && (*format) != '\0') {
+		switch(*format) {
+			case ' ':
+				format++;
+				break;
+			case '%':
+				format++
+				break;
+			case 'd':
+				source += scanNumber(source, va_arg(pa, *int), &cantArgs);
+				format++;
+				break;
+			case 'c':
+				source += scanChar(source, va_arg(pa, *char), &cantArgs);
+				format++;
+				break;
+			case 's':
+				source += scanString(source, va_arg(pa, char*), &cantArgs);
+				format++;
+				break;
+		}
+	}
+
+	return cantArgs;	
+
+}
+
+int sscanf(char* source, char* format, ...) {
+	va_list pa;
+	va_start(pa, format);
+	int aux = vscanf(source, format, pa);
+	va_end(pa);
+	return aux;	
+}
+
+static int scanString(char* source, char*dest, int* cantArgs) {
+	int counter = 0;
+	if((*source) == ' ' || (*source) == '\n') {
+		while((*source++) == ' ' || (*source) == '\n');
+	}
+	if((*source) != '\0') {
+		*cantArgs++;
+	}
+	while((*source) != ' ' && (*source) != '\0' && (*source) != '\n') {
+		*dest = *source;
+		dest++;
+		source++;
+		counter++;
+	}
+	(*dest) = '\0';
+	return counter;
+}
+
+static int scanChar(char* source, char* dest, int* cantArgs) {
+	if((*source) == ' ' || (*source) == '\n') {
+		while((*source++) == ' ' || (*source) == '\n');
+	}
+	if((*source) == '\0' || (*source) == '\n') {
+		return 0;
+	}
+	*dest = *source;
+	*cantArgs++;
+	return 1;
+}
+
+static int scanNumber(char* source, int* dest, int* cantArgs) {
+	int aux = 0;
+	int counter = 0;
+
+	if((*source) == ' ' && !isDigit(*source)) {
+		while((*source++) == ' ' && !isDigit(*source));
+	}
+	if(isDigit(*source)) {
+		*cantArgs++;
+		while((*source) != '\0' && isDigit(*source)) {
+			aux = (10^counter)*charToDigit(*source);
+			counter++;
+		}
+		*dest = aux;
+	}
+	return counter;
+}
+
+int scanf(char* fmt, ...) {
+	char c;
+	char source[255];
+	int i = 0;
+	while((c = getChar()) != '\0') {
+		source[i] = c;
+		i++;
+	}
+	source[i] = '\0';
+
+	va_list pa;
+	va_start(pa, fmt);
+	va_end(pa);
+	return vscanf(source, fmt, va_list);
+}
+
 void printf(char * format, ...) {
 
 	va_list pa; //Lista de parámetros
@@ -149,18 +216,22 @@ void printf(char * format, ...) {
 	va_end(pa);
 }
 
+// void setFontColor(enum COLOR c) {
+// 	if(c < NUMCOLORS) fontColor = c;
+// 	char * pos = getCursorPos() + 1;
+// 	*pos = fontColor + (16 * backgroundColor);
+// }
+// void setBackgroundColor(enum COLOR c) {
+// 	if(c < NUMCOLORS) backgroundColor = c;
+// 	char * pos = getCursorPos() + 1;
+// 	*pos = fontColor + (16 * backgroundColor);
+// }
+
 void setFontColor(int color) {
 	fontColor = color;
 }
 void setBackgroundColor(int color) {
 	backgroundColor = color;
-}
-
-int getFontColor() {
-	return fontColor;
-}
-int getBackgroundColor() {
-	return backgroundColor;
 }
 
 void printChar(char c) {
@@ -172,20 +243,17 @@ void printChar(char c) {
 		case BACKSPACE:
 			resetCursor();
 			shiftCursor(-1);
-			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, ' ', fontSize, fontColor, backgroundColor);
+			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, ' ', fontColor, backgroundColor);
 			break;
-		/*case KLEFT:
+		case KLEFT:
 			shiftCursor(-1);
 			break;
 		case KRIGHT:
 			if(getNextChar != 0)
 				shiftCursor(1);
-			break;*/
-		case BELL:
-			_beep_start(1193);
 			break;
 		default:
-			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
+			drawChar(curScreenCol*CHAR_WIDTH, curScreenRow*CHAR_HEIGHT, c, fontColor, backgroundColor);
 			shiftCursor(1);
 			break;
 	}
@@ -224,7 +292,7 @@ void printChar(char c) {
 // }
 
 void clearScreen() {
-	clearDisplay(backgroundColor);
+	clearDisplay();
 	setCursor(0, 0);
 }
 
@@ -263,7 +331,7 @@ void printBase(int i, int base) {
 
 
 
-uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {
+static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {
 	char *p = buffer;
 	char *p1, *p2;
 	uint32_t digits = 0;
