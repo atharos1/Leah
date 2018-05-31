@@ -52,6 +52,9 @@ void digitalClock() {
     while(c = getchar(), c != 27) { //Esc
         
         if(c == '\n') {
+
+            puts('\7'); //BEEP
+
             if(currColor < CANTCOLORS - 1)
                 currColor++;
             else

@@ -4,6 +4,7 @@
 #define GLOBAL_VARIABLES_H
 
 extern uint64_t stackPointerBackup;
+extern uint64_t instructionPointerBackup;
 
 typedef int (*EntryPoint)();
 static void * const sampleCodeModuleAddress = (void*)0x400000;

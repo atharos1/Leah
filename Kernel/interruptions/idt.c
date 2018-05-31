@@ -122,6 +122,7 @@ uint64_t _r14();
 uint64_t _r15();
 
 void _rsp_set(uint64_t address);
+void _rdi_set(uint64_t address);
 
 void dumpData() {
 
@@ -133,19 +134,9 @@ void dumpData() {
 	printf("RDI: %X, RSI: %X, RAX: %X, RBX: %X, RCX: %X, RDX: %X\n", _rdi(), _rsi(), raxBackup, _rbx(), _rcx(), _rdx());
 	printf("R8: %X, R9: %X, R10: %X, R11: %X, R12: %X, R13: %X, R14: %X, R15: %X\n", _r8(), _r9(), _r10(), _r11(), _r12(), _r13(), _r14(), _r15());
 
-	/*while( c == EOF ) {
-		_halt();
-	}
-
-	clearScreen();*/
-	//_rsp_set(stackPointerBackup);
-
-	//((EntryPoint)sampleCodeModuleAddress)();
 }
 
-void exDispatcher(int n) {
-
-	kernelPanic();
+uint64_t exDispatcher(int n, uint64_t retAddress) {
 	
 	int fColor = getFontColor();
 	int bColor = getBackgroundColor();
@@ -156,15 +147,22 @@ void exDispatcher(int n) {
 	switch(n) {
 		case 0: //Division by 0
 			printf("\n\nEXCEPCION: DIVISION POR CERO\n\n");
+			retAddress += 4;
 			break;
 
 		case 6: //InvalidOpCode
 			printf("\n\nEXCEPTION: CODIGO DE OPERACION INVALIDO\n\n");
+			kernelPanic();
+			break;
 	}
 
 	dumpData();
 
 	setFontColor(fColor);
 	setBackgroundColor(bColor);
+
+	//_rdi_set(stackPointerBackup);
+
+	return retAddress;
 
 }

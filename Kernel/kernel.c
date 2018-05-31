@@ -20,6 +20,7 @@ static const uint64_t PageSize = 0x1000;
 void pruebaSysCallWrite();
 void _halt();
 uint64_t _rsp();
+uint64_t _rip();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -85,11 +86,13 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
+uint64_t _rsp();
+
 int main()
 {
 
-	writeIDT();
 	init_VM_Driver();
+	writeIDT();
 
 	printString("[Kernel Main]");
 	incLine(1);
@@ -99,6 +102,9 @@ int main()
 	incLine(1);	
 
 	//stackPointerBackup = _rsp();
+	//instructionPointerBackup = _rip();
+	//printf("\nACTUAL SP: %X\n", _rsp());
+
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
 

@@ -31,6 +31,7 @@ GLOBAL _rbp
 GLOBAL _rsp
 GLOBAL _rdi
 GLOBAL _rsi
+GLOBAL _rip
 GLOBAL _r8
 GLOBAL _r9
 GLOBAL _r10
@@ -40,6 +41,7 @@ GLOBAL _r13
 GLOBAL _r14
 GLOBAL _r15
 GLOBAL _rsp_set
+GLOBAL _rdi_set
 
 
 EXTERN irqDispatcher
@@ -64,6 +66,9 @@ _rbp:
 	ret
 _rsp:
 	mov rax, rsp
+	ret
+_rip:
+	;mov rax, rel $
 	ret
 _rdi:
 	mov rax, rdi
@@ -100,8 +105,11 @@ _rsp_set:
 	mov rsp, rdi
 	ret
 
+_rdi_set:
+	mov rdi, rdi
+	ret
+
 %macro pushState 0
-	push rax
 	push rbx
 	push rcx
 	push rdx
@@ -133,10 +141,10 @@ _rsp_set:
 	pop rdx
 	pop rcx
 	pop rbx
-	pop rax
 %endmacro
 
 %macro irqHandlerMaster 1
+	push rax
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro
@@ -147,21 +155,30 @@ _rsp_set:
 	out 20h, al
 
 	popState
+	pop rax
 
 	iretq
 %endmacro
 
 %macro exHandlerMaster 1
+
+	pop rsi ; pop de la direccion de retorno
+	pop rdi
+
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro
 	call exDispatcher
 
 	; signal pic EOI (End of Interrupt)
-	mov al, 20h
-	out 20h, al
+	;mov al, 20h
+	;out 20h, al
 
 	popState
+
+	push rdi
+	push rax ; push de la direccion de retorno
+
 	iretq
 %endmacro
 

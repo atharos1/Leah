@@ -237,9 +237,14 @@ void digitalClock_exec() {
 	clear();
 }
 
+int _checkStack();
+void _pushA();
+
 void div100(char * args) {
 	int num = atoi(args);
+
 	int r = 100 / num;
+
 	printf("100 / %d = %d", num, r);
 }
 
@@ -250,6 +255,8 @@ void throwInvalidOpCode() {
 int main() {
 
 	clear();
+
+	//div100("0\0");
 
 	puts("\n\n");
 

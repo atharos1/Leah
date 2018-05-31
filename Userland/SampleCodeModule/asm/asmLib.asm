@@ -14,8 +14,13 @@ GLOBAL _setCursor
 GLOBAL _setGraphicCursorStatus
 GLOBAL _throwInvalidOpCode
 
+GLOBAL _rsp
 
 section .text
+
+_rsp:
+	mov rax, rsp
+	ret
 
 _enableCursor:
 
@@ -112,7 +117,7 @@ _setGraphicCursorStatus:
 	ret
 
 _throwInvalidOpCode:
-    jmp [27h]
+    rsm
     ret
 
 _rtc:
