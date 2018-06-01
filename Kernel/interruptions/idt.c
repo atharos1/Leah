@@ -56,10 +56,10 @@ void kernelPanic(char * msg, uint64_t * RIP, uint64_t * RSP) {
 	setFontSize(8);
 	incLine(2);
 
-	printf("Se fue todo\na la mierda.\n");
+	printf("Se acabo todo.\nTodo todillo.\n");
 	setFontSize(4);
 	incLine(4);
-	printf("Nada, eso.\n");
+	printf("Que mal...\n");
 
 	setFontSize(1);
 	incLine(31);
