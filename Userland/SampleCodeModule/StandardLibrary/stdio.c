@@ -8,6 +8,7 @@
 #define STD_IN 0 
 #define SYSCALL_WRITE 4
 
+int charToDigit(char a);
 int _read(int fileDescriptor, char * buffer, int count);
 int _write(int fileDescriptor, char * buffer, int count);
 void _halt();
@@ -87,6 +88,10 @@ void printIntR(int i) {
 
 int isDigit(char c) {
     return (c >= '0' && c <= '9');
+}
+
+int charToDigit(char c) {
+	return c - '0';
 }
 
 int isAlpha(char c) {
@@ -205,6 +210,109 @@ unsigned int getchar() {
 
     return (unsigned int)c;
 }
+
+static int scanNumber(char* source, int* dest, int* cantArgs) {
+	int aux = 0;
+	int counter = 0;
+
+	if((*source) == ' ' && !isDigit(*source)) {
+		while((*source++) == ' ' && !isDigit(*source));
+	}
+	if(isDigit(*source)) {
+		*cantArgs++;
+		while((*source) != '\0' && isDigit(*source)) {
+			aux = (10^counter)*charToDigit(*source);
+			counter++;
+		}
+		*dest = aux;
+	}
+	return counter;
+}
+
+static int scanString(char* source, char*dest, int* cantArgs) {
+	int counter = 0;
+	if((*source) == ' ' || (*source) == '\n') {
+		while((*source++) == ' ' || (*source) == '\n');
+	}
+	if((*source) != '\0') {
+		*cantArgs++;
+	}
+	while((*source) != ' ' && (*source) != '\0' && (*source) != '\n') {
+		*dest = *source;
+		dest++;
+		source++;
+		counter++;
+	}
+	(*dest) = '\0';
+	return counter;
+}
+
+static int scanChar(char* source, char* dest, int* cantArgs) {
+	if((*source) == ' ' || (*source) == '\n') {
+		while((*source++) == ' ' || (*source) == '\n');
+	}
+	if((*source) == '\0' || (*source) == '\n') {
+		return 0;
+	}
+	*dest = *source;
+	*cantArgs++;
+	return 1;
+}
+
+int vscanf(char* source, char* format, va_list pa) {
+	int cantArgs = 0;
+	while((*source) != '\0' && (*format) != '\0') {
+		switch(*format) {
+			case ' ':
+				format++;
+				break;
+			case '%':
+				format++;
+				break;
+			case 'd':
+				source += scanNumber(source, va_arg(pa, int*), &cantArgs);
+				format++;
+				break;
+			case 'c':
+				source += scanChar(source, va_arg(pa, char*), &cantArgs);
+				format++;
+				break;
+			case 's':
+				source += scanString(source, va_arg(pa, char*), &cantArgs);
+				format++;
+				break;
+		}
+	}
+
+	return cantArgs;	
+
+}
+
+int sscanf(char* source, char* format, ...) {
+	va_list pa;
+	va_start(pa, format);
+	int aux = vscanf(source, format, pa);
+	va_end(pa);
+	return aux;	
+}
+
+int scanf(char* fmt, ...) {
+	char c;
+	char source[255];
+	int i = 0;
+	while((c = getchar()) != '\0') {
+		source[i] = c;
+		i++;
+	}
+	source[i] = '\0';
+
+	va_list pa;
+	va_start(pa, fmt);
+	int ret = vscanf(source, fmt, pa);
+	va_end(pa);
+	return ret;
+}
+
 /*
 int scanf(char * fmt, ...) {
 

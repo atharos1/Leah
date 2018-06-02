@@ -112,6 +112,24 @@ void incLine(int cant) {
 }
 
 //Librería screen
+static int scanNumber(char* source, int* dest, int* cantArgs) {
+	int aux = 0;
+	int counter = 0;
+
+	if((*source) == ' ' && !isDigit(*source)) {
+		while((*source++) == ' ' && !isDigit(*source));
+	}
+	if(isDigit(*source)) {
+		*cantArgs++;
+		while((*source) != '\0' && isDigit(*source)) {
+			aux = (10^counter)*charToDigit(*source);
+			counter++;
+		}
+		*dest = aux;
+	}
+	return counter;
+}
+
 static int scanString(char* source, char*dest, int* cantArgs) {
 	int counter = 0;
 	if((*source) == ' ' || (*source) == '\n') {
@@ -142,23 +160,6 @@ static int scanChar(char* source, char* dest, int* cantArgs) {
 	return 1;
 }
 
-static int scanNumber(char* source, int* dest, int* cantArgs) {
-	int aux = 0;
-	int counter = 0;
-
-	if((*source) == ' ' && !isDigit(*source)) {
-		while((*source++) == ' ' && !isDigit(*source));
-	}
-	if(isDigit(*source)) {
-		*cantArgs++;
-		while((*source) != '\0' && isDigit(*source)) {
-			aux = (10^counter)*charToDigit(*source);
-			counter++;
-		}
-		*dest = aux;
-	}
-	return counter;
-}
 int vscanf(char* source, char* format, va_list pa) {
 	int cantArgs = 0;
 	while((*source) != '\0' && (*format) != '\0') {
