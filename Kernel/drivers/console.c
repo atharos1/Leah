@@ -30,6 +30,7 @@ int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
 void _beep_start(uint16_t freq);
+void _beep_stop();
 
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
@@ -73,12 +74,6 @@ void cursorTick() {
 		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, backgroundColor);
 
 	cursorStatus = !cursorStatus;
-
-	//invertChar(curScreenCol*char_Width, curScreenRow*char_Height*num_Cols);
- 	// char * cursorPosColor = getCursorPos() + 1;
- 	// if( cursorStatus == 0 )
- 	// 	*cursorPosColor = WHITE + (16 * BLACK);
-
 }
 
 
@@ -106,7 +101,7 @@ void incLine(int cant) {
 		scrollUp(char_Height);
 		cant--;
 	}
-	
+
 	setCursor(0, curScreenRow + cant);
 
 }
@@ -185,7 +180,7 @@ int vscanf(char* source, char* format, va_list pa) {
 		}
 	}
 
-	return cantArgs;	
+	return cantArgs;
 
 }
 
@@ -194,7 +189,7 @@ int sscanf(char* source, char* format, ...) {
 	va_start(pa, format);
 	int aux = vscanf(source, format, pa);
 	va_end(pa);
-	return aux;	
+	return aux;
 }
 
 int scanf(char* fmt, ...) {
@@ -251,17 +246,6 @@ void printf(char * format, ...) {
 
 	va_end(pa);
 }
-
-// void setFontColor(enum COLOR c) {
-// 	if(c < NUMCOLORS) fontColor = c;
-// 	char * pos = getCursorPos() + 1;
-// 	*pos = fontColor + (16 * backgroundColor);
-// }
-// void setBackgroundColor(enum COLOR c) {
-// 	if(c < NUMCOLORS) backgroundColor = c;
-// 	char * pos = getCursorPos() + 1;
-// 	*pos = fontColor + (16 * backgroundColor);
-// }
 
 void setFontColor(int color) {
 	fontColor = color;
@@ -377,7 +361,6 @@ void printBase(int i, int base) {
     printString(buffer);
 
 }
-
 
 
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {

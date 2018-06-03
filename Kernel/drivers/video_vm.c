@@ -74,19 +74,27 @@ void drawSquare(unsigned int x, unsigned int y, int l, int color) {
     drawRectangle(x, y, l, l, color);
 }
 
-void invertPixel(unsigned int x, unsigned int y) {
-	char* screen = screenData->framebuffer;
-	unsigned where = (x + y*SCREEN_WIDTH) * SCREEN_bPP;
-	screen[where] = 255 - screen[where];          // BLUE
-	screen[where + 1] = 255 - screen[where + 1];  // GREEN
-	screen[where + 2] = 255 - screen[where + 2];  // RED
-}
+// void scrollUp(int cant){
+// 	char* screen = screenData->framebuffer;
+// 	for (int i = 0; i < SCREEN_HEIGHT - cant; i++)
+// 		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
+// 			screen[j + i * SCREEN_WIDTH * SCREEN_bPP] = screen[j + (i + cant) * SCREEN_WIDTH * SCREEN_bPP];
+//
+// 	for (int i = SCREEN_HEIGHT - cant; i < SCREEN_HEIGHT; i++)
+// 		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
+// 			drawPixel(j, i, 0x0);
+// }
 
 void scrollUp(int cant){
-	char* screen = screenData->framebuffer;
-	for (int i = 0; i < SCREEN_HEIGHT - cant; i++)
-		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
-			screen[j + i * SCREEN_WIDTH * SCREEN_bPP] = screen[j + (i + cant) * SCREEN_WIDTH * SCREEN_bPP];
+	uint64_t* screen = screenData->framebuffer;
+
+	int i = 0;
+	int j = (cant * SCREEN_WIDTH * SCREEN_bPP)/8;
+	while (j < (SCREEN_HEIGHT * SCREEN_WIDTH * SCREEN_bPP)/8) {
+		screen[i] = screen[j];
+		i++;
+		j++;
+	}
 
 	for (int i = SCREEN_HEIGHT - cant; i < SCREEN_HEIGHT; i++)
 		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
@@ -98,7 +106,7 @@ void drawChar(int x, int y, char character, int fontSize, int fontColor, int bac
 	int aux_x = x;
 	int aux_y = y;
 
-	char bitIsPresent;	
+	char bitIsPresent;
 
 	char* toDraw = charBitmap(character);
 
@@ -110,7 +118,7 @@ void drawChar(int x, int y, char character, int fontSize, int fontColor, int bac
 				drawSquare(aux_x, aux_y, fontSize, fontColor);
 			else
 				drawSquare(aux_x, aux_y, fontSize, backgroundColor);
-				
+
 			aux_x+=fontSize;
 
 			/*if(bitIsPresent)
@@ -124,43 +132,11 @@ void drawChar(int x, int y, char character, int fontSize, int fontColor, int bac
 	}
 }
 
-void invertChar(int x, int y) {
-	int aux_x = x;
-	int aux_y = y;
-
-	for(int i = 0; i < 8; i++) {
-		for(int j = 0; j < 8; j++) {
-			invertPixel(aux_x, aux_y);
-			aux_x++;
-		}
-		aux_x = x;
-		aux_y++;
-	}
-}
-
 void clearDisplay(unsigned int backgroundColor) {
 	char * pos = screenData->framebuffer;
 	for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * SCREEN_bPP; i+=SCREEN_bPP) {
 		pos[i] = backgroundColor & 255;              // BLUE
     	pos[i + 1] = (backgroundColor >> 8) & 255;   // GREEN
     	pos[i + 2] = (backgroundColor >> 16) & 255;  // RED
-		/**pos = 0;
-		pos++;
-		*pos = 0;
-		pos++;
-		*pos = 0;
-		pos++;*/
 	}
 }
-
-// void writeStringToScreen(int x, int y, char* string) {
-//
-// 	int aux_x = x;
-// 	char* aux_s = string;
-//
-// 	for(int i = 0; (*aux_s) != '\0'; i++) {
-// 		drawChar(aux_x, y, (*aux_s));
-// 		aux_s++;
-// 		aux_x += 8;
-// 	}
-// }

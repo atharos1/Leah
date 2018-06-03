@@ -66,7 +66,7 @@ long getCommandID(char * commandName) {
 int command_register(char * name, function f, char * desc) {
 	if(commandsNum >= MAX_COMMANDS - 1 || getCommandFunction(name) )
 		return -1;
-	
+
 	strcpy(commandList[commandsNum].name, name);
 	strcpy(commandList[commandsNum].desc, desc);
 	commandList[commandsNum].f = f;
@@ -77,7 +77,7 @@ int command_register(char * name, function f, char * desc) {
 }
 
 void cursorTick() {
-	if(!cursorStatus) 
+	if(!cursorStatus)
 		setBackgroundColor(WHITE);
 	else
 		setBackgroundColor(BLACK);
@@ -103,7 +103,7 @@ void cursorTick() {
 }*/
 
 void prueba() {
-	printf("HOLA");
+	printf("HOLA \7");
 }
 
 int parseCommand(char * cmd, int l) {
@@ -125,11 +125,11 @@ int parseCommand(char * cmd, int l) {
 		printf("Comando '%s' desconocido.\n\n", cmd);
 		return -1;
 	}
-	
+
 	f(args);
 
 	puts("\n\n");
-			
+
 	return 0;
 }
 
@@ -234,7 +234,7 @@ void setFontSize(char * args) {
 
 	_setFontSize(num);
 	clear();
-		
+
 }
 
 void digitalClock_exec() {
@@ -242,6 +242,14 @@ void digitalClock_exec() {
 	_setFontSize(1);
 	clear();
 }
+
+
+
+// void beep() {
+// 	digitalClock();
+// 	_setFontSize(1);
+// 	clear();
+// }
 
 int _checkStack();
 void _pushA();
@@ -284,7 +292,7 @@ int main() {
 		status = commandListener();
 	}
 
-	
+
 
 
 	return 0;

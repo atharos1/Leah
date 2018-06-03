@@ -88,6 +88,7 @@ void * initializeKernelBinary()
 
 uint64_t _rsp();
 
+
 int main()
 {
 
@@ -99,7 +100,7 @@ int main()
 	printString("  Sample code module at 0x");
 	printBase((uint64_t)sampleCodeModuleAddress, 16);
 	incLine(1);
-	incLine(1);	
+	incLine(1);
 
 	clearScreen();
 
@@ -107,6 +108,7 @@ int main()
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
+
 
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);

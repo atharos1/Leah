@@ -215,7 +215,7 @@ _ex00Handler:
 ;InvalidOpCode
 _ex06Handler:
 	exHandlerMaster 6
-	
+
 _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una direccion de memoria no entra en uno de 32 bits?
 	push rbp
 	mov rbp, rsp
@@ -240,9 +240,9 @@ _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una di
 
 	mov rsp, rbp
 	pop rbp
-	
+
 	iretq
-	
+
 cpuVendor:
 
 	push rbp
@@ -271,10 +271,10 @@ cpuVendor:
 IO_OUT: ;DESTINO, ORIGEN
 	mov rdx,rdi
 	mov rax,rsi
-	
+
 	mov [80h], ax
 	mov [70h], dx
-	
+
 	out dx,ax
 	ret
 
@@ -356,7 +356,7 @@ _out:
 	out dx,ax
 	ret
 
-_beep_start: 
+_beep_start:
 	push rbp
 	mov rbp, rsp
 
@@ -371,18 +371,16 @@ _beep_start:
 	out 42h,al
 	mov al,ah
 	out 42h,al
-	in al, 61h ;lo esta apagando?
-	mov al, 03h		
+	;in al, 61h ;lo esta apagando?
+	mov al, 03h
 	out 61h,al
-    
+
 	mov rsp, rbp
 	pop rbp
 	ret
 
 _beep_stop:
-    in al, 61h
-	mov al, 00h		
+  ;in al, 61h
+	mov al, 00h
 	out 61h,al
-    ret
-
-	
+  ret
