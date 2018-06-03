@@ -164,9 +164,11 @@ int commandListener() {
 					}
 					break;
 				default:
-					cmd[cursor] = c;
-					cursor++;
-					lastChar++;
+					if (c >= ' ' && c < 0x80) {
+						cmd[cursor] = c;
+						cursor++;
+						lastChar++;	
+					}
 					putchar(c);
 					break;
 			}

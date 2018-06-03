@@ -29,6 +29,7 @@ CIRC_BUFFER buff={{0},0,0,0};
 char kb_fetch(){
 	unsigned char c=(unsigned char)readKey();
 	unsigned char p;
+
 	switch (c){
 		case KRRIGHT_SHIFT:
 			rshift=1;
@@ -65,7 +66,7 @@ char kb_fetch(){
 	if(c>0x80)
 		return 0;
 
-	
+
 
 	if (lshift || rshift) {
 		p=asciiShift[c];

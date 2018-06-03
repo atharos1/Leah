@@ -280,6 +280,8 @@ void printChar(char c) {
 			beep(1000, 3);
  			break;
 		default:
+			if (c < ' ' || c >= 0x80)
+				break;
 			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
 			shiftCursor(1);
 			break;
