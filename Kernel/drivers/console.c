@@ -3,6 +3,8 @@
 #include <drivers/console.h>
 #include <drivers/kb_layout.h>
 #include <drivers/video_vm.h>
+#include <drivers/speaker.h>
+#include <interruptions/intHandlers.h>
 
 
 #define NUMCOLORS 16
@@ -23,9 +25,8 @@ int char_Width = CHAR_WIDTH;
 static char * firstScreenPos = (char*)0xB8000;
 unsigned short int curScreenRow = 0;
 unsigned short int curScreenCol = 0;
-//enum COLOR backgroundColor = BLACK;
+
 int backgroundColor = 0x0;
-//enum COLOR fontColor = WHITE;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
@@ -78,15 +79,11 @@ void cursorTick() {
 
 
 void setCursor(unsigned short int x, unsigned short int y) {
-
 	if( x >= num_Cols || y >= num_Rows )
 		return;
 
 	curScreenCol = x;
 	curScreenRow = y;
-	//printf("HOLA\n");
-
-
 }
 
 void shiftCursor(int cant) {
@@ -115,7 +112,7 @@ static int scanNumber(char* source, int* dest, int* cantArgs) {
 		while((*source++) == ' ' && !isDigit(*source));
 	}
 	if(isDigit(*source)) {
-		*cantArgs++;
+		(*cantArgs)++;
 		while((*source) != '\0' && isDigit(*source)) {
 			aux = (10^counter)*charToDigit(*source);
 			counter++;
@@ -131,7 +128,7 @@ static int scanString(char* source, char*dest, int* cantArgs) {
 		while((*source++) == ' ' || (*source) == '\n');
 	}
 	if((*source) != '\0') {
-		*cantArgs++;
+		(*cantArgs)++;
 	}
 	while((*source) != ' ' && (*source) != '\0' && (*source) != '\n') {
 		*dest = *source;
@@ -151,7 +148,7 @@ static int scanChar(char* source, char* dest, int* cantArgs) {
 		return 0;
 	}
 	*dest = *source;
-	*cantArgs++;
+	(*cantArgs)++;
 	return 1;
 }
 
@@ -283,7 +280,7 @@ void printChar(char c) {
 				shiftCursor(1);
 			break;*/
 		case BELL:
-			_beep_start(1193);
+			beep(1000, 3);
  			break;
 		default:
 			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
@@ -291,38 +288,6 @@ void printChar(char c) {
 			break;
 	}
 }
-
-// void printChar(char c) {
-//
-// 	char * pos = getCursorPos();
-//
-// 	switch(c) {
-// 		case ENTER:
-// 			resetCursor();
-// 			incLine(1);
-// 			break;
-// 		case BACKSPACE:
-// 			resetCursor();
-// 			shiftCursor(-1);
-// 			pos = getCursorPos();
-// 			*pos = 0;
-// 			break;
-// 		case KLEFT:
-// 			shiftCursor(-1);
-// 			break;
-// 		case KRIGHT:
-// 			if(getNextChar != 0)
-// 				shiftCursor(1);
-// 			break;
-// 		default:
-// 			*pos = c;
-// 			pos++;
-// 			*pos = fontColor + (16 * backgroundColor);
-// 			shiftCursor(1);
-// 			break;
-// 	}
-//
-// }
 
 void clearScreen() {
 	clearDisplay(backgroundColor);

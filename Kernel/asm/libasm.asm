@@ -360,7 +360,7 @@ _beep_start:
 	push rbp
 	mov rbp, rsp
 
-	mov al, 182; B6h FIJO?
+	mov al, 0xB6
 	out 43h,al
 
 	mov rbx, rdi
@@ -371,8 +371,9 @@ _beep_start:
 	out 42h,al
 	mov al,ah
 	out 42h,al
-	;in al, 61h ;lo esta apagando?
-	mov al, 03h
+
+	in al, 61h ;lo esta apagando?
+ 	or al, 03h
 	out 61h,al
 
 	mov rsp, rbp
@@ -380,7 +381,7 @@ _beep_start:
 	ret
 
 _beep_stop:
-  ;in al, 61h
-	mov al, 00h
-	out 61h,al
+  in al, 61h
+	and al, 0xFC
+	out 61h, al
   ret

@@ -7,6 +7,7 @@
 #include <interruptions/idt.h>
 #include <drivers/video_vm.h>
 #include <include/global_variables.h>
+#include <drivers/speaker.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -109,7 +110,7 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-
+	setSpeaker();
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//removeFunctionFromTimer(cursorTick);
 

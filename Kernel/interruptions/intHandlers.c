@@ -1,18 +1,20 @@
 #include <stdint.h>
 #include <drivers/kb_driver.h>
 #include <drivers/console.h>
+#include <drivers/speaker.h>
+#include <drivers/video_vm.h>
 #include <interruptions/intHandlers.h>
 
 unsigned long int ticks = 0;
 
-typedef struct timerFunction{
+typedef struct {
 	function f;
 	unsigned long int ticks;
-};
+} timerFunction;
 
 #define MAX_FUNCTIONS 255
 
-struct timerFunction timerFunctions[MAX_FUNCTIONS] = {0, 0}; //CONIRMAR SI GARANTIZA QUE TODOS LOS VALORES DE F VAN A EMPEZAR EN 0
+timerFunction timerFunctions[MAX_FUNCTIONS] = {0}; //CONIRMAR SI GARANTIZA QUE TODOS LOS VALORES DE F VAN A EMPEZAR EN 0
 
 void timerRestart() {
 	for(int i = 0; i < MAX_FUNCTIONS; i++)
@@ -24,7 +26,7 @@ void timerTick() {
 	for(int i = 0; i < MAX_FUNCTIONS && timerFunctions[i].f != 0; i++)
 		if( ticks % timerFunctions[i].ticks == 0 )
 			timerFunctions[i].f();
-	
+
 	ticks++;
 
 }
@@ -36,9 +38,9 @@ int appendFunctionToTimer(function f, unsigned long int ticks) {
 			timerFunctions[i].ticks = ticks;
 			return 0;
 		}
-			
+
 	}
-	return -1;	
+	return -1;
 }
 
 int removeFunctionFromTimer(function f) {
@@ -50,7 +52,7 @@ int removeFunctionFromTimer(function f) {
 			for(j = i + 1; j < MAX_FUNCTIONS; j++) {
 				timerFunctions[j - 1].f = timerFunctions[j].f;
 				timerFunctions[j - 1].ticks = timerFunctions[j].ticks;
-			}			
+			}
 			return 0;
 		}
 	}
@@ -120,6 +122,10 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 
 		case 101: //timerRemove, return 0 if successful, -1 if error
 			return removeFunctionFromTimer( (function)rbx );
+			break;
+
+		case 102: //beep
+			beep(rbx, rcx);
 			break;
 
 		case 200: //RTC

@@ -76,14 +76,14 @@ int command_register(char * name, function f, char * desc) {
 	return 0;
 }
 
-void cursorTick() {
-	if(!cursorStatus)
-		setBackgroundColor(WHITE);
-	else
-		setBackgroundColor(BLACK);
-
-	cursorStatus = !cursorStatus;
-}
+// void cursorTick() {
+// 	if(!cursorStatus)
+// 		setBackgroundColor(WHITE);
+// 	else
+// 		setBackgroundColor(BLACK);
+//
+// 	cursorStatus = !cursorStatus;
+// }
 
 /*int command_unregister(char * name) {
 
@@ -211,17 +211,17 @@ void exit() {
 	return;
 }
 
+void printWelcome() {
+	setFontColor(0xFFFFFF);
+	setBackgroundColor(0x000000);
+	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
+}
+
 void clear() {
 	setFontColor(0xFFFFFF);
 	setBackgroundColor(0x000000);
 	clearScreen();
 	printWelcome();
-}
-
-void printWelcome() {
-	setFontColor(0xFFFFFF);
-	setBackgroundColor(0x000000);
-	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
 }
 
 void setFontSize(char * args) {
@@ -242,8 +242,6 @@ void digitalClock_exec() {
 	_setFontSize(1);
 	clear();
 }
-
-
 
 // void beep() {
 // 	digitalClock();
@@ -291,9 +289,6 @@ int main() {
 	while(status != 1) {
 		status = commandListener();
 	}
-
-
-
 
 	return 0;
 

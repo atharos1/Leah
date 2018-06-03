@@ -5,7 +5,7 @@
 #include "math.h"
 
 #define STD_OUT 1
-#define STD_IN 0 
+#define STD_IN 0
 #define SYSCALL_WRITE 4
 
 int charToDigit(char a);
@@ -69,7 +69,7 @@ static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 void printInt(int i) {
 	if(i < 0)
 		putchar('-');
-	
+
 	printIntR(abs(i));
 }
 
@@ -79,7 +79,7 @@ void printIntR(int i) {
 		putchar(i + '0');
 		return;
 	}
-	
+
 	printIntR(i/10);
 
 	putchar( (i % 10) + '0');
@@ -106,12 +106,12 @@ int getString(char * str, char * buff, char limit)  {
     char c;
     int i;
     for( i = 0; c = str[i], c != limit; i++ ) {
-        
+
         if( c == EOF  )
             return EOF; //ERROR
 
         buff[i] = c;
-        
+
     }
 
     return i;
@@ -157,12 +157,12 @@ int getString(char * buff, char limit)  {
     char c;
     int i;
     for( i = 0; c = getchar(), c != limit; i++ ) {
-        
+
         if( c == EOF  )
             return EOF; //ERROR
 
         buff[i] = c;
-        
+
     }
 
     return i;
@@ -219,7 +219,7 @@ static int scanNumber(char* source, int* dest, int* cantArgs) {
 		while((*source++) == ' ' && !isDigit(*source));
 	}
 	if(isDigit(*source)) {
-		*cantArgs++;
+		(*cantArgs)++;
 		while((*source) != '\0' && isDigit(*source)) {
 			aux = (10^counter)*charToDigit(*source);
 			counter++;
@@ -235,7 +235,7 @@ static int scanString(char* source, char*dest, int* cantArgs) {
 		while((*source++) == ' ' || (*source) == '\n');
 	}
 	if((*source) != '\0') {
-		*cantArgs++;
+		(*cantArgs)++;
 	}
 	while((*source) != ' ' && (*source) != '\0' && (*source) != '\n') {
 		*dest = *source;
@@ -255,7 +255,7 @@ static int scanChar(char* source, char* dest, int* cantArgs) {
 		return 0;
 	}
 	*dest = *source;
-	*cantArgs++;
+	(*cantArgs)++;
 	return 1;
 }
 
@@ -284,7 +284,7 @@ int vscanf(char* source, char* format, va_list pa) {
 		}
 	}
 
-	return cantArgs;	
+	return cantArgs;
 
 }
 
@@ -293,7 +293,7 @@ int sscanf(char* source, char* format, ...) {
 	va_start(pa, format);
 	int aux = vscanf(source, format, pa);
 	va_end(pa);
-	return aux;	
+	return aux;
 }
 
 int scanf(char* fmt, ...) {
@@ -422,7 +422,7 @@ int puts(char * str) {
 		if( putchar( str[i] ) != 1 )
             return EOF;
 	}
-        
+
 
     return 1;
 
