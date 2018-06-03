@@ -13,6 +13,7 @@ GLOBAL _setFontSize
 GLOBAL _setCursor
 GLOBAL _setGraphicCursorStatus
 GLOBAL _throwInvalidOpCode
+GLOBAL _beep
 
 GLOBAL _rsp
 
@@ -268,7 +269,28 @@ _setFontSize:
     mov rsp, rbp
     pop rbp
 
-	ret
+		ret
+
+_beep:
+		push rbp
+		mov rbp, rsp
+
+		push rbx
+		push rcx
+
+		mov rax, 102    ; syscall 102
+		mov rbx, rdi  ; frequence
+		mov rcx, rsi	; duration
+		int 80h
+
+		pop rcx
+		pop rbx
+
+		mov rsp, rbp
+		pop rbp
+
+		ret
+
 
 _halt:
     hlt

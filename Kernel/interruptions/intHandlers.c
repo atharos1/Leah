@@ -119,15 +119,17 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);
 			return appendFunctionToTimer( (function)rbx, rcx );
 			break;
-
 		case 101: //timerRemove, return 0 if successful, -1 if error
 			return removeFunctionFromTimer( (function)rbx );
 			break;
-
 		case 102: //beep
 			beep(rbx, rcx);
+			return 0;
 			break;
-
+		case 103: //nosound
+			nosound();
+			return 0;
+			break;
 		case 200: //RTC
 			return RTC(rbx);
 	}

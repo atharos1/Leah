@@ -258,8 +258,6 @@ int getBackgroundColor() {
 	return backgroundColor;
 }
 
-
-
 void printChar(char c) {
 	switch(c) {
 		case ENTER:
