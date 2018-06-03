@@ -25,7 +25,7 @@ int currColor = 0;
 void drawMe() {
 
     _setCursor(1, 1);
-    printf("%X:%X:%X", _rtc(4), _rtc(2), _rtc(0));
+    printf("%2X:%2X:%2X", _rtc(4), _rtc(2), _rtc(0));
     //printf("%d:%d:%d", 17, 25, 25);
 
     return;

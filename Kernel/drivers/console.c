@@ -4,20 +4,19 @@
 #include <drivers/kb_layout.h>
 #include <drivers/video_vm.h>
 #include <drivers/speaker.h>
+#include <drivers/kb_driver.h>
 #include <interruptions/intHandlers.h>
 
-
-#define NUMCOLORS 16
 int fontSize = 1;
 /*int num_Cols = SCREEN_WIDTH / CHAR_WIDTH;
 int num_Rows = (SCREEN_HEIGHT / CHAR_HEIGHT);
 int char_Height = CHAR_HEIGHT;
 int char_Width = CHAR_WIDTH;*/
-
 int num_Cols = 128;
 int num_Rows = 48;
 int char_Height = CHAR_HEIGHT;
 int char_Width = CHAR_WIDTH;
+
 #define isDigit(a) ('0'<=a && a<='9')
 #define charToDigit(a) (a - '0')
 

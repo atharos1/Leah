@@ -4,10 +4,10 @@
 #include <moduleLoader.h>
 #include <drivers/console.h>
 #include <drivers/rtc.h>
-#include <interruptions/idt.h>
 #include <drivers/video_vm.h>
-#include <include/global_variables.h>
 #include <drivers/speaker.h>
+#include <interruptions/idt.h>
+#include <include/global_variables.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -94,6 +94,8 @@ int main()
 {
 
 	init_VM_Driver();
+	setFontSize(1);
+
 	writeIDT();
 
 	printString("[Kernel Main]");

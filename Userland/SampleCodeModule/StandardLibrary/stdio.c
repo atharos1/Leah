@@ -2,6 +2,7 @@
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
 #include <limits.h>
+#include "string.h"
 #include "math.h"
 
 #define STD_OUT 1
@@ -66,25 +67,25 @@ static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	return buffer;
 }
 
-void printInt(int i) {
-	if(i < 0)
-		putchar('-');
-
-	printIntR(abs(i));
-}
-
-void printIntR(int i) {
-
-	if( !( i/10 ) ) {
-		putchar(i + '0');
-		return;
-	}
-
-	printIntR(i/10);
-
-	putchar( (i % 10) + '0');
-
-}
+// void printInt(int i) {
+// 	if(i < 0)
+// 		putchar('-');
+//
+// 	printIntR(abs(i));
+// }
+//
+// void printIntR(int i) {
+//
+// 	if( !( i/10 ) ) {
+// 		putchar(i + '0');
+// 		return;
+// 	}
+//
+// 	printIntR(i/10);
+//
+// 	putchar( (i % 10) + '0');
+//
+// }
 
 int isDigit(char c) {
     return (c >= '0' && c <= '9');
@@ -431,10 +432,12 @@ int puts(char * str) {
 int printf(char * fmt, ...) {
 
 	va_list pa; //Lista de parámetros
-    va_start(pa, fmt);
-    char * format = fmt;
+  va_start(pa, fmt);
+  char * format = fmt;
 
-    char buffer[255];
+  char buffer[255];
+	char* tmp;
+	int zeroes = 0;
 
 	while( *format != '\0' ) {
 
@@ -448,9 +451,22 @@ int printf(char * fmt, ...) {
 
 		format++;
 
+		zeroes = 0;
+		while ('0' <= *format && *format <= '9') {
+			zeroes = zeroes * 10 + (*format - '0');
+			format++;
+		}
+
 		switch(*format) {
 			case 'd':
-				printInt(va_arg(pa, int));
+			case 'X':
+				tmp = itoa(va_arg(pa, int), buffer, (*format=='d')?10:16);
+				zeroes -= strlen(tmp);
+				while (zeroes > 0) {
+					putchar('0');
+					zeroes--;
+				}
+				puts(tmp);
 				break;
 			case 'c':
 				putchar( va_arg(pa, int) ); //NOTA: en parámatros ilimitados, char promociona a int SIEMPRE.
@@ -458,8 +474,6 @@ int printf(char * fmt, ...) {
 			case 's':
 				puts( va_arg(pa, char*) );
 				break;
-			case 'X':
-				puts(  itoa(va_arg(pa, int), buffer, 16)  );
 		}
 
 		format++;

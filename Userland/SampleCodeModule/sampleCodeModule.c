@@ -103,7 +103,7 @@ int command_register(char * name, function f, char * desc) {
 }*/
 
 void prueba() {
-	printf("HOLA \7");
+	printf("HOLA %5d \7", 1234);
 }
 
 int parseCommand(char * cmd, int l) {
