@@ -14,8 +14,8 @@ int _read(int fileDescriptor, char * buffer, int count);
 int _write(int fileDescriptor, char * buffer, int count);
 void _halt();
 void _clearScreen();
-void _setBackgroundColor(enum COLOR backgroundColor, char * buffer, int count);
-void _setFontColor(enum COLOR fontColor, char * buffer, int count);
+void _setBackgroundColor(unsigned int color);
+void _setFontColor(unsigned int color);
 
 extern uint64_t stackPointerBackup;
 
@@ -25,14 +25,12 @@ void clearScreen() {
 	_clearScreen();
 }
 
-void setBackgroundColor(enum COLOR backgroundColor) {
-	char c;
-	_setBackgroundColor(backgroundColor, &c, 1);
+void setBackgroundColor(unsigned int color) {
+	_setBackgroundColor(color);
 }
 
-void setFontColor(enum COLOR fontColor) {
-	char c;
-	_setFontColor(fontColor, &c, 1);
+void setFontColor(unsigned int color) {
+	_setFontColor(color);
 }
 
 static char * itoa(uint64_t value, char * buffer, uint32_t base) {
@@ -212,28 +210,37 @@ unsigned int getchar() {
     return (unsigned int)c;
 }
 
+
 static int scanNumber(char* source, int* dest, int* cantArgs) {
 	int aux = 0;
-	int counter = 0;
+	int counter1 = 0;
+    int counter2 = 0;
 
-	if((*source) == ' ' && !isDigit(*source)) {
-		while((*source++) == ' ' && !isDigit(*source));
+	if(!isDigit(*source)) {
+		while(!isDigit(*(source + counter1))) {
+            counter1++;
+        }
 	}
-	if(isDigit(*source)) {
+	if(isDigit(*(source + counter1))) {
 		(*cantArgs)++;
-		while((*source) != '\0' && isDigit(*source)) {
-			aux = (10^counter)*charToDigit(*source);
-			counter++;
+		while(isDigit(*(source + counter1))) {
+            counter2++;
+            counter1++;
 		}
+        for(int i = 0; i < counter2; i++) {
+            aux = aux + (pow(10, i))*charToDigit(*(source + counter1 - i - 1));
+        }
 		*dest = aux;
 	}
-	return counter;
+	return counter1;
 }
 
 static int scanString(char* source, char*dest, int* cantArgs) {
 	int counter = 0;
 	if((*source) == ' ' || (*source) == '\n') {
-		while((*source++) == ' ' || (*source) == '\n');
+		while((*source++) == ' ' || (*source) == '\n') {
+            counter++;
+        }
 	}
 	if((*source) != '\0') {
 		(*cantArgs)++;
@@ -297,119 +304,7 @@ int sscanf(char* source, char* format, ...) {
 	return aux;
 }
 
-int scanf(char* fmt, ...) {
-	char c;
-	char source[255];
-	int i = 0;
-	while((c = getchar()) != '\0') {
-		source[i] = c;
-		i++;
-	}
-	source[i] = '\0';
 
-	va_list pa;
-	va_start(pa, fmt);
-	int ret = vscanf(source, fmt, pa);
-	va_end(pa);
-	return ret;
-}
-
-/*
-int scanf(char * fmt, ...) {
-
-    int rc = 0;
-
-    va_list pa; //Lista de parámetros
-    va_start(pa, fmt);
-    char * format = fmt;
-
-    while( *format != '\0' ) {
-
-		if( *format != '%' ) {
-
-			if( getchar() != *format )
-                return ( rc > 0 ? rc : EOF );
-
-			format++;
-			continue;
-		}
-
-		format++;
-
-		switch(*format) {
-			case 'd':
-				*va_arg(pa, int*) = getInt( *(format + 1) );
-				break;
-			case 'c':
-				*va_arg(pa, char*) = getchar();
-				break;
-			case 's':
-				getString( va_arg(pa, char*), *(format + 1) );
-				break;
-			case 'X':
-				//read hexa
-                break;
-		}
-        rc++;
-
-		format++;
-
-	}
-
-	va_end(pa);
-
-    return rc;
-
-}
-
-int sscanf(char * str, char * fmt, ...) {
-
-    int rc = 0;
-
-    va_list pa; //Lista de parámetros
-    va_start(pa, fmt);
-    char * format = fmt;
-
-    while( *format != '\0' ) {
-
-		if( *format != '%' ) {
-
-			if( str != *format )
-                return ( rc > 0 ? rc : EOF );
-
-			str++;
-			format++;
-			continue;
-		}
-
-		format++;
-
-		switch(*format) {
-			case 'd':
-				*va_arg(pa, int*) = getInt( *(format + 1) );
-				break;
-			case 'c':
-				*va_arg(pa, char*) = getchar();
-				break;
-			case 's':
-				getString( va_arg(pa, char*), *(format + 1) );
-				break;
-			case 'X':
-				//read hexa
-                break;
-		}
-        rc++;
-
-		format++;
-
-	}
-
-	va_end(pa);
-
-    return rc;
-
-}
-*/
 unsigned int putchar(char c) {
     if( _write(STD_OUT, &c, 1) == 1 )
         return 1;

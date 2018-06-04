@@ -46,6 +46,8 @@ void digitalClock() {
 
     char c;
 
+    setBackgroundColor(0x000000);
+
     clearScreen();
 
     _setFontSize(1);

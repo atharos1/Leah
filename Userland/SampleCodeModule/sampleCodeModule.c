@@ -2,7 +2,7 @@
 
 #include "StandardLibrary/stdio.h"
 #include "StandardLibrary/string.h"
-
+#include "programs/snake.h"
 #include "programs/digitalClock.h"
 
 #define MAX_COMMANDS 255
@@ -11,6 +11,11 @@
 //VER SI SE USA O NO
 #define HISTORY_LENGHT 20
 #define COMMAND_LENGHT 255
+
+unsigned int currFontColor = 0xFFFFFF;
+unsigned int currBackColor = 0x000000;
+unsigned int currFontSize = 1;
+
 
 int lastHistoryPos = 0;
 
@@ -30,6 +35,7 @@ int _timerRemove(function f);
 int _setFontSize(unsigned int size);
 void _setGraphicCursorStatus(unsigned int status);
 void _throwInvalidOpCode();
+void _setBackgroundColor(unsigned int color);
 
 int _rtc(int fetch);
 
@@ -112,7 +118,8 @@ int parseCommand(char * cmd, int l) {
 		return 1;
 
 	char * args;
-	for(int i = 0; i < l; i++) {
+	int i;
+	for(i = 0; i < l; i++) {
 		if( cmd[i] == ' ' ) {
 			args = &cmd[i] + sizeof(char);
 			cmd[i] = 0;
@@ -126,7 +133,10 @@ int parseCommand(char * cmd, int l) {
 		return -1;
 	}
 
-	f(args);
+	if(i < l)
+		f(args);
+	else
+		f("");
 
 	puts("\n\n");
 
@@ -142,7 +152,8 @@ int commandListener() {
 
 	setFontColor(0xFFA500);
 	puts("Terminalator> ");
-	setFontColor(0xFFFFFF);
+	setBackgroundColor(currBackColor);
+	setFontColor(currFontColor);
 
 	_setGraphicCursorStatus(1);
 
@@ -177,7 +188,7 @@ int commandListener() {
 
 	_setGraphicCursorStatus(0);
 
-	setBackgroundColor(0x000000);
+	setBackgroundColor(currBackColor);
 	//_timerRemove(cursorTick);
 
 	cmd[lastChar] = '\0';
@@ -200,7 +211,7 @@ void help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
 		printf("%s\n", commandList[i].name);
-		setFontColor(0xFFFFFF);
+		setFontColor(currFontColor);
 			if(commandList[i].desc != '\0') {
 				printf("  %s", commandList[i].desc);
 				if( i < commandsNum - 1)
@@ -214,27 +225,42 @@ void exit() {
 }
 
 void printWelcome() {
-	setFontColor(0xFFFFFF);
-	setBackgroundColor(0x000000);
 	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
 }
 
 void clear() {
-	setFontColor(0xFFFFFF);
-	setBackgroundColor(0x000000);
+	setFontColor(currFontColor);
+	setBackgroundColor(currBackColor);
+	_setFontSize(currFontSize);
 	clearScreen();
 	printWelcome();
 }
 
 void setFontSize(char * args) {
-	int num = atoi(args);
+	int num;
+
+	sscanf(args, "%d", &num);
 
 	if( num <= 0 ) {
 		invalidArgument(args);
 		return;
 	}
 
-	_setFontSize(num);
+	currFontSize = num;
+	clear();
+
+}
+
+void setBackColor(char * args) {
+	int r, g, b;
+
+	sscanf(args, "%d %d %d", &r, &g, &b);
+
+	int color = r * 256 * 256 + g * 256 + b;
+	int cComplement = 0xFFFFFF - color;
+
+	currFontColor = cComplement;
+	currBackColor = color;
 	clear();
 
 }
@@ -256,14 +282,46 @@ void _pushA();
 
 void div100(char * args) {
 
-	/*int num;
-	sscanf(args, "%d", num);*/
+	int num;
+	int leidos = sscanf(args, "%d", &num);
 
-	int num = atoi(args);
+	if( leidos <= 0 ) {
+		invalidArgument(args);
+		return;
+	}
 
 	int r = 100 / num;
 
 	printf("100 / %d = %d", num, r);
+}
+
+void play_snake(char * args) {
+
+	int num, grow_rate;
+
+	int leidos = sscanf(args, "%d %d", &num, &grow_rate);
+
+	if(leidos == 0) {
+		num = 2;
+		grow_rate = 3;
+	}
+
+	if(leidos == 1) {
+		grow_rate = 3;
+	}
+
+	int puntos = game_start(num, grow_rate);
+
+	clear();
+
+	printf("\n\n");
+
+	if(puntos == -1) {
+		printf("Has salido del juego");
+	} else {
+		printf("¡Has perdido! Tu puntuacion: %d", puntos);
+	}
+
 }
 
 void throwInvalidOpCode() {
@@ -287,9 +345,11 @@ int main() {
 	command_register("clear", clear, "Limpia la pantalla");
 	command_register("font-size", setFontSize, "Establece el tamano de la fuente y limpia la consola");
 	command_register("digital-clock", digitalClock_exec, "Muestra un reloj digital en pantalla");
-	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0)");
+	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0). Parametros: [divisor]");
 	command_register("invopcode", throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
 	command_register("exit", exit, "Cierra la Shell");
+	command_register("snake", play_snake, "Ejecuta el juego snake. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
+	command_register("back-color", setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Parametros: *[R G B]");
 
 	int status = 0;
 	while(status != 1) {

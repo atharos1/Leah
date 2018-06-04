@@ -5,11 +5,10 @@
 #include <drivers/video_vm.h>
 #include <interruptions/intHandlers.h>
 
-unsigned long int ticks = 0;
-
 typedef struct {
 	function f;
 	unsigned long int ticks;
+	unsigned long int remainingTicks;
 } timerFunction;
 
 #define MAX_FUNCTIONS 255
@@ -23,19 +22,20 @@ void timerRestart() {
 
 void timerTick() {
 
-	for(int i = 0; i < MAX_FUNCTIONS && timerFunctions[i].f != 0; i++)
-		if( ticks % timerFunctions[i].ticks == 0 )
+	for(int i = 0; i < MAX_FUNCTIONS && timerFunctions[i].f != 0; i++) {
+		timerFunctions[i].remainingTicks--;
+		if( timerFunctions[i].remainingTicks == 0 ) {
+			timerFunctions[i].remainingTicks = timerFunctions[i].ticks;
 			timerFunctions[i].f();
-
-	ticks++;
-
+		}
+	}			
 }
 
 int appendFunctionToTimer(function f, unsigned long int ticks) {
 	for(int i = 0; i < MAX_FUNCTIONS; i++) {
 		if( timerFunctions[i].f == 0 ) {
 			timerFunctions[i].f = f;
-			timerFunctions[i].ticks = ticks;
+			timerFunctions[i].ticks = timerFunctions[i].remainingTicks = ticks;
 			return 0;
 		}
 
@@ -51,6 +51,7 @@ int removeFunctionFromTimer(function f) {
 			timerFunctions[i].ticks = 0;
 			for(j = i + 1; j < MAX_FUNCTIONS; j++) {
 				timerFunctions[j - 1].f = timerFunctions[j].f;
+				timerFunctions[j - 1].remainingTicks = timerFunctions[j].remainingTicks;
 				timerFunctions[j - 1].ticks = timerFunctions[j].ticks;
 			}
 			return 0;
