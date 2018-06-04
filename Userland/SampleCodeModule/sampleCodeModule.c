@@ -85,7 +85,7 @@ int command_register(char * name, function f, char * desc) {
 // 	cursorStatus = !cursorStatus;
 // }
 
-/*int command_unregister(char * name) {
+int command_unregister(char * name) {
 
 	int id = getCommandID(name);
 
@@ -100,7 +100,7 @@ int command_register(char * name, function f, char * desc) {
 	commandsNum--;
 
 	return 0;
-}*/
+}
 
 void prueba() {
 	printf("HOLA %5d \7", 1234);
@@ -255,6 +255,10 @@ int _checkStack();
 void _pushA();
 
 void div100(char * args) {
+
+	/*int num;
+	sscanf(args, "%d", num);*/
+
 	int num = atoi(args);
 
 	int r = 100 / num;

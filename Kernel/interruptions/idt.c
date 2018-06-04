@@ -174,12 +174,16 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 		case 0: //Division by 0
 			*RIP = instructionPointerBackup;
 			*RSP = stackPointerBackup;
-			dumpData("EXCEPCION (DIVISION POR CERO)", RIP_Back, RSP_Back); //ARREGLAR: QUE MUESTRE LAS DIRECCIONES PREVIAS, NO LAS NUEVAS!
+			dumpData("EXCEPCION (DIVISION POR CERO)", RIP_Back, RSP_Back);
 			printf("\n\n");
 			break;
 
 		case 6: //InvalidOpCode
-			kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP);
+			//kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP); //Lo dejo porque la pantallita quedaba divertida
+			*RIP = instructionPointerBackup;
+			*RSP = stackPointerBackup;
+			dumpData("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP_Back, RSP_Back);
+			printf("\n\n");
 			break;
 	}
 
