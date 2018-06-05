@@ -15,8 +15,9 @@ typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
 void _throwInvalidOpCode();
-
 int _rtc(int fetch);
+
+unsigned int programStatus = 0;
 
 unsigned long commandsNum = 0;
 
@@ -27,8 +28,6 @@ typedef struct command {
 } command;
 
 struct command commandList[MAX_COMMANDS];
-
-int cursorStatus = 0;
 
 function getCommandFunction(char * commandName) {
 	for(int i = 0; i < commandsNum; i++)
@@ -158,12 +157,7 @@ int commandListener() {
 
 	putchar('\n');
 
-	if(strcmp(cmd, "exit") == 0)
-		return 1;
-
 	parseCommand(cmd, lastChar);
-	return 0;
-
 }
 
 void invalidArgument(char * args) {
@@ -196,7 +190,7 @@ void cmd_help() {
 }
 
 void cmd_exit() {
-	return;
+	programStatus = 1;
 }
 
 void cmd_printWelcome() {
@@ -286,9 +280,9 @@ void program_Snake(char * args) {
 	printf("\n\n");
 
 	if(puntos == -1) {
-		printf("Has salido del juego");
+		printf("SNAKE: Has salido del juego");
 	} else {
-		printf("¡Has perdido! Tu puntuacion: %d", puntos);
+		printf("SNAKE: ¡Has perdido! Tu puntuacion fue de %d puntos", puntos);
 	}
 
 }
@@ -302,28 +296,23 @@ int main() {
 
 	cmd_printWelcome();
 
-	//div100("0\0");
-
 	puts("\n\n");
 
-	//_enableCursor();
-
-	command_register("echo", cmd_echo, "Imprime una cadena de caracteres en pantalla");
+	command_register("echo", cmd_echo, "Imprime una cadena de caracteres en pantalla. Argumentos: [cadena]");
 	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
 	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
 	command_register("prueba", cmd_prueba, "Comando de prueba");
 	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
 	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
 	command_register("digital-clock", program_digitalClock, "Muestra un reloj digital en pantalla");
-	command_register("div100", cmd_Div100, "Divide 100 por el valor especificado (Prueba ex0). Parametros: [divisor]");
+	command_register("div100", cmd_Div100, "Divide 100 por el valor especificado (Prueba ex0). Argumentos: [*divisor]");
 	command_register("invopcode", cmd_throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
 	command_register("exit", cmd_exit, "Cierra la Shell");
-	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
-	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Parametros: *[R G B]");
+	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
+	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 
-	int status = 0;
-	while(status != 1) {
-		status = commandListener();
+	while(programStatus != 1) {
+		commandListener();
 	}
 
 	return 0;

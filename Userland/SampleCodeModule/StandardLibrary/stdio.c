@@ -18,6 +18,7 @@ void _setBackgroundColor(unsigned int color);
 void _setFontColor(unsigned int color);
 int _setFontSize(unsigned int size);
 void _setGraphicCursorStatus(unsigned int status);
+int _setCursor(unsigned int x, unsigned int y);
 
 extern uint64_t stackPointerBackup;
 
@@ -37,6 +38,10 @@ void setGraphicCursorStatus(unsigned int status) {
 
 	_setGraphicCursorStatus(status);
 
+}
+
+int setCursor(unsigned int x, unsigned int y) {
+	return _setCursor(x, y);
 }
 
 void setFontColor(unsigned int color) {

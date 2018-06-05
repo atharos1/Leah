@@ -150,11 +150,32 @@ void refresh() {
     }*/
 }
 
+void displayInstructions() {
+    setFontSize(5);
+    printf("MY LITTLE BOA CONSTRICTOR\n");
+
+    setFontSize(3);
+    printf("Instrucciones");
+    setFontSize(2);
+    printf("\n\n\nTeclas de movimiento:\nW (Arriba)\nA (Izquierda)\nS (Abajo)\nD (Derecha)");
+
+    printf("\n\nDurante el juego, pulse ESC para salir");
+    printf("\nPRESIONE ENTER PARA COMENZAR\n\n\n");
+
+    while( getchar() != '\n' ) {
+
+    }
+
+    clearScreen();
+
+}
 
 int game_start(int ticks, int growrate) {
     grow_rate = growrate;
     setBackgroundColor(0x000000);
     clearScreen();
+
+    displayInstructions();
 
     for(int i = 0; i < 500; i ++) {
         snake[i][X] = snake[i][Y] = -1;

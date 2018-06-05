@@ -8,7 +8,6 @@ typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
 int _drawPixel(int x, int y, int color);
-int _setCursor(int x, int y);
 int _rtc(int fetch);
 void _beep(int nFrequence, unsigned char duration);
 
@@ -21,8 +20,7 @@ int color[CANTCOLORS] = {
     0xFFA500
 };
 
-//int frequence[] = {440, 495, 550, 587, 660, 733, 825, 880};
-int frequence[] = {440, 550, 660, 880};
+int frequence[CANTFREQ] = {440, 550, 660, 880};
 
 int currFreq = 0;
 int step = 1;
@@ -33,9 +31,8 @@ void drawMe() {
 
     if (!isDrawing) {
       isDrawing = 1;
-      _setCursor(1, 1);
+      setCursor(1, 1);
       printf("%2X:%2X:%2X", _rtc(4), _rtc(2), _rtc(0));
-      //printf("%d:%d:%d", 17, 25, 25);
       isDrawing = 0;
     }
 
@@ -52,9 +49,9 @@ void digitalClock() {
     clearScreen();
 
     setFontSize(1);
-    _setCursor(38, 24);
+    setCursor(38, 24);
     printf("Presione ENTER para cambiar el color del texto.");
-    _setCursor(50, 25);
+    setCursor(50, 25);
     printf("Presione ESC para salir.");
 
     setFontSize(12);
@@ -66,8 +63,6 @@ void digitalClock() {
     while(c = getchar(), c != 27) { //Esc
 
         if(c == '\n') {
-
-            //putchar('\7'); //BEEP
 
             if(currColor < CANTCOLORS - 1)
                 currColor++;

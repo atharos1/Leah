@@ -17,6 +17,7 @@ void setFontColor(unsigned int color);
 int setFontSize(unsigned int size);
 int sscanf(char* source, char* format, ...);
 void setGraphicCursorStatus(unsigned int status);
+int setCursor(unsigned int x, unsigned int y);
 
 
 #endif
