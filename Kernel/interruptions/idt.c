@@ -4,21 +4,8 @@
 #include <drivers/kb_driver.h>
 #include <drivers/console.h>
 #include <drivers/speaker.h>
-#include <include/global_variables.h>
+#include <asm/libasm.h>
 
-/* Assembly functions */
-void _sti();
-void _cli();
-void picMasterMask(uint8_t mask);
-void picSlaveMask(uint8_t mask);
-
-/* Handlers (Assembly) */
-void _ex00Handler();
-void _ex06Handler();
-
-void _irq00Handler();
-void _irq01Handler();
-void _int80handler();
 
 /* Descriptor de interrupcion */
 typedef struct {
@@ -42,7 +29,6 @@ static void setup_IDT_entry (int index, uint64_t offset) {
   idt[index].other_cero = (uint64_t) 0;
 }
 
-int s(int i);
 
 void kernelPanic(char * msg, uint64_t * RIP, uint64_t * RSP) {
 	setFontColor(0x000000);
@@ -85,8 +71,8 @@ void writeIDT() {
 	setup_IDT_entry (0x80, (uint64_t)&_int80handler);
 
 	//Habilita 1 y 2 (Timer_Tick y teclado)
-	picMasterMask(0xFC);
-	picSlaveMask(0xFF);
+	_picMasterMask(0xFC);
+	_picSlaveMask(0xFF);
 
 	_sti();
 }
@@ -102,29 +88,6 @@ void irqDispatcher(int n) {
 	}
 }
 
-//Getters de los registros
-uint64_t _rax();
-uint64_t _rbx();
-uint64_t _rcx();
-uint64_t _rdx();
-uint64_t _rbp();
-uint64_t _rsp();
-uint64_t _rdi();
-uint64_t _rsi();
-uint64_t _r8();
-uint64_t _r9();
-uint64_t _r10();
-uint64_t _r11();
-uint64_t _r12();
-uint64_t _r13();
-uint64_t _r14();
-uint64_t _r15();
-
-void _rsp_set(uint64_t address);
-void _rdi_set(uint64_t address);
-
-void _popState();
-void _pushState();
 
 void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP) {
 

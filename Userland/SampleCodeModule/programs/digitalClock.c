@@ -1,16 +1,11 @@
 #include "../StandardLibrary/stdio.h"
 #include "../StandardLibrary/string.h"
+#include "../asm/asmLibC.h"
 
 #define CANTCOLORS 5
 #define CANTFREQ 4
 
 typedef void (*function)();
-int _timerAppend(function f, unsigned long int ticks);
-int _timerRemove(function f);
-int _drawPixel(int x, int y, int color);
-int _rtc(int fetch);
-void _beep(int nFrequence, unsigned char duration);
-
 
 int color[CANTCOLORS] = {
     0xFFFFFF,
@@ -32,7 +27,7 @@ void drawMe() {
     if (!isDrawing) {
       isDrawing = 1;
       setCursor(1, 1);
-      printf("%2X:%2X:%2X", _rtc(4), _rtc(2), _rtc(0));
+      printf("%2X:%2X:%2X", sys_rtc(4), sys_rtc(2), sys_rtc(0));
       isDrawing = 0;
     }
 
@@ -58,7 +53,7 @@ void digitalClock() {
 
     drawMe();
 
-    _timerAppend(drawMe, 18);
+    sys_timerAppend(drawMe, 18);
 
     while(c = getchar(), c != 27) { //Esc
 
@@ -70,7 +65,7 @@ void digitalClock() {
                 currColor = 0;
 
             setFontColor(color[currColor]);
-            _beep(frequence[currFreq], 4);
+            sys_beep(frequence[currFreq], 4);
 
             currFreq += step;
             if (currFreq == 0 || currFreq == CANTFREQ - 1)
@@ -81,7 +76,7 @@ void digitalClock() {
 
     }
 
-    _timerRemove(drawMe);
+    sys_timerRemove(drawMe);
 
     return;
 

@@ -4,6 +4,7 @@
 #include "StandardLibrary/string.h"
 #include "programs/snake.h"
 #include "programs/digitalClock.h"
+#include "asm/asmLibC.h"
 
 #define MAX_COMMANDS 255
 
@@ -12,10 +13,6 @@ unsigned int currBackColor = 0x000000;
 unsigned int currFontSize = 1;
 
 typedef void (*function)();
-int _timerAppend(function f, unsigned long int ticks);
-int _timerRemove(function f);
-void _throwInvalidOpCode();
-int _rtc(int fetch);
 
 unsigned int programStatus = 0;
 
@@ -169,7 +166,7 @@ void cmd_echo(char * args) {
 }
 
 void cmd_time(char * args) {
-	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", _rtc(7), _rtc(8), _rtc(9), _rtc(4), _rtc(2), _rtc(0));
+	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", sys_rtc(7), sys_rtc(8), sys_rtc(9), sys_rtc(4), sys_rtc(2), sys_rtc(0));
 }
 
 void cmd_prueba() {
@@ -295,7 +292,11 @@ void program_digitalClock() {
 
 int main() {
 
+
 	cmd_printWelcome();
+	currBackColor = getBackgroundColor();
+	currFontColor = getFontColor();
+	currFontSize = getFontSize();
 
 	puts("\n\n");
 

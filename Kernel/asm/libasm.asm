@@ -1,51 +1,27 @@
-GLOBAL cpuVendor
+GLOBAL _cpuVendor
 
-GLOBAL RTC
-GLOBAL readKey
-GLOBAL poolKey
+GLOBAL _RTC
+GLOBAL _readKey
 
-GLOBAL _sti
-GLOBAL picMasterMask
-GLOBAL picSlaveMask
+GLOBAL _picMasterMask
+GLOBAL _picSlaveMask
 
 GLOBAL _int80handler
-GLOBAL _cli
 GLOBAL _irq00Handler
 GLOBAL _irq01Handler
+
+GLOBAL _sti
+GLOBAL _cli
+
 GLOBAL _halt
 
 GLOBAL _beep_start
 GLOBAL _beep_stop
 
-GLOBAL _in
-GLOBAL _out
-
 GLOBAL _ex00Handler
 GLOBAL _ex06Handler
 
-;Getters de los registros
-GLOBAL _rax
-GLOBAL _rbx
-GLOBAL _rcx
-GLOBAL _rdx
-GLOBAL _rbp
 GLOBAL _rsp
-GLOBAL _rdi
-GLOBAL _rsi
-GLOBAL _rip
-GLOBAL _r8
-GLOBAL _r9
-GLOBAL _r10
-GLOBAL _r11
-GLOBAL _r12
-GLOBAL _r13
-GLOBAL _r14
-GLOBAL _r15
-GLOBAL _rsp_set
-GLOBAL _rdi_set
-
-GLOBAL _popState
-GLOBAL _pushState
 
 GLOBAL stackPointerBackup
 GLOBAL instructionPointerBackup
@@ -61,63 +37,8 @@ section .bss
 
 section .text
 
-_rax:
-	ret
-_rbx:
-	mov rax, rbx
-	ret
-_rcx:
-	mov rax, rcx
-	ret
-_rdx:
-	mov rax, rdx
-	ret
-_rbp:
-	mov rax, rbp
-	ret
 _rsp:
 	mov rax, rsp
-	ret
-_rip:
-	;mov rax, rel $
-	ret
-_rdi:
-	mov rax, rdi
-	ret
-_rsi:
-	mov rax, rsi
-	ret
-_r8:
-	mov rax, r8
-	ret
-_r9:
-	mov rax, r9
-	ret
-_r10:
-	mov rax, r10
-	ret
-_r11:
-	mov rax, r11
-	ret
-_r12:
-	mov rax, r12
-	ret
-_r13:
-	mov rax, r13
-	ret
-_r14:
-	mov rax, r14
-	ret
-_r15:
-	mov rax, r15
-	ret
-
-_rsp_set:
-	mov rsp, rdi
-	ret
-
-_rdi_set:
-	mov rdi, rdi
 	ret
 
 %macro pushState 0
@@ -190,12 +111,6 @@ _rdi_set:
 	iretq
 %endmacro
 
-_popState:
-	popState
-
-_pushState:
-	pushState
-
 _halt:
 	hlt
 	ret
@@ -220,30 +135,14 @@ _int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una di
 	push rbp
 	mov rbp, rsp
 
-	push rdi
-	push rsi
-	push rcx
-	push rdx
-
-	mov rdi, rax
-	mov rsi, rbx
-	mov rax, rcx
-	mov rcx, rdx ;ver como arreglamos este desastre para que no se pisen entre ellos!
-	mov rdx, rax
-
 	call int80Handler
-
-	pop rdx
-	pop rcx
-	pop rsi
-	pop rdi
 
 	mov rsp, rbp
 	pop rbp
 
 	iretq
 
-cpuVendor:
+_cpuVendor:
 
 	push rbp
 	mov rbp, rsp
@@ -268,32 +167,14 @@ cpuVendor:
 	pop rbp
 	ret
 
-IO_OUT: ;DESTINO, ORIGEN
-	mov rdx,rdi
-	mov rax,rsi
 
-	mov [80h], ax
-	mov [70h], dx
-
-	out dx,ax
-	ret
-
-IO_IN: ;ORIGEN
-	mov rax,0
-	mov rdx,rdi
-
-	;mov [70h], rdi
-
-	in ax,dx
-	ret
-
-RTC:
+_RTC:
 	mov rax,rdi
 	out 70h,al
 	in al,71h
 	ret
 
-readKey:
+_readKey:
 	in al,64h
 	test al,1
 	jz .nothing
@@ -305,18 +186,6 @@ readKey:
 .end:
 	ret
 
-poolKey:
-.loop:
-	in al,64h
-	test al,1
-	jnz .nothing
-	in al,60h
-	jmp .end
-.nothing:
-	mov rax,0
-	jmp .loop
-.end:
-	ret
 
 _sti:
 	sti
@@ -326,7 +195,7 @@ _cli:
 	cli
 	ret
 
-picMasterMask:
+_picMasterMask:
 	push rbp
     mov rbp, rsp
     mov ax, di
@@ -334,27 +203,13 @@ picMasterMask:
     pop rbp
     retn
 
-picSlaveMask:
+_picSlaveMask:
 	push    rbp
     mov     rbp, rsp
     mov     ax, di  ; ax = mascara de 16 bits
     out		0A1h,al
     pop     rbp
     retn
-
-_in:
-	mov rax,0
-	mov rdx,rdi
-	in ax,dx
-	ret
-
-;rdi port
-;rsi value
-_out:
-	mov rdx,rdi
-	mov rax,rsi
-	out dx,ax
-	ret
 
 _beep_start:
 	push rbp

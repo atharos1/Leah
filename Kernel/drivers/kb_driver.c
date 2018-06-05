@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <drivers/console.h>
 #include <drivers/kb_driver.h>
+#include <asm/libasm.h>
 
 #define BUFF_SIZE 0xFF
 
@@ -9,7 +10,7 @@ static char lshift=0;
 static char rshift=0;
 static char blockm=0;
 
-unsigned char readKey();
+//unsigned char readKey();
 
 static void insert(unsigned char c);
 int isAlpha(char c);
@@ -27,7 +28,7 @@ CIRC_BUFFER buff={{0},0,0,0};
  * Use only in int_33()
  */
 char kb_fetch(){
-	unsigned char c=(unsigned char)readKey();
+	unsigned char c=(unsigned char)_readKey();
 	unsigned char p;
 
 	switch (c){

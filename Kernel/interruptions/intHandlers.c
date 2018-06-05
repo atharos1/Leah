@@ -4,12 +4,13 @@
 #include <drivers/speaker.h>
 #include <drivers/video_vm.h>
 #include <drivers/timer.h>
+#include <asm/libasm.h>
 
-int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
+int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 	switch(rax) {
 		case 3: //Read
-			if( rbx == 1 ) { //stdin
-				char * buff = (char*)rcx;
+			if( rdi == 1 ) { //stdin
+				char * buff = (char*)rsi;
 				char r;
 				int i;
 				for(i = 0; i < rdx && (r = getChar()) != -1; i++ )
@@ -19,12 +20,12 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			}
 			break;
 		case 4: //Write
-			if( rbx == 2) { //STD_ERR
+			if( rdi == 2) { //STD_ERR
 				setFontColor(0x000000);
 				setBackgroundColor(0xDC143C);
 			}
 
-			char * str = (char*)rcx;
+			char * str = (char*)rsi;
 			int i;
 			for(i = 0; i < rdx; i++)
 				printChar(str[i]);
@@ -37,39 +38,54 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			return 0;
 			break;
 		case 6: //setFontColor
-			setFontColor(rbx);
-			//printf("color: %d", rbx);
+			setFontColor(rdi);
+			//printf("color: %d", rdi);
 			return 0;
 			break;
 		case 7: //setBackgroundColor
-			setBackgroundColor(rbx);
+			setBackgroundColor(rdi);
 			return 0;
 			break;
 		case 8: //setFontSize
-			setFontSize(rbx);
+			setFontSize(rdi);
 			return 0;
 			break;
-		case 9: //drawPixel
-			drawPixel(rbx, rcx, rdx);
+		case 9:
+			return getFontColor();
+			break;
+		case 10:
+			return getBackgroundColor();
+			break;
+		case 11:
+			return getFontSize();
+			break;
+		case 12: //drawPixel
+			drawPixel(rdi, rsi, rdx);
 			return 0;
 			break;
-		case 10: //setCursor
-			setCursor(rbx, rcx);
+		case 13: //setCursor
+			setCursor(rdi, rsi);
 			return 0;
 			break;
-		case 11: //setGraphicCursorStatus
-			setGraphicCursorStatus(rbx);
+		case 14: //setGraphicCursorStatus
+			setGraphicCursorStatus(rdi);
 			return 0;
+			break;
+		case 15:
+			return SCREEN_HEIGHT;
+			break;
+		case 16:
+			return SCREEN_WIDTH;
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
-			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);
-			return timer_appendFunction( (function)rbx, rcx );
+			//printf("\nParametros: RAX %d rdi %d rsi %d RDX %d\n", rax, rdi, rsi, rdx);
+			return timer_appendFunction( (function)rdi, rsi );
 			break;
 		case 101: //timerRemove, return 0 if successful, -1 if error
-			return timer_removeFunction( (function)rbx );
+			return timer_removeFunction( (function)rdi );
 			break;
 		case 102: //beep
-			beep(rbx, rcx);
+			beep(rdi, rsi);
 			return 0;
 			break;
 		case 103: //nosound
@@ -77,7 +93,7 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			return 0;
 			break;
 		case 200: //RTC
-			return RTC(rbx);
+			return _RTC(rdi);
 	}
 	return 0;
 }

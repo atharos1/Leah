@@ -1,9 +1,8 @@
 #include <stdint.h>
 #include <drivers/timer.h>
 #include <drivers/speaker.h>
+#include <asm/libasm.h>
 
-void _beep_start(uint16_t freq);
-void _beep_stop();
 
 void beep(uint32_t nFrequence, unsigned char duration) {
   timer_removeFunction(&nosound);

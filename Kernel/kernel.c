@@ -3,11 +3,10 @@
 #include <lib.h>
 #include <moduleLoader.h>
 #include <drivers/console.h>
-#include <drivers/rtc.h>
 #include <drivers/video_vm.h>
 #include <drivers/speaker.h>
 #include <interruptions/idt.h>
-#include <include/global_variables.h>
+#include <asm/libasm.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -16,11 +15,10 @@ extern uint8_t bss;
 extern uint8_t endOfKernelBinary;
 extern uint8_t endOfKernel;
 
+typedef int (*EntryPoint)();
+static void * const sampleCodeModuleAddress = (void*)0x400000;
+static void * const sampleDataModuleAddress = (void*)0x500000;
 static const uint64_t PageSize = 0x1000;
-
-void _halt();
-void * _rsp();
-void * _rip();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -38,14 +36,13 @@ void * getStackBase()
 
 void * initializeKernelBinary()
 {
-
 	char buffer[10];
 
 	printString("[x64BareBones]");
 	incLine(1);;
 
 	printString("CPU Vendor:");
-	printString(cpuVendor(buffer));
+	printString(_cpuVendor(buffer));
 	incLine(1);
 
 	printString("[Loading modules]");
@@ -88,7 +85,6 @@ void * initializeKernelBinary()
 
 int main()
 {
-
 	init_VM_Driver();
 	setFontSize(1);
 

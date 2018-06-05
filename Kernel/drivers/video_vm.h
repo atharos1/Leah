@@ -12,4 +12,4 @@ void invertChar(int x, int y);
 void clearDisplay(unsigned int backgroundColor);
 void drawSquare(unsigned int x, unsigned int y, int l, int color);
 void drawRectangle(unsigned int x, unsigned int y, int b, int h, int color);
-void scrollUp(int cant);
+void scrollUp(int cant, unsigned int backgroundColor);

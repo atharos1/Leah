@@ -6,6 +6,12 @@
 #include <drivers/speaker.h>
 #include <drivers/kb_driver.h>
 #include <drivers/timer.h>
+#include <asm/libasm.h>
+
+void cursorTick();
+int abs(int n);
+int sign(int n);
+void printInt(int i);
 
 int fontSize = 1;
 int num_Cols = 128;
@@ -21,7 +27,7 @@ static char * firstScreenPos = (char*)0xB8000;
 unsigned short int curScreenRow = 0;
 unsigned short int curScreenCol = 0;
 
-int backgroundColor = 0x0;
+int backgroundColor = 0x000001;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
@@ -43,12 +49,27 @@ void setFontSize(unsigned int size) {
 	num_Rows = SCREEN_HEIGHT / (CHAR_HEIGHT * fontSize);
 }
 
+void setFontColor(int color) {
+	fontColor = color;
+}
+void setBackgroundColor(int color) {
+	backgroundColor = color;
+}
+
+int getFontColor() {
+	return fontColor;
+}
+
+int getBackgroundColor() {
+	return backgroundColor;
+}
+
+int getFontSize() {
+	return fontSize;
+}
+
 
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
-
-char getNextChar() {
-	return 0;
-}
 
 void resetCursor() {
 	if(cursorStatus == 1)
@@ -87,27 +108,12 @@ void shiftCursor(int cant) {
 void incLine(int cant) {
 
 	if( curScreenRow + cant >= num_Rows ) {
-		scrollUp(char_Height);
+		scrollUp(char_Height, backgroundColor);
 		cant--;
 	}
 
 	setCursor(0, curScreenRow + cant);
 
-}
-
-void setFontColor(int color) {
-	fontColor = color;
-}
-void setBackgroundColor(int color) {
-	backgroundColor = color;
-}
-
-int getFontColor() {
-	return fontColor;
-}
-
-int getBackgroundColor() {
-	return backgroundColor;
 }
 
 void printChar(char c) {

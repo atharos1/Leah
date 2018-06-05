@@ -1,14 +1,10 @@
 #include "../StandardLibrary/stdio.h"
 #include <stdint.h>
+#include "../asm/asmLibC.h"
 
 #define X 0
 #define Y 1
 #define SQUARE_SIZE 32
-
-void _drawPixel(uint64_t x, uint64_t y, uint64_t color);
-void _timerAppend(void *, int ticks);
-void _timerRemove(void *);
-//void _setBackgroundColor(unsigned int color);
 
 int snake[500][2] = {{0}};
 
@@ -37,7 +33,7 @@ unsigned short lfsr = 0xACE1u;
 void drawRectangle(unsigned int x, unsigned int y, int b, int h, int color) {
     for(int i = 0; i < b; i++)
 		for(int j = 0; j < h; j++)
-			_drawPixel(x + i, y + j, color);
+			sys_drawPixel(x + i, y + j, color);
 }
 
 void drawSquare(unsigned int x, unsigned int y, int l, int color) {
@@ -208,13 +204,13 @@ int game_start(int ticks, int growrate) {
 
     drawComidita();
 
-    _timerAppend(refresh, ticks);
+    sys_timerAppend(refresh, ticks);
 
     while(status == 0) {
         //status = checkStatus();
     }
 
-    _timerRemove(refresh);
+    sys_timerRemove(refresh);
 
     if(status == -1) //Salio
         return -1;

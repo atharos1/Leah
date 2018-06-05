@@ -4,53 +4,59 @@
 #include <limits.h>
 #include "string.h"
 #include "math.h"
+#include "../asm/asmLibC.h"
 
 #define STD_OUT 1
 #define STD_IN 0
 #define SYSCALL_WRITE 4
 
 int charToDigit(char a);
-int _read(int fileDescriptor, char * buffer, int count);
-int _write(int fileDescriptor, char * buffer, int count);
-void _halt();
-void _clearScreen();
-void _setBackgroundColor(unsigned int color);
-void _setFontColor(unsigned int color);
-int _setFontSize(unsigned int size);
-void _setGraphicCursorStatus(unsigned int status);
-int _setCursor(unsigned int x, unsigned int y);
 
 extern uint64_t stackPointerBackup;
 
 void printIntR(int i);
 
 void clearScreen() {
-	_clearScreen();
+	sys_clearScreen();
 }
 
 void setBackgroundColor(unsigned int color) {
-	_setBackgroundColor(color);
+	sys_setBackgroundColor(color);
+}
+
+unsigned int getBackgroundColor() {
+	return sys_getBackgroundColor();
+}
+
+
+void setFontColor(unsigned int color) {
+	sys_setFontColor(color);
+}
+
+unsigned int getFontColor() {
+	return sys_getFontColor();
+}
+
+int setFontSize(unsigned int size) {
+	return sys_setFontSize(size);
+}
+
+int getFontSize() {
+	return sys_getFontSize();
 }
 
 void setGraphicCursorStatus(unsigned int status) {
 	if( status != 0 && status != 1 )
 		return;
 
-	_setGraphicCursorStatus(status);
+	sys_setGraphicCursorStatus(status);
 
 }
 
 int setCursor(unsigned int x, unsigned int y) {
-	return _setCursor(x, y);
+	return sys_setCursor(x, y);
 }
 
-void setFontColor(unsigned int color) {
-	_setFontColor(color);
-}
-
-int setFontSize(unsigned int size) {
-	return _setFontSize(size);
-}
 
 static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	char *p = buffer;
@@ -84,26 +90,6 @@ static char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	return buffer;
 }
 
-// void printInt(int i) {
-// 	if(i < 0)
-// 		putchar('-');
-//
-// 	printIntR(abs(i));
-// }
-//
-// void printIntR(int i) {
-//
-// 	if( !( i/10 ) ) {
-// 		putchar(i + '0');
-// 		return;
-// 	}
-//
-// 	printIntR(i/10);
-//
-// 	putchar( (i % 10) + '0');
-//
-// }
-
 int isDigit(char c) {
     return (c >= '0' && c <= '9');
 }
@@ -119,57 +105,6 @@ int isAlpha(char c) {
 int isAlphanumeric(char c) {
 	return ( isAlpha(c) || isDigit(c) );
 }
-/*
-int getString(char * str, char * buff, char limit)  {
-    char c;
-    int i;
-    for( i = 0; c = str[i], c != limit; i++ ) {
-
-        if( c == EOF  )
-            return EOF; //ERROR
-
-        buff[i] = c;
-
-    }
-
-    return i;
-
-}
-
-unsigned int getInt(char * str, char limit) {
-
-    char c;
-    char buff[INT_MAX];
-    int i, num;
-
-    int chars_int = 11;
-
-    for(i = 0; i < chars_int ; i++) {
-        c = str[i];
-        if( c == EOF  )
-            return EOF; //ERROR
-
-        if( c == limit )
-            break;
-
-        buff[chars_int - i] = c;
-
-    }
-
-    if(c != limit) //OVERFLOW
-        return EOF;
-
-    for(int j = 0; j < i; j++)
-        num += (buff[j + chars_int - (i + 1)] - '0') * pow(10, j);
-
-    if( buff[chars_int] == '-' )
-        num *= -1;
-    else
-        num += buff[chars_int] * pow(10, i);
-
-    return num;
-}*/
-
 
 int getString(char * buff, char limit)  {
     char c;
@@ -223,7 +158,7 @@ unsigned int getInt(char limit) {
 
 unsigned int getchar() {
     char c;
-    if( _read(STD_OUT, &c, 1) == 0 )
+    if( sys_read(STD_OUT, &c, 1) == 0 )
         return EOF;
 
     return (unsigned int)c;
@@ -325,7 +260,7 @@ int sscanf(char* source, char* format, ...) {
 
 
 unsigned int putchar(char c) {
-    if( _write(STD_OUT, &c, 1) == 1 )
+    if( sys_write(STD_OUT, &c, 1) == 1 )
         return 1;
 
     return EOF;

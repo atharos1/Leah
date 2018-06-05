@@ -74,7 +74,7 @@ void drawSquare(unsigned int x, unsigned int y, int l, int color) {
     drawRectangle(x, y, l, l, color);
 }
 
-void scrollUp(int cant){
+void scrollUp(int cant, unsigned int backgroundColor){
 	uint64_t* screen = screenData->framebuffer;
 
 	int i = 0;
@@ -87,7 +87,7 @@ void scrollUp(int cant){
 
 	for (int i = SCREEN_HEIGHT - cant; i < SCREEN_HEIGHT; i++)
 		for (int j = 0; j < SCREEN_WIDTH * SCREEN_bPP; j++)
-			drawPixel(j, i, 0x0);
+			drawPixel(j, i, backgroundColor);
 }
 
 void drawChar(int x, int y, char character, int fontSize, int fontColor, int backgroundColor) {
@@ -109,12 +109,6 @@ void drawChar(int x, int y, char character, int fontSize, int fontColor, int bac
 				drawSquare(aux_x, aux_y, fontSize, backgroundColor);
 
 			aux_x+=fontSize;
-
-			/*if(bitIsPresent)
-				drawPixel(aux_x, aux_y, fontColor);
-			else
-				drawPixel(aux_x, aux_y, backgroundColor);
-			aux_x++;*/
 		}
 		aux_x = x;
 		aux_y+=fontSize;
