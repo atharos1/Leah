@@ -7,39 +7,16 @@
 
 #define MAX_COMMANDS 255
 
-
-//VER SI SE USA O NO
-#define HISTORY_LENGHT 20
-#define COMMAND_LENGHT 255
-
 unsigned int currFontColor = 0xFFFFFF;
 unsigned int currBackColor = 0x000000;
 unsigned int currFontSize = 1;
 
-
-int lastHistoryPos = 0;
-
-void invalidArgument(char * args) {
-	printf("Argumento '%s' invalido", args);
-}
-
-void echo(char * args) {
-	printf(args);
-}
-
-char comandHistory[HISTORY_LENGHT][COMMAND_LENGHT];
-
 typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
-int _setFontSize(unsigned int size);
-void _setGraphicCursorStatus(unsigned int status);
 void _throwInvalidOpCode();
-void _setBackgroundColor(unsigned int color);
 
 int _rtc(int fetch);
-
-int _write(int fileDescriptor, char * buffer, int count);
 
 unsigned long commandsNum = 0;
 
@@ -82,15 +59,6 @@ int command_register(char * name, function f, char * desc) {
 	return 0;
 }
 
-// void cursorTick() {
-// 	if(!cursorStatus)
-// 		setBackgroundColor(WHITE);
-// 	else
-// 		setBackgroundColor(BLACK);
-//
-// 	cursorStatus = !cursorStatus;
-// }
-
 int command_unregister(char * name) {
 
 	int id = getCommandID(name);
@@ -106,10 +74,6 @@ int command_unregister(char * name) {
 	commandsNum--;
 
 	return 0;
-}
-
-void prueba() {
-	printf("HOLA %5d \7", 1234);
 }
 
 int parseCommand(char * cmd, int l) {
@@ -155,7 +119,7 @@ int commandListener() {
 	setBackgroundColor(currBackColor);
 	setFontColor(currFontColor);
 
-	_setGraphicCursorStatus(1);
+	setGraphicCursorStatus(1);
 
 	while(c = getchar(), c != '\n') {
 
@@ -186,10 +150,9 @@ int commandListener() {
 		}
 	}
 
-	_setGraphicCursorStatus(0);
+	setGraphicCursorStatus(0);
 
 	setBackgroundColor(currBackColor);
-	//_timerRemove(cursorTick);
 
 	cmd[lastChar] = '\0';
 
@@ -203,11 +166,23 @@ int commandListener() {
 
 }
 
-void time(char * args) {
+void invalidArgument(char * args) {
+	printf("Argumento '%s' invalido", args);
+}
+
+void cmd_echo(char * args) {
+	printf(args);
+}
+
+void cmd_time(char * args) {
 	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", _rtc(7), _rtc(8), _rtc(9), _rtc(4), _rtc(2), _rtc(0));
 }
 
-void help() {
+void cmd_prueba() {
+	printf("HOLA %5d \7", 1234);
+}
+
+void cmd_help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
 		printf("%s\n", commandList[i].name);
@@ -220,23 +195,23 @@ void help() {
 	}
 }
 
-void exit() {
+void cmd_exit() {
 	return;
 }
 
-void printWelcome() {
+void cmd_printWelcome() {
 	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
 }
 
-void clear() {
+void cmd_resetScreen() {
 	setFontColor(currFontColor);
 	setBackgroundColor(currBackColor);
-	_setFontSize(currFontSize);
+	setFontSize(currFontSize);
 	clearScreen();
-	printWelcome();
+	cmd_printWelcome();
 }
 
-void setFontSize(char * args) {
+void cmd_setFontSize(char * args) {
 	int num;
 
 	sscanf(args, "%d", &num);
@@ -247,40 +222,30 @@ void setFontSize(char * args) {
 	}
 
 	currFontSize = num;
-	clear();
+	cmd_resetScreen();
 
 }
 
-void setBackColor(char * args) {
+void cmd_setBackColor(char * args) {
 	int r, g, b;
 
-	sscanf(args, "%d %d %d", &r, &g, &b);
+	int leidos = sscanf(args, "%d %d %d", &r, &g, &b);
+
+	if(leidos < 3) {
+		invalidArgument(args);
+		return;
+	}
 
 	int color = r * 256 * 256 + g * 256 + b;
 	int cComplement = 0xFFFFFF - color;
 
 	currFontColor = cComplement;
 	currBackColor = color;
-	clear();
+	cmd_resetScreen();
 
 }
 
-void digitalClock_exec() {
-	digitalClock();
-	_setFontSize(1);
-	clear();
-}
-
-// void beep() {
-// 	digitalClock();
-// 	_setFontSize(1);
-// 	clear();
-// }
-
-int _checkStack();
-void _pushA();
-
-void div100(char * args) {
+void cmd_Div100(char * args) {
 
 	int num;
 	int leidos = sscanf(args, "%d", &num);
@@ -295,7 +260,11 @@ void div100(char * args) {
 	printf("100 / %d = %d", num, r);
 }
 
-void play_snake(char * args) {
+void cmd_throwInvalidOpCode() {
+	_throwInvalidOpCode();
+}
+
+void program_Snake(char * args) {
 
 	int num, grow_rate;
 
@@ -312,7 +281,7 @@ void play_snake(char * args) {
 
 	int puntos = game_start(num, grow_rate);
 
-	clear();
+	cmd_resetScreen();
 
 	printf("\n\n");
 
@@ -324,13 +293,14 @@ void play_snake(char * args) {
 
 }
 
-void throwInvalidOpCode() {
-	_throwInvalidOpCode();
+void program_digitalClock() {
+	digitalClock();
+	cmd_resetScreen();
 }
 
 int main() {
 
-	printWelcome();
+	cmd_printWelcome();
 
 	//div100("0\0");
 
@@ -338,18 +308,18 @@ int main() {
 
 	//_enableCursor();
 
-	command_register("echo", echo, "Imprime una cadena de caracteres en pantalla");
-	command_register("time", time, "Muentra la fecha y hora del reloj del sistema");
-	command_register("help", help, "Despliega informacion sobre los comandos disponibles");
-	command_register("prueba", prueba, "Comando de prueba");
-	command_register("clear", clear, "Limpia la pantalla");
-	command_register("font-size", setFontSize, "Establece el tamano de la fuente y limpia la consola");
-	command_register("digital-clock", digitalClock_exec, "Muestra un reloj digital en pantalla");
-	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0). Parametros: [divisor]");
-	command_register("invopcode", throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
-	command_register("exit", exit, "Cierra la Shell");
-	command_register("snake", play_snake, "Juego Snake. Se juega con WASD. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
-	command_register("back-color", setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Parametros: *[R G B]");
+	command_register("echo", cmd_echo, "Imprime una cadena de caracteres en pantalla");
+	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
+	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
+	command_register("prueba", cmd_prueba, "Comando de prueba");
+	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
+	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
+	command_register("digital-clock", program_digitalClock, "Muestra un reloj digital en pantalla");
+	command_register("div100", cmd_Div100, "Divide 100 por el valor especificado (Prueba ex0). Parametros: [divisor]");
+	command_register("invopcode", cmd_throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
+	command_register("exit", cmd_exit, "Cierra la Shell");
+	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
+	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Parametros: *[R G B]");
 
 	int status = 0;
 	while(status != 1) {

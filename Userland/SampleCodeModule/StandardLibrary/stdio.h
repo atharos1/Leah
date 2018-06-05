@@ -14,8 +14,9 @@ int puts(char * str);
 void clearScreen();
 void setBackgroundColor(unsigned int color);
 void setFontColor(unsigned int color);
+int setFontSize(unsigned int size);
 int sscanf(char* source, char* format, ...);
-
+void setGraphicCursorStatus(unsigned int status);
 
 
 #endif

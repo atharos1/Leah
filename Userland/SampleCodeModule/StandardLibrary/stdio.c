@@ -16,6 +16,8 @@ void _halt();
 void _clearScreen();
 void _setBackgroundColor(unsigned int color);
 void _setFontColor(unsigned int color);
+int _setFontSize(unsigned int size);
+void _setGraphicCursorStatus(unsigned int status);
 
 extern uint64_t stackPointerBackup;
 
@@ -29,8 +31,20 @@ void setBackgroundColor(unsigned int color) {
 	_setBackgroundColor(color);
 }
 
+void setGraphicCursorStatus(unsigned int status) {
+	if( status != 0 && status != 1 )
+		return;
+
+	_setGraphicCursorStatus(status);
+
+}
+
 void setFontColor(unsigned int color) {
 	_setFontColor(color);
+}
+
+int setFontSize(unsigned int size) {
+	return _setFontSize(size);
 }
 
 static char * itoa(uint64_t value, char * buffer, uint32_t base) {

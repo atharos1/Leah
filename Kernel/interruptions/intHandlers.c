@@ -3,62 +3,7 @@
 #include <drivers/console.h>
 #include <drivers/speaker.h>
 #include <drivers/video_vm.h>
-#include <interruptions/intHandlers.h>
-
-typedef struct {
-	function f;
-	unsigned long int ticks;
-	unsigned long int remainingTicks;
-} timerFunction;
-
-#define MAX_FUNCTIONS 255
-
-timerFunction timerFunctions[MAX_FUNCTIONS] = {0}; //CONIRMAR SI GARANTIZA QUE TODOS LOS VALORES DE F VAN A EMPEZAR EN 0
-
-void timerRestart() {
-	for(int i = 0; i < MAX_FUNCTIONS; i++)
-		timerFunctions[i].f = 0;
-}
-
-void timerTick() {
-
-	for(int i = 0; i < MAX_FUNCTIONS && timerFunctions[i].f != 0; i++) {
-		timerFunctions[i].remainingTicks--;
-		if( timerFunctions[i].remainingTicks == 0 ) {
-			timerFunctions[i].remainingTicks = timerFunctions[i].ticks;
-			timerFunctions[i].f();
-		}
-	}			
-}
-
-int appendFunctionToTimer(function f, unsigned long int ticks) {
-	for(int i = 0; i < MAX_FUNCTIONS; i++) {
-		if( timerFunctions[i].f == 0 ) {
-			timerFunctions[i].f = f;
-			timerFunctions[i].ticks = timerFunctions[i].remainingTicks = ticks;
-			return 0;
-		}
-
-	}
-	return -1;
-}
-
-int removeFunctionFromTimer(function f) {
-	int i, j;
-	for(i = 0; i < MAX_FUNCTIONS; i++) {
-		if( timerFunctions[i].f == f ) {
-			timerFunctions[i].f = 0;
-			timerFunctions[i].ticks = 0;
-			for(j = i + 1; j < MAX_FUNCTIONS; j++) {
-				timerFunctions[j - 1].f = timerFunctions[j].f;
-				timerFunctions[j - 1].remainingTicks = timerFunctions[j].remainingTicks;
-				timerFunctions[j - 1].ticks = timerFunctions[j].ticks;
-			}
-			return 0;
-		}
-	}
-	return -1;
-}
+#include <drivers/timer.h>
 
 int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 	switch(rax) {
@@ -118,10 +63,10 @@ int int80Handler(uint64_t rax, uint64_t rbx, uint64_t rcx, uint64_t rdx) {
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d RBX %d RCX %d RDX %d\n", rax, rbx, rcx, rdx);
-			return appendFunctionToTimer( (function)rbx, rcx );
+			return timer_appendFunction( (function)rbx, rcx );
 			break;
 		case 101: //timerRemove, return 0 if successful, -1 if error
-			return removeFunctionFromTimer( (function)rbx );
+			return timer_removeFunction( (function)rbx );
 			break;
 		case 102: //beep
 			beep(rbx, rcx);

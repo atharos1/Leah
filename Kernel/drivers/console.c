@@ -5,13 +5,9 @@
 #include <drivers/video_vm.h>
 #include <drivers/speaker.h>
 #include <drivers/kb_driver.h>
-#include <interruptions/intHandlers.h>
+#include <drivers/timer.h>
 
 int fontSize = 1;
-/*int num_Cols = SCREEN_WIDTH / CHAR_WIDTH;
-int num_Rows = (SCREEN_HEIGHT / CHAR_HEIGHT);
-int char_Height = CHAR_HEIGHT;
-int char_Width = CHAR_WIDTH;*/
 int num_Cols = 128;
 int num_Rows = 48;
 int char_Height = CHAR_HEIGHT;
@@ -29,17 +25,14 @@ int backgroundColor = 0x0;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
 
-void _beep_start(uint16_t freq);
-void _beep_stop();
-
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 void setGraphicCursorStatus(unsigned int status) {
 	if( status == 1 )
-		appendFunctionToTimer(cursorTick, 18);
+		timer_appendFunction(cursorTick, 18);
 
 	if( status == 0 )
-		removeFunctionFromTimer(cursorTick);
+		timer_removeFunction(cursorTick);
 }
 
 void setFontSize(unsigned int size) {

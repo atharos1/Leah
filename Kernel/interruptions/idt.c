@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <interruptions/defs.h>
-#include <interruptions/intHandlers.h>
+#include <drivers/timer.h>
 #include <drivers/kb_driver.h>
 #include <drivers/console.h>
 #include <drivers/speaker.h>
@@ -78,25 +78,23 @@ void writeIDT() {
 	setup_IDT_entry (0x6, (uint64_t)&_ex06Handler); //InvalidOpCode
 
 	setup_IDT_entry (0x20, (uint64_t)&_irq00Handler);
-	timerRestart(); //Inicializa el timer_Tick
+	timer_Restart(); //Inicializa el timer_Tick
 
 
 	setup_IDT_entry (0x21, (uint64_t)&_irq01Handler);
 	setup_IDT_entry (0x80, (uint64_t)&_int80handler);
-  	//setup_IDT_entry (0x00, (uint64_t)&_exception0Handler);
 
 	//Habilita 1 y 2 (Timer_Tick y teclado)
 	picMasterMask(0xFC);
 	picSlaveMask(0xFF);
 
-	//appendFunctionToTimer(cursorTick, 10); //Esto no va acá, bue
 	_sti();
 }
 
 void irqDispatcher(int n) {
 	switch(n) {
 		case 0: //Timer_Tick
-			timerTick();
+			timer_Tick();
 			break;
 		case 1: //Keyboard
 			kb_fetch();
@@ -143,7 +141,7 @@ void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP) {
 }
 
 void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
-  beep(60, 3);
+  	beep(60, 3);
 
 	int fColor = getFontColor();
 	int bColor = getBackgroundColor();
@@ -176,7 +174,5 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 
 	setFontColor(fColor);
 	setBackgroundColor(bColor);
-
-	//_rdi_set(stackPointerBackup);
 
 }

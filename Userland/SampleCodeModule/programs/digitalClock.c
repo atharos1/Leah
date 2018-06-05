@@ -9,7 +9,6 @@ int _timerAppend(function f, unsigned long int ticks);
 int _timerRemove(function f);
 int _drawPixel(int x, int y, int color);
 int _setCursor(int x, int y);
-int _setFontSize(unsigned int size);
 int _rtc(int fetch);
 void _beep(int nFrequence, unsigned char duration);
 
@@ -48,16 +47,17 @@ void digitalClock() {
     char c;
 
     setBackgroundColor(0x000000);
+    setFontColor(0xFFFFFF);
 
     clearScreen();
 
-    _setFontSize(1);
+    setFontSize(1);
     _setCursor(38, 24);
     printf("Presione ENTER para cambiar el color del texto.");
     _setCursor(50, 25);
     printf("Presione ESC para salir.");
 
-    _setFontSize(12);
+    setFontSize(12);
 
     drawMe();
 

@@ -18,7 +18,6 @@ extern uint8_t endOfKernel;
 
 static const uint64_t PageSize = 0x1000;
 
-void pruebaSysCallWrite();
 void _halt();
 uint64_t _rsp();
 uint64_t _rip();
@@ -113,7 +112,6 @@ int main()
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
-	//removeFunctionFromTimer(cursorTick);
 
 	incLine(1);
 	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
