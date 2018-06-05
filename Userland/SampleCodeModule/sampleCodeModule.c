@@ -178,7 +178,7 @@ int commandListener() {
 					if (c >= ' ' && c < 0x80) {
 						cmd[cursor] = c;
 						cursor++;
-						lastChar++;	
+						lastChar++;
 					}
 					putchar(c);
 					break;
@@ -348,7 +348,7 @@ int main() {
 	command_register("div100", div100, "Divide 100 por el valor especificado (Prueba ex0). Parametros: [divisor]");
 	command_register("invopcode", throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
 	command_register("exit", exit, "Cierra la Shell");
-	command_register("snake", play_snake, "Ejecuta el juego snake. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
+	command_register("snake", play_snake, "Juego Snake. Se juega con WASD. Parametros: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Parametros: *[R G B]");
 
 	int status = 0;

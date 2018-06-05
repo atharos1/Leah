@@ -1,11 +1,6 @@
 #include "../StandardLibrary/stdio.h"
 #include <stdint.h>
 
-#define    KLEFT       0x96
-#define    KUP         (KLEFT + 1)
-#define    KDOWN       (KUP + 1)
-#define    KRIGHT      (KDOWN + 1)
-
 #define X 0
 #define Y 1
 #define SQUARE_SIZE 32
@@ -53,7 +48,7 @@ void drawSquare(unsigned int x, unsigned int y, int l, int color) {
 void drawComidita() {
     comidita[X] = rand() % screen_width;
     comidita[Y] = rand() % screen_height;
-    
+
     for (int i = 0; i < snakeLength; i++) {
         if (snake[i][X] == comidita[X] && snake[i][Y] == comidita[Y]) {
             comidita[X] = rand() % screen_width;
@@ -67,24 +62,32 @@ void drawComidita() {
 
 void move() {
     int c;
+    int k = 0;
     while((c = getchar()) != EOF) {
-        switch (c) {
-            case 'w':
-                dir = ARRIBA;
-                break;
-            case 's':
-                dir = ABAJO;
-                break;
-            case 'd':
-                dir = DERECHA;
-                break;
-            case 'a':
-                dir = IZQUIERDA;
-                break; 
-            case 27:
-                status = -1;
-                break;
-        }
+      k = c;
+      if (c == 27) {
+          status = -1;
+          return;
+      }
+    }
+
+    switch (k) {
+        case 'w':
+            if (dir != ABAJO)
+              dir = ARRIBA;
+            break;
+        case 's':
+            if (dir != ARRIBA)
+              dir = ABAJO;
+            break;
+        case 'd':
+            if (dir != IZQUIERDA)
+              dir = DERECHA;
+            break;
+        case 'a':
+            if (dir != DERECHA)
+              dir = IZQUIERDA;
+            break;
     }
 }
 
@@ -108,21 +111,21 @@ void refresh() {
         snake[i][X] = snake[i - 1][X];
         snake[i][Y] = snake[i - 1][Y];
     }
-    
+
     //printf("(%d, %d)", snake[0][X], snake[0][Y]);
 
     switch (dir) {
         case ARRIBA:
-            snake[0][Y] = (snake[0][Y] - 1);
+              snake[0][Y] = (snake[0][Y] - 1);
             break;
         case ABAJO:
-            snake[0][Y] = (snake[0][Y] + 1);
+              snake[0][Y] = (snake[0][Y] + 1);
             break;
         case DERECHA:
-            snake[0][X] = (snake[0][X] + 1);
+              snake[0][X] = (snake[0][X] + 1);
             break;
         case IZQUIERDA:
-            snake[0][X] = (snake[0][X] - 1);
+              snake[0][X] = (snake[0][X] - 1);
             break;
     }
 
@@ -158,6 +161,7 @@ int game_start(int ticks, int growrate) {
     }
 
     status = 0;
+    dir = ARRIBA;
 
     int mid_x = screen_width / 2;
     int mid_y = screen_height / 2;
@@ -181,7 +185,7 @@ int game_start(int ticks, int growrate) {
     startLenght = snakeLength = 4;
 
     drawComidita();
-    
+
     _timerAppend(refresh, ticks);
 
     while(status == 0) {
@@ -198,4 +202,3 @@ int game_start(int ticks, int growrate) {
     return status; //Perdiste, perdiste, no hay nadie peor que vos...
 
 }
-

@@ -102,107 +102,47 @@ void incLine(int cant) {
 
 }
 
-//Librería screen
-static int scanNumber(char* source, int* dest, int* cantArgs) {
-	int aux = 0;
-	int counter = 0;
-
-	if((*source) == ' ' && !isDigit(*source)) {
-		while((*source++) == ' ' && !isDigit(*source));
-	}
-	if(isDigit(*source)) {
-		(*cantArgs)++;
-		while((*source) != '\0' && isDigit(*source)) {
-			aux = (10^counter)*charToDigit(*source);
-			counter++;
-		}
-		*dest = aux;
-	}
-	return counter;
+void setFontColor(int color) {
+	fontColor = color;
+}
+void setBackgroundColor(int color) {
+	backgroundColor = color;
 }
 
-static int scanString(char* source, char*dest, int* cantArgs) {
-	int counter = 0;
-	if((*source) == ' ' || (*source) == '\n') {
-		while((*source++) == ' ' || (*source) == '\n');
-	}
-	if((*source) != '\0') {
-		(*cantArgs)++;
-	}
-	while((*source) != ' ' && (*source) != '\0' && (*source) != '\n') {
-		*dest = *source;
-		dest++;
-		source++;
-		counter++;
-	}
-	(*dest) = '\0';
-	return counter;
+int getFontColor() {
+	return fontColor;
 }
 
-static int scanChar(char* source, char* dest, int* cantArgs) {
-	if((*source) == ' ' || (*source) == '\n') {
-		while((*source++) == ' ' || (*source) == '\n');
-	}
-	if((*source) == '\0' || (*source) == '\n') {
-		return 0;
-	}
-	*dest = *source;
-	(*cantArgs)++;
-	return 1;
+int getBackgroundColor() {
+	return backgroundColor;
 }
 
-int vscanf(char* source, char* format, va_list pa) {
-	int cantArgs = 0;
-	while((*source) != '\0' && (*format) != '\0') {
-		switch(*format) {
-			case ' ':
-				format++;
+void printChar(char c) {
+	switch(c) {
+		case ENTER:
+			resetCursor();
+			incLine(1);
+			break;
+		case BACKSPACE:
+			resetCursor();
+			shiftCursor(-1);
+			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, ' ', fontSize, fontColor, backgroundColor);
+			break;
+		case BELL:
+			beep(1000, 3);
+ 			break;
+		default:
+			if (c < ' ' || c >= 0x80)
 				break;
-			case '%':
-				format++;
-				break;
-			case 'd':
-				source += scanNumber(source, va_arg(pa, int*), &cantArgs);
-				format++;
-				break;
-			case 'c':
-				source += scanChar(source, va_arg(pa, char*), &cantArgs);
-				format++;
-				break;
-			case 's':
-				source += scanString(source, va_arg(pa, char*), &cantArgs);
-				format++;
-				break;
-		}
+			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
+			shiftCursor(1);
+			break;
 	}
-
-	return cantArgs;
-
 }
 
-int sscanf(char* source, char* format, ...) {
-	va_list pa;
-	va_start(pa, format);
-	int aux = vscanf(source, format, pa);
-	va_end(pa);
-	return aux;
-}
-
-int scanf(char* fmt, ...) {
-	char c;
-	char source[255];
-	int i = 0;
-	while((c = getChar()) != '\0') {
-		source[i] = c;
-		i++;
-	}
-	source[i] = '\0';
-
-	va_list pa;
-	va_start(pa, fmt);
-	int ret = vscanf(source, fmt, pa);
-	va_end(pa);
-	return ret;
+void clearScreen() {
+	clearDisplay(backgroundColor);
+	setCursor(0, 0);
 }
 
 void printf(char * format, ...) {
@@ -243,56 +183,6 @@ void printf(char * format, ...) {
 	va_end(pa);
 }
 
-void setFontColor(int color) {
-	fontColor = color;
-}
-void setBackgroundColor(int color) {
-	backgroundColor = color;
-}
-
-int getFontColor() {
-	return fontColor;
-}
-
-int getBackgroundColor() {
-	return backgroundColor;
-}
-
-void printChar(char c) {
-	switch(c) {
-		case ENTER:
-			resetCursor();
-			incLine(1);
-			break;
-		case BACKSPACE:
-			resetCursor();
-			shiftCursor(-1);
-			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, ' ', fontSize, fontColor, backgroundColor);
-			break;
-		/*case KLEFT:
-			shiftCursor(-1);
-			break;
-		case KRIGHT:
-			if(getNextChar != 0)
-				shiftCursor(1);
-			break;*/
-		case BELL:
-			beep(1000, 3);
- 			break;
-		default:
-			if (c < ' ' || c >= 0x80)
-				break;
-			drawChar(curScreenCol*char_Width, curScreenRow*char_Height, c, fontSize, fontColor, backgroundColor);
-			shiftCursor(1);
-			break;
-	}
-}
-
-void clearScreen() {
-	clearDisplay(backgroundColor);
-	setCursor(0, 0);
-}
-
 void printString(char * str) {
 	for(int i = 0; str[i] != '\0'; i++)
 		printChar(str[i]);
@@ -306,9 +196,7 @@ void printIntR(int i) {
 	}
 
 	printIntR(i/10);
-
 	printChar( (i % 10) + '0');
-
 }
 
 void printInt(int i) {
@@ -319,11 +207,9 @@ void printInt(int i) {
 }
 
 void printBase(int i, int base) {
-
     char buffer[64] = { '0' };
     uintToBase(i, buffer, base);
     printString(buffer);
-
 }
 
 
@@ -358,9 +244,6 @@ uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base) {
 
 	return digits;
 }
-
-//Librería screen
-
 
 
 //Librería math

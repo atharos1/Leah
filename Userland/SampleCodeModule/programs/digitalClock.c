@@ -2,7 +2,7 @@
 #include "../StandardLibrary/string.h"
 
 #define CANTCOLORS 5
-#define CANTFREQ 8
+#define CANTFREQ 4
 
 typedef void (*function)();
 int _timerAppend(function f, unsigned long int ticks);
@@ -22,7 +22,8 @@ int color[CANTCOLORS] = {
     0xFFA500
 };
 
-int frequence[] = {440, 495, 550, 587, 660, 733, 825, 880};
+//int frequence[] = {440, 495, 550, 587, 660, 733, 825, 880};
+int frequence[] = {440, 550, 660, 880};
 
 int currFreq = 0;
 int step = 1;
