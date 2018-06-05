@@ -1,3 +1,6 @@
+#ifndef VIDEO_VM_H
+#define VIDEO_VM_H
+
 #include <drivers/font.h>
 
 extern unsigned int SCREEN_WIDTH;
@@ -13,3 +16,5 @@ void clearDisplay(unsigned int backgroundColor);
 void drawSquare(unsigned int x, unsigned int y, int l, int color);
 void drawRectangle(unsigned int x, unsigned int y, int b, int h, int color);
 void scrollUp(int cant, unsigned int backgroundColor);
+
+#endif

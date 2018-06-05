@@ -158,9 +158,11 @@ void displayInstructions() {
     printf("\n\nDurante el juego, pulse ESC para salir");
     printf("\nPRESIONE ENTER PARA COMENZAR\n\n\n");
 
-    while( getchar() != '\n' ) {
+    int c;
+    while( (c = getchar()) != '\n' && c != 27);
 
-    }
+    if (c == 27)
+        status = -1;
 
     clearScreen();
 
@@ -171,14 +173,13 @@ int game_start(int ticks, int growrate) {
     setBackgroundColor(0x000000);
     setFontColor(0xFFFFFF);
     clearScreen();
-
+    status = 0;
     displayInstructions();
 
     for(int i = 0; i < 500; i ++) {
         snake[i][X] = snake[i][Y] = -1;
     }
 
-    status = 0;
     dir = ARRIBA;
 
     int mid_x = screen_width / 2;

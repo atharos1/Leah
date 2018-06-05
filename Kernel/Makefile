@@ -34,5 +34,8 @@ $(LOADEROBJECT):
 
 clean:
 	rm -rf asm/*.o *.o *.bin
+	rm -rf drivers/*.o *.o *.bin
+	rm -rf interruptions/*.o *.o *.bin
+	rm -rf /*.o *.o *.bin
 
 .PHONY: all clean
