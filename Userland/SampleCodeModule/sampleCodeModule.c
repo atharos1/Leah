@@ -106,7 +106,7 @@ int parseCommand(char * cmd, int l) {
 	return 0;
 }
 
-int commandListener() {
+void commandListener() {
 
 	char c;
 	char cmd[100];
@@ -190,6 +190,7 @@ void cmd_help() {
 }
 
 void cmd_exit() {
+	printf("Finalizando shell...");
 	programStatus = 1;
 }
 
@@ -280,9 +281,9 @@ void program_Snake(char * args) {
 	printf("\n\n");
 
 	if(puntos == -1) {
-		printf("SNAKE: Has salido del juego");
+		printf("MY LITTLE BOA CONSTRICTOR: Has salido del juego.");
 	} else {
-		printf("SNAKE: ¡Has perdido! Tu puntuacion fue de %d puntos", puntos);
+		printf("MY LITTLE BOA CONSTRICTOR: ¡Has perdido! Tu puntuacion fue de %d puntos.", puntos);
 	}
 
 }

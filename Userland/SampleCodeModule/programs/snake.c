@@ -173,6 +173,7 @@ void displayInstructions() {
 int game_start(int ticks, int growrate) {
     grow_rate = growrate;
     setBackgroundColor(0x000000);
+    setFontColor(0xFFFFFF);
     clearScreen();
 
     displayInstructions();

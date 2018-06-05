@@ -19,8 +19,8 @@ extern uint8_t endOfKernel;
 static const uint64_t PageSize = 0x1000;
 
 void _halt();
-uint64_t _rsp();
-uint64_t _rip();
+void * _rsp();
+void * _rip();
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -85,9 +85,6 @@ void * initializeKernelBinary()
 
 	return getStackBase();
 }
-
-uint64_t _rsp();
-
 
 int main()
 {
