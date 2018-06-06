@@ -175,6 +175,9 @@ void displayInstructions() {
         putchar( title[i] );
     }
 
+    setFontSize(2);
+    printf("\nQue pony ni que pony?");
+
     setFontColor(0xFFFFFFFF);
 
     setFontSize(3);
