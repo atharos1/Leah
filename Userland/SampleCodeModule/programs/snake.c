@@ -148,10 +148,37 @@ void refresh() {
 
 void displayInstructions() {
     setFontSize(5);
-    printf("MY LITTLE BOA CONSTRICTOR\n");
+    //printf("MY LITTLE BOA CONSTRICTOR\n");
+
+    char title[26] = "MY LITTLE BOA CONSTRICTOR";
+
+    int colors[7] = {
+        0x4444DD,
+        0x11aabb,
+        0xaacc22,
+        0xd0c310,
+        0xff9933,
+        0xff4422,
+        0x72a4c9
+    };
+
+    int currColor = 0;
+    for(int i = 0; i < 26; i++) {
+        if(title[i] != ' ') {
+            if(currColor == 6)
+                currColor = 0;
+            else
+                currColor++;
+
+            setFontColor( colors[currColor] );
+        }
+        putchar( title[i] );
+    }
+
+    setFontColor(0xFFFFFFFF);
 
     setFontSize(3);
-    printf("Instrucciones");
+    printf("\nInstrucciones");
     setFontSize(2);
     printf("\n\n\nTeclas de movimiento:\nW (Arriba)\nA (Izquierda)\nS (Abajo)\nD (Derecha)");
 
