@@ -42,7 +42,7 @@ struct vbe_mode_info_structure {
 	uint8_t reserved_position;
 	uint8_t direct_color_attributes;
 
-	uint32_t * framebuffer;		// physical address of the linear frame buffer; write here to draw to the screen
+	uint32_t framebuffer;		// physical address of the linear frame buffer; write here to draw to the screen
 	uint32_t off_screen_mem_off;
 	uint16_t off_screen_mem_size;	// size of memory in the framebuffer but not being displayed on the screen
 	uint8_t reserved1[206];
@@ -58,7 +58,7 @@ void init_VM_Driver() {
 
 void drawPixel(unsigned int x, unsigned int y, int color)
 {
-    uint32_t * screen = screenData->framebuffer; 
+    char* screen = screenData->framebuffer; 
     unsigned where = (x + y*SCREEN_WIDTH) * SCREEN_bPP;
     screen[where] = color & 255;              // BLUE
     screen[where + 1] = (color >> 8) & 255;   // GREEN
@@ -76,7 +76,7 @@ void drawSquare(unsigned int x, unsigned int y, int l, int color) {
 }
 
 void scrollUp(int cant, unsigned int backgroundColor){
-	uint32_t * screen = screenData->framebuffer;
+	uint64_t* screen = screenData->framebuffer;
 
 	int i = 0;
 	int j = (cant * SCREEN_WIDTH * SCREEN_bPP)/8;
@@ -117,7 +117,7 @@ void drawChar(int x, int y, char character, int fontSize, int fontColor, int bac
 }
 
 void clearDisplay(unsigned int backgroundColor) {
-	uint32_t * pos = screenData->framebuffer;
+	char * pos = screenData->framebuffer;
 	for(int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * SCREEN_bPP; i+=SCREEN_bPP) {
 		pos[i] = backgroundColor & 255;              // BLUE
     	pos[i + 1] = (backgroundColor >> 8) & 255;   // GREEN
