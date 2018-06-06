@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <drivers/font.h>
 #include <drivers/video_vm.h>
+#include <drivers/console.h>
 
 unsigned int bgColor = 0x0;
 unsigned int fColor = 0xFFFFFF;
@@ -57,7 +58,7 @@ void init_VM_Driver() {
 
 void drawPixel(unsigned int x, unsigned int y, int color)
 {
-    uint32_t* screen = (uint32_t*) screenData->framebuffer;
+    char* screen = screenData->framebuffer; 
     unsigned where = (x + y*SCREEN_WIDTH) * SCREEN_bPP;
     screen[where] = color & 255;              // BLUE
     screen[where + 1] = (color >> 8) & 255;   // GREEN
