@@ -57,7 +57,7 @@ void init_VM_Driver() {
 
 void drawPixel(unsigned int x, unsigned int y, int color)
 {
-    char* screen = screenData->framebuffer;
+    uint32_t* screen = (uint32_t*) screenData->framebuffer;
     unsigned where = (x + y*SCREEN_WIDTH) * SCREEN_bPP;
     screen[where] = color & 255;              // BLUE
     screen[where + 1] = (color >> 8) & 255;   // GREEN

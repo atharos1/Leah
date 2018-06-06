@@ -1,9 +1,8 @@
 #ifndef KB_DRIVER_H
 #define KB_DRIVER_H
 
-#include <drivers/kb_layout.h>
-
 #define EOF -1
+#include <drivers/kb_layout.h>
 
 char kb_fetch();
 int8_t getChar();

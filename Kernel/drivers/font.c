@@ -6,7 +6,7 @@
 
 #include "font.h"
 
-static const unsigned char __font_bitmap__[] = {
+static unsigned char __font_bitmap__[] = {
 //  32 $20 'space'
 //	width 8, bbx 0, bby -4, bbw 8, bbh 16
 	________,

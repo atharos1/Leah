@@ -2,6 +2,7 @@
 #include <drivers/console.h>
 #include <drivers/kb_driver.h>
 #include <asm/libasm.h>
+#include <drivers/kb_layout.h>
 
 #define BUFF_SIZE 0xFF
 
@@ -91,9 +92,6 @@ static void insert(unsigned char c){
 	if(buff.not_read==BUFF_SIZE+1){
 		buff.not_read=0;
 	}
-
-	//printChar(c); //ARMAR UN FOCUS_HANDLER PARA DECIDIR QUIEN RECIBE LA DATA
-
 }
 
 /*

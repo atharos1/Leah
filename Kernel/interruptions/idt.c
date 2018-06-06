@@ -5,6 +5,7 @@
 #include <drivers/console.h>
 #include <drivers/speaker.h>
 #include <asm/libasm.h>
+#include <interruptions/idt.h>
 
 
 /* Descriptor de interrupcion */
@@ -15,7 +16,7 @@ typedef struct {
   uint32_t offset_h, other_cero;
 } DESCR_INT;
 
-#pragma pack(pop)		/* Reestablece la alinceación actual */
+//#pragma pack(pop)		/* Reestablece la alinceación actual */
 
 DESCR_INT * idt = (DESCR_INT *) 0;	// IDT de 255 entradas
 
