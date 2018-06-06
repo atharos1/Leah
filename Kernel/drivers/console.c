@@ -1,10 +1,10 @@
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
 #include <drivers/console.h>
-#include <drivers/kb_layout.h>
 #include <drivers/video_vm.h>
 #include <drivers/speaker.h>
 #include <drivers/kb_driver.h>
+#include <drivers/kb_layout.h>
 #include <drivers/timer.h>
 #include <asm/libasm.h>
 

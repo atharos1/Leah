@@ -7,6 +7,7 @@
 #include <asm/libasm.h>
 #include <interruptions/idt.h>
 
+void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP);
 
 /* Descriptor de interrupcion */
 typedef struct {
@@ -116,22 +117,22 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 	extern uint64_t * instructionPointerBackup;
 	extern void * stackPointerBackup;
 
-	uint64_t RIP_Back = &RIP;
-	uint64_t RSP_Back = &RSP;
+	uint64_t RIP_Back = (uint64_t)&RIP;
+	uint64_t RSP_Back = (uint64_t)&RSP;
 
 	switch(n) {
 		case 0: //Division by 0
-			*RIP = instructionPointerBackup;
-			*RSP = stackPointerBackup;
-			dumpData("EXCEPCION (DIVISION POR CERO)", RIP_Back, RSP_Back);
+			*RIP = (uint64_t)instructionPointerBackup;
+			*RSP = (uint64_t)stackPointerBackup;
+			dumpData("EXCEPCION (DIVISION POR CERO)", (uint64_t *)RIP_Back, (uint64_t *)RSP_Back);
 			printf("\n\n");
 			break;
 
 		case 6: //InvalidOpCode
 			//kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP); //Lo dejo porque la pantallita quedaba divertida
-			*RIP = instructionPointerBackup;
-			*RSP = stackPointerBackup;
-			dumpData("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP_Back, RSP_Back);
+			*RIP = (uint64_t)instructionPointerBackup;
+			*RSP = (uint64_t)stackPointerBackup;
+			dumpData("EXCEPCION (CODIGO DE OPERACION INVALIDO)", (uint64_t *)RIP_Back, (uint64_t *)RSP_Back);
 			printf("\n\n");
 			break;
 	}
