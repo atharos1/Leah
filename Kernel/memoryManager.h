@@ -14,6 +14,7 @@ typedef struct {
 #define FREE 0
 #define USED 1
 #define NULL ((void *) 0)
+#define OK 0
 #define ERROR -1
 #define TRUE 1
 #define FALSE 0
@@ -26,6 +27,7 @@ typedef struct {
 
 void init_memoryManager(void * baseAddress, uint64_t mem_amount);
 void * getMemory(uint32_t pagesToAllocate);
-int freeMemory(void * addressToFree);
+//Retorna OK si pudo librerar la memoria, ERROR en caso contrario
+uint32_t freeMemory(void * addressToFree);
 
 #endif

@@ -16,6 +16,7 @@ static uint64_t calculateOffset(int pagesIndex, uint32_t order);
 static void markUsedNodes(int pagesIndex);
 static uint32_t getBuddyIndex(uint32_t currentIndex);
 static uint64_t pageSizeMultiple(uint64_t bytesToAllocate);
+static uint64_t getSkippedPages(void * addressToFree);
 
 /////// CODIGO ///////
 
@@ -153,6 +154,50 @@ static uint64_t pageSizeMultiple(uint64_t bytesToAllocate) {
   }
 
   return multiple;
+}
+
+uint32_t freeMemory(void * addressToFree) {
+  uint64_t skippedPages = getSkippedPages(addressToFree);
+  uint64_t pagesPerOrder = pagesQuantity();
+  uint32_t pagesIndex = 0;
+  uint32_t pagesSkippedAtBranch = 0;
+  uint64_t nodeQuantity = getNodeQuantity();
+  uint32_t leftChildIndex, rightChildIndex;
+  uint8_t found = FALSE;
+
+  if (skippedPages >= pagesQuantity()) {
+    return ERROR;
+  }
+
+  while (found == FALSE && pagesIndex < nodeQuantity) {
+    leftChildIndex = LEFT_CHILD_INDEX(pagesIndex);
+    rightChildIndex = RIGHT_CHILD_INDEX(pagesIndex);
+
+    if (memoryManager.pages[pagesIndex] == USED) {
+      memoryManager.pages[pagesIndex] = FREE;
+
+      if (leftChildIndex < nodeQuantity && rightChildIndex < nodeQuantity
+          && memoryManager.pages[leftChildIndex] == FREE
+          && memoryManager.pages[rightChildIndex] == FREE) {
+            return OK;
+      }
+    }
+
+    pagesPerOrder /= 2;
+
+    if (skippedPages < pagesSkippedAtBranch + pagesPerOrder) {
+      pagesIndex = leftChildIndex;
+    } else {
+      pagesSkippedAtBranch += pagesPerOrder;
+      pagesIndex = RIGHT_CHILD_INDEX(pagesIndex);
+    }
+  }
+
+  return ERROR;
+}
+
+static uint64_t getSkippedPages(void * addressToFree) {
+  return (((uint64_t) addressToFree - (uint64_t) memoryManager.memoryBaseAddress) / PAGE_SIZE);
 }
 
 static uint32_t log2(uint32_t number) {
