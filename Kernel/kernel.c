@@ -2,6 +2,7 @@
 #include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
+#include <memoryManager.h>
 #include <drivers/console.h>
 #include <drivers/video_vm.h>
 #include <drivers/speaker.h>
@@ -54,21 +55,14 @@ void * initializeKernelBinary()
 int main()
 {
 	init_VM_Driver();
+
+	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
+	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
+	init_memoryManager(sampleCodeModuleAddress + userlandSize, mem_amount_bytes);
+
 	setFontSize(1);
 
 	writeIDT();
-
-	printString("[Kernel Main]");
-	incLine(1);
-	printString("  Sample code module at 0x");
-	printBase((uint64_t)sampleCodeModuleAddress, 16);
-	incLine(1);
-	incLine(1);
-
-	short int * mem_amount = (void *)(systemVar + 132); //EN MB
-	printf("\nCantidad de RAM instalada: %dMB\n", *mem_amount);
-
-	//clearScreen();
 
 	extern uint64_t * instructionPointerBackup;
 	instructionPointerBackup = sampleCodeModuleAddress;
@@ -76,12 +70,9 @@ int main()
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
 	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
-
-	incLine(1);
 	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 	printf("Userlandsize\n");
 	printBase(userlandSize, 16);
-	incLine(1);
 
 	return 0;
 }
