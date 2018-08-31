@@ -162,7 +162,7 @@ void invalidArgument(char * args) {
 }
 
 void cmd_echo(char * args) {
-	printf(args);
+	puts(args);
 }
 
 void cmd_time(char * args) {

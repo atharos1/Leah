@@ -5,8 +5,9 @@
 #define X 0
 #define Y 1
 #define SQUARE_SIZE 32
+#define SNAKE_MAX_LENGHT 500
 
-int snake[500][2] = {{0}};
+int snake[SNAKE_MAX_LENGHT][2] = {{0}};
 
 int screen_width = 1024 / SQUARE_SIZE;
 int screen_height = 768 / SQUARE_SIZE;
@@ -22,13 +23,12 @@ int startLenght;
 int status = 0;
 
 unsigned short lfsr = 0xACE1u;
-  unsigned bit;
+unsigned bit;
 
-  unsigned rand()
-  {
+unsigned rand() {
     bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
     return lfsr =  (lfsr >> 1) | (bit << 15);
-  }
+}
 
 void drawRectangle(unsigned int x, unsigned int y, int b, int h, int color) {
     for(int i = 0; i < b; i++)
@@ -93,6 +93,11 @@ void refresh() {
 
     if( snake[0][X] == comidita[X] && snake[0][Y] == comidita[Y] ) {
         snakeLength+= grow_rate;
+
+        if(snakeLength >= SNAKE_MAX_LENGHT) {
+            status = 2;
+        }
+
         printf("\7");
         drawComidita();
     } else {

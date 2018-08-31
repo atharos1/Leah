@@ -18,6 +18,7 @@ extern uint8_t endOfKernel;
 typedef int (*EntryPoint)();
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
+static void * const  systemVar = (void *)0x0000000000005A00;
 static const uint64_t PageSize = 0x1000;
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
@@ -96,6 +97,9 @@ int main()
 	printBase((uint64_t)sampleCodeModuleAddress, 16);
 	incLine(1);
 	incLine(1);
+
+	short int * mem_amount = (void *)(systemVar + 132); //EN MB
+	printf("\nCantidad de RAM instalada: %dMB\n", *mem_amount);
 
 	clearScreen();
 

@@ -268,23 +268,24 @@ unsigned int putchar(char c) {
 
 int puts(char * str) {
 
-	for(int i = 0; str[i] != '\0'; i++) {
-		if( putchar( str[i] ) != 1 )
-            return EOF;
-	}
+	if( sys_write(STD_OUT, str, strlen(str) + 1) == 1 )
+        return 1;
 
-
-    return 1;
+    return EOF;
 
 }
 
 int printf(char * fmt, ...) {
 
 	va_list pa; //Lista de parámetros
-  va_start(pa, fmt);
-  char * format = fmt;
+	va_start(pa, fmt);
+	char * format = fmt;
 
-  char buffer[255];
+	char buffer[255];
+
+	char string[255]; //Verificamos si se nos fue la mano?
+	int curChar = 0;
+
 	char* tmp;
 	int zeroes = 0;
 
@@ -292,7 +293,9 @@ int printf(char * fmt, ...) {
 
 		if( *format != '%' ) {
 
-			putchar(*format);
+			//putchar(*format);
+			string[curChar] = *format;
+			curChar++;
 
 			format++;
 			continue;
@@ -312,22 +315,37 @@ int printf(char * fmt, ...) {
 				tmp = itoa(va_arg(pa, int), buffer, (*format=='d')?10:16);
 				zeroes -= strlen(tmp);
 				while (zeroes > 0) {
-					putchar('0');
+					string[curChar] = '0';
+					curChar++;
+					//putchar('0');
 					zeroes--;
 				}
-				puts(tmp);
+				//puts(tmp);
+
+				strcpy(&string[curChar], tmp);
+				curChar += strlen(tmp);
 				break;
 			case 'c':
-				putchar( va_arg(pa, int) ); //NOTA: en parámatros ilimitados, char promociona a int SIEMPRE.
+				//putchar( va_arg(pa, int) ); //NOTA: en parámatros ilimitados, char promociona a int SIEMPRE.
+				string[curChar] = va_arg(pa, int);
+				curChar++;
 				break;
 			case 's':
-				puts( va_arg(pa, char*) );
+				curChar += 0;
+				tmp = va_arg(pa, char*);
+
+				strcpy(&string[curChar], tmp);
+				curChar += strlen(tmp);
+
 				break;
 		}
 
 		format++;
 
 	}
+
+	string[curChar] = 0;
+	puts(string);
 
 	va_end(pa);
     return 0;
