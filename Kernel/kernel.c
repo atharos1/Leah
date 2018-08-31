@@ -39,47 +39,14 @@ void * initializeKernelBinary()
 {
 	char buffer[10];
 
-	printString("[x64BareBones]");
-	incLine(1);;
-
-	printString("CPU Vendor:");
-	printString(_cpuVendor(buffer));
-	incLine(1);
-
-	printString("[Loading modules]");
-	incLine(1);
 	void * moduleAddresses[] = {
 		sampleCodeModuleAddress,
 		sampleDataModuleAddress
 	};
 
 	loadModules(&endOfKernelBinary, moduleAddresses);
-	printString("[Done]");
-	incLine(1);
-	incLine(1);
-
-	printString("[Initializing kernel's binary]");
-	incLine(1);
 
 	clearBSS(&bss, &endOfKernel - &bss);
-
-	printString("  text: 0x");
-	printBase((uint64_t)&text, 16);
-	incLine(1);
-	printString("  rodata: 0x");
-	printBase((uint64_t)&rodata, 16);
-	incLine(1);
-	printString("  data: 0x");
-	printBase((uint64_t)&data, 16);
-	incLine(1);
-	printString("  bss: 0x");
-	printBase((uint64_t)&bss, 16);
-	incLine(1);
-
-	printString("[Done]");
-
-	incLine(1);
-	incLine(1);
 
 	return getStackBase();
 }
@@ -101,27 +68,20 @@ int main()
 	short int * mem_amount = (void *)(systemVar + 132); //EN MB
 	printf("\nCantidad de RAM instalada: %dMB\n", *mem_amount);
 
-	clearScreen();
+	//clearScreen();
 
 	extern uint64_t * instructionPointerBackup;
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 
 	incLine(1);
-	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
-
-	printString("  Sample data module at 0x");
-	printBase((uint64_t)sampleDataModuleAddress, 16);
-
+	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
+	printf("Userlandsize\n");
+	printBase(userlandSize, 16);
 	incLine(1);
-	printString("  Sample data module contents: ");
-	printString((char*)sampleDataModuleAddress);
-	incLine(1);
-
-	printString("[Finished]");
 
 	return 0;
 }

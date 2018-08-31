@@ -3,8 +3,10 @@
 #include <moduleLoader.h>
 #include <drivers/console.h>
 
-static void loadModule(uint8_t ** module, void * targetModuleAddress);
+static uint32_t loadModule(uint8_t ** module, void * targetModuleAddress);
 static uint32_t readUint32(uint8_t ** address);
+
+uint32_t userlandSize;
 
 void loadModules(void * payloadStart, void ** targetModuleAddress)
 {
@@ -13,26 +15,17 @@ void loadModules(void * payloadStart, void ** targetModuleAddress)
 	uint32_t moduleCount = readUint32(&currentModule);
 
 	for (i = 0; i < moduleCount; i++)
-		loadModule(&currentModule, targetModuleAddress[i]);
+		userlandSize += loadModule(&currentModule, targetModuleAddress[i]);
 }
 
-static void loadModule(uint8_t ** module, void * targetModuleAddress)
+static uint32_t loadModule(uint8_t ** module, void * targetModuleAddress)
 {
 	uint32_t moduleSize = readUint32(module);
-
-	printString("  Will copy module at 0x");
-	printBase((uint64_t)*module, 16);
-	printString(" to 0x");
-	printBase((uint64_t)targetModuleAddress, 16);
-	printString(" (");
-	printInt(moduleSize);
-	printString(" bytes)");
 
 	memcpy(targetModuleAddress, *module, moduleSize);
 	*module += moduleSize;
 
-	printString(" [Done]");
-	incLine(1);
+	return moduleSize;
 }
 
 static uint32_t readUint32(uint8_t ** address)
