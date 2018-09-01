@@ -27,7 +27,7 @@ typedef struct {
 #define IS_RIGHT_CHILD(currentIndex) (currentIndex % 2 == 0)
 
 void init_memoryManager(void * baseAddress, uint64_t mem_amount);
-void * getMemory(uint32_t pagesToAllocate);
+void * getMemory(uint32_t bytesToAllocate);
 //Retorna OK si pudo librerar la memoria, ERROR en caso contrario
 uint32_t freeMemory(void * addressToFree);
 

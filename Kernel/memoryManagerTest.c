@@ -3,8 +3,8 @@
 static void * memories[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static int i = 0;
 
-void memoryManagerTest(int pages) {
-    if (pages == -1) { //memories should be freed
+void memoryManagerTest(int bytes) {
+    if (bytes == -1) { //memories should be freed
 
         for (int j = 0; j < i; j++) {
           freeMemory(memories[j]);
@@ -15,7 +15,7 @@ void memoryManagerTest(int pages) {
 
         void * memory;
 
-        memory = getMemory(pages);
+        memory = getMemory(bytes);
 
         if (memory == 0) {
 
@@ -23,7 +23,7 @@ void memoryManagerTest(int pages) {
 
         } else {
 
-            printf("\n\n      %d bytes alocados en = %Xh\n\n", pages * PAGE_SIZE, memory);
+            printf("\n\n      %d bytes alocados en = %Xh\n\n", bytes, memory);
             memories[i++] = memory;
 
         }

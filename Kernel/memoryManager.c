@@ -39,13 +39,11 @@ static void init_pagesStatus() {
 }
 
 //Retorna el puntero a la zona de memoria asignada o NULL en caso de error
-void * getMemory(uint32_t pagesToAllocate) {
+void * getMemory(uint32_t bytesToAllocate) {
 
-  if (pagesToAllocate <= 0 || pagesToAllocate > pagesQuantity()) {
+  if (bytesToAllocate <= 0 || bytesToAllocate > memoryManager.memoryAvailable) {
   return NULL;
   }
-
-  uint64_t bytesToAllocate = pagesToAllocate * PAGE_SIZE;
 
   uint64_t offset = getOffsetFromBaseAddress(bytesToAllocate);
   if (offset == ERROR) {

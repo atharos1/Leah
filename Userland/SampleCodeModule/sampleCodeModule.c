@@ -259,13 +259,13 @@ void cmd_throwInvalidOpCode() {
 void cmd_memoryManagerTest() {
 
 	char c = 8;
-	int pages = 0;
+	int bytes = 0;
 	int cursor = 0;
 	char notNum = 0;
 	int blocksAllocated = 0;
 
 	printf("\nPresione ESC para salir (todos los bloques seran liberados)\n\n");
-	printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+	printf("Inserte numero de bytes para reservar: ");
 	while(c = getchar(), c != 27 && blocksAllocated < 16) { //Esc
 
 		if( c != '\n' ) {
@@ -285,7 +285,7 @@ void cmd_memoryManagerTest() {
 
 								if (c != -1) {
 									if (isNumeric(c)) {
-										pages = c - '0' + pages * 10;
+										bytes = c - '0' + bytes * 10;
 
 									} else {
 										if (notNum == 0)
@@ -300,14 +300,14 @@ void cmd_memoryManagerTest() {
 		} else {
 
 				if (notNum == 0) {
-					sys_memoryManagerTest(pages);
+					sys_memoryManagerTest(bytes);
 					blocksAllocated ++;
-					pages = 0;
+					bytes = 0;
 					if (blocksAllocated < 16)
-							printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+							printf("Inserte numero de bytes para reservar: ");
 				} else {
 					printf("\nSolo se aceptan numeros!\n\n");
-					printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+					printf("Inserte numero de bytes para reservar: ");
 				}
 				notNum = 0;
 				cursor = 0;

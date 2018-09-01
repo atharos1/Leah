@@ -17,7 +17,7 @@ int sys_setCursor(unsigned int x, unsigned int y);
 void sys_setGraphicCursorStatus(unsigned int status);
 int sys_getScreenHeight();
 int sys_getScreenWidth();
-void sys_memoryManagerTest(int pages);
+void sys_memoryManagerTest(int bytes);
 void sys_timerAppend(function f, unsigned long int ticks);
 void sys_timerRemove(function f);
 void sys_beep(int nFrequence, unsigned char duration);

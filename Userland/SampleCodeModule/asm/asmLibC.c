@@ -58,8 +58,8 @@ int sys_getScreenWidth() {
     _systemCall(16, 0, 0, 0, 0);
 }
 
-void sys_memoryManagerTest(int pages) {
-    return _systemCall(17, pages, 0, 0, 0);
+void sys_memoryManagerTest(int bytes) {
+    return _systemCall(17, bytes, 0, 0, 0);
 }
 
 void sys_timerAppend(function f, unsigned long int ticks) {
