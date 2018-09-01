@@ -58,7 +58,7 @@ int main()
 
 	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
 	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
-	init_memoryManager(sampleCodeModuleAddress + userlandSize, mem_amount_bytes);
+	init_memoryManager((void *)((char *)sampleCodeModuleAddress + 100000), mem_amount_bytes);
 
 	setFontSize(1);
 
@@ -69,10 +69,10 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
-	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
-	printf("Userlandsize\n");
-	printBase(userlandSize, 16);
+	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
+	// printf("Userlandsize\n");
+	// printBase(userlandSize, 16);
 
 	return 0;
 }

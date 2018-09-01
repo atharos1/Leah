@@ -13,6 +13,7 @@ typedef struct {
 #define PAGE_SIZE 4096
 #define FREE 0
 #define USED 1
+#define PART_USED 2
 #define NULL ((void *) 0)
 #define OK 0
 #define ERROR -1

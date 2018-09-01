@@ -3,7 +3,7 @@ typedef void (*function)();
 int _systemCall();
 
 int sys_read(int fileDescriptor, void * buff, int length) {
-    _systemCall(3, fileDescriptor, buff, length, 0);  
+    _systemCall(3, fileDescriptor, buff, length, 0);
 }
 
 int sys_write(int fileDescriptor, void * buff, int length) {
@@ -39,7 +39,7 @@ unsigned int sys_getFontSize() {
 }
 
 void sys_drawPixel(int x, int y, int color) {
-    _systemCall(12, x, y, color, 0);  
+    _systemCall(12, x, y, color, 0);
 }
 
 int sys_setCursor(unsigned int x, unsigned int y) {
@@ -56,6 +56,10 @@ int sys_getScreenHeight() {
 
 int sys_getScreenWidth() {
     _systemCall(16, 0, 0, 0, 0);
+}
+
+void sys_memoryManagerTest(int pages) {
+    return _systemCall(17, pages, 0, 0, 0);
 }
 
 void sys_timerAppend(function f, unsigned long int ticks) {

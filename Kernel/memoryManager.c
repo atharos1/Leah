@@ -40,6 +40,7 @@ static void init_pagesStatus() {
 
 //Retorna el puntero a la zona de memoria asignada o NULL en caso de error
 void * getMemory(uint32_t pagesToAllocate) {
+
   if (pagesToAllocate <= 0 || pagesToAllocate > pagesQuantity()) {
   return NULL;
   }
@@ -68,20 +69,31 @@ static uint64_t getOffsetFromBaseAddress(uint64_t bytesToAllocate) {
 
   while (pagesIndex >= 0 && !memoryAllocated) {
 
-    if (memoryManager.pages[pagesIndex] == FREE) {
+    if (memoryManager.pages[pagesIndex] != USED) {
 
       if (neededBlockSize == currentBlockSize) {
 
-        memoryManager.pages[pagesIndex] = USED;
-        markUsedNodes(pagesIndex);
-        memoryAllocated = TRUE;
+          if (memoryManager.pages[pagesIndex] == FREE) {
+
+              memoryManager.pages[pagesIndex] = USED;
+              markUsedNodes(pagesIndex);
+              memoryAllocated = TRUE;
+
+          } else {
+
+              pagesIndex = nextPagesIndexToSearch(pagesIndex, &currentOrder, &currentBlockSize);
+              if (pagesIndex < 0) {
+                return ERROR;
+              }
+
+          }
 
       } else {
 
         currentOrder ++;
         currentBlockSize /= 2;
 
-        if (memoryManager.pages[LEFT_CHILD_INDEX(pagesIndex)] == FREE) {
+        if (memoryManager.pages[LEFT_CHILD_INDEX(pagesIndex)] != USED) {
 
           pagesIndex = LEFT_CHILD_INDEX(pagesIndex);
 
@@ -91,7 +103,6 @@ static uint64_t getOffsetFromBaseAddress(uint64_t bytesToAllocate) {
         }
       }
     } else {
-
       pagesIndex = nextPagesIndexToSearch(pagesIndex, &currentOrder, &currentBlockSize);
       if (pagesIndex < 0) {
         return ERROR;
@@ -132,6 +143,11 @@ static void markUsedNodes(int pagesIndex) {
       memoryManager.pages[pagesIndex] = USED;
     }
     markUsedNodes(pagesIndex);
+  } else {
+    while (pagesIndex > 0) {
+      pagesIndex = PARENT_INDEX(pagesIndex);
+      memoryManager.pages[pagesIndex] = PART_USED;
+    }
   }
 }
 
@@ -215,5 +231,5 @@ static uint32_t getMaxOrder() {
 }
 
 static uint64_t getNodeQuantity() {
-  return (1 << getMaxOrder()) - 1;
+  return (1 << (getMaxOrder() + 1)) - 1;
 }

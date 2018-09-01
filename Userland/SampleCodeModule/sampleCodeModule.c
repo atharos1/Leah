@@ -256,6 +256,58 @@ void cmd_throwInvalidOpCode() {
 	_throwInvalidOpCode();
 }
 
+void cmd_memoryManagerTest() {
+
+	char c = 8;
+	int pages = 0;
+	int cursor = 0;
+	char notNum = 0;
+
+	printf("\nPresione ESC para salir (todos los bloques seran liberados)\n\n");
+	printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+	while(c = getchar(), c != 27) { //Esc
+
+		if( c != '\n' ) {
+
+				switch(c) {
+						case 8: //backspace
+
+								if(cursor > 0) {
+									cursor--;
+									putchar(c);
+								}
+								break;
+
+						default:
+
+								cursor ++;
+								if (isNumeric(c)) {
+									pages = c - '0' + pages * 10;
+								} else if (c != -1){
+									notNum = 1;
+								}
+								putchar(c);
+								break;
+				}
+
+		} else {
+
+				if (notNum != 1) {
+					sys_memoryManagerTest(pages);
+					pages = 0;
+					printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+				} else {
+					printf("\nSolo se aceptan numeros!\n\n");
+					printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+				}
+				notNum = 0;
+		}
+	}
+	putchar('-');
+	sys_memoryManagerTest(-1);
+	printf("\n\n\n      Todos los bloques alocados fueron liberados\n");
+}
+
 void program_Snake(char * args) {
 
 	int num, grow_rate;
@@ -312,6 +364,7 @@ int main() {
 	command_register("exit", cmd_exit, "Cierra la Shell");
 	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
+	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
 
 	while(programStatus != 1) {
 		commandListener();
