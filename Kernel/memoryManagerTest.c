@@ -1,6 +1,6 @@
 #include <memoryManagerTest.h>
 
-static void * memories[10] = {0,0,0,0,0,0,0,0,0,0};
+static void * memories[15] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 static int i = 0;
 
 void memoryManagerTest(int pages) {
@@ -11,7 +11,7 @@ void memoryManagerTest(int pages) {
         }
         i = 0;
 
-    } else {
+    } else if ( i < 15 ) {
 
         void * memory;
 
@@ -26,7 +26,12 @@ void memoryManagerTest(int pages) {
             printf("\n\n      %d bytes alocados en = %Xh\n\n", pages * PAGE_SIZE, memory);
             memories[i++] = memory;
 
-      }
+        }
+    } else {
+
+        printf("\n\n      Esta permitido alocar hasta 15 bloques de memoria en el test");
+        i = 0;
+
     }
 
 }

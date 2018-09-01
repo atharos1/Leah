@@ -262,10 +262,11 @@ void cmd_memoryManagerTest() {
 	int pages = 0;
 	int cursor = 0;
 	char notNum = 0;
+	int blocksAllocated = 0;
 
 	printf("\nPresione ESC para salir (todos los bloques seran liberados)\n\n");
 	printf("Inserte numero de paginas de 4096 bytes para reservar: ");
-	while(c = getchar(), c != 27) { //Esc
+	while(c = getchar(), c != 27 && blocksAllocated < 16) { //Esc
 
 		if( c != '\n' ) {
 
@@ -275,35 +276,45 @@ void cmd_memoryManagerTest() {
 								if(cursor > 0) {
 									cursor--;
 									putchar(c);
+									if (cursor == notNum)
+										notNum = 0;
 								}
 								break;
 
 						default:
 
-								cursor ++;
-								if (isNumeric(c)) {
-									pages = c - '0' + pages * 10;
-								} else if (c != -1){
-									notNum = 1;
+								if (c != -1) {
+									if (isNumeric(c)) {
+										pages = c - '0' + pages * 10;
+
+									} else {
+										if (notNum == 0)
+											notNum = cursor;
+									}
+									cursor ++;
+									putchar(c);
 								}
-								putchar(c);
 								break;
 				}
 
 		} else {
 
-				if (notNum != 1) {
+				if (notNum == 0) {
 					sys_memoryManagerTest(pages);
+					blocksAllocated ++;
 					pages = 0;
-					printf("Inserte numero de paginas de 4096 bytes para reservar: ");
+					if (blocksAllocated < 16)
+							printf("Inserte numero de paginas de 4096 bytes para reservar: ");
 				} else {
 					printf("\nSolo se aceptan numeros!\n\n");
 					printf("Inserte numero de paginas de 4096 bytes para reservar: ");
 				}
 				notNum = 0;
+				cursor = 0;
 		}
 	}
-	putchar('-');
+	if (blocksAllocated < 16)
+		putchar('-');
 	sys_memoryManagerTest(-1);
 	printf("\n\n\n      Todos los bloques alocados fueron liberados\n");
 }
