@@ -40,7 +40,7 @@ section .bss
 
 section .text
 
-%macro pushaqlite 0
+%macro pushStateNoRax 0
     push rbx
     push rcx
     push rdx
@@ -68,7 +68,7 @@ _initialize_stack_frame:
 	push 0x08 
 	push rdi
 	push 0x0 
-	pushaqlite
+	pushStateNoRax
 	mov rax, rsp
 	mov rsp, rcx
 	push rbx 
@@ -156,6 +156,8 @@ _halt:
 _irq00Handler:
 	;irqHandlerMaster 0
 	pushState
+	mov rdi, 0
+	call irqDispatcher ;;ejecutamos la rutina de interrupcion del tick original
 	mov rdi, rsp
 	call schedule
 	mov rsp, rax

@@ -53,14 +53,25 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
-long int i = 0;
-
 void pruebaTask() {
+	long int i = 0;
+	int j = 0;
+	int colors[7] = {
+		0x4444DD,
+		0x11aabb,
+		0xaacc22,
+		0xd0c310,
+		0xff9933,
+		0xff4422,
+		0x72a4c9
+	};
 	while(1) {
-		/*if(i % 99999999 == 0)
-			printf("\nHola mundo!\n");
-		i++;*/
-		_halt();
+		if(i % 9999999 == 0) {
+			setFontColor( colors[j%7] );
+			j++;
+			i = 0;
+		}
+		i++;
 	}
 }
 
@@ -85,7 +96,8 @@ int main()
 
 	scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 
-	scheduler_newProcess("Prueba", &pruebaTask, 4, 4);
+	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
+	//scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
 	
 	while(1)
 		_halt();
