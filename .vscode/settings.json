@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "memorymanager.h": "c",
+        "scheduler.h": "c",
+        "console.h": "c",
+        "stdint.h": "c"
+    }
+}

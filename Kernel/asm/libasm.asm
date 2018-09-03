@@ -26,16 +26,53 @@ GLOBAL _rsp
 GLOBAL stackPointerBackup
 GLOBAL instructionPointerBackup
 
+GLOBAL _initialize_stack_frame
+
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
+EXTERN schedule
 
 section .bss
 	stackPointerBackup:  resq 1
 	instructionPointerBackup: resq 1
 
 section .text
+
+%macro pushaqlite 0
+    push rbx
+    push rcx
+    push rdx
+    push rbp
+    push rdi
+    push rsi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+%endmacro
+
+_initialize_stack_frame:
+	pop rbx
+	mov rcx, rsp 
+	mov rsp, rsi
+	;mov rax, rsi
+	push 0x0
+	push rsi 
+	push 0x202 
+	push 0x08 
+	push rdi
+	push 0x0 
+	pushaqlite
+	mov rax, rsp
+	mov rsp, rcx
+	push rbx 
+	ret
 
 _rsp:
 	mov rax, rsp
@@ -57,7 +94,7 @@ _rsp:
 	push r13
 	push r14
 	push r15
-	mov rax, 15*8 ;cantidad de bytes que agrego al stackpointer
+	;cantidad de bytes que agrego al stackpointer: 15*8
 %endmacro
 
 %macro popState 0
@@ -98,9 +135,9 @@ _rsp:
 	pushState
 
 	mov rsi, rsp
-	add rsi, rax ; RSI APUNTE A LA DIRECCION DE RETORNO A LA FUNCION QUE FALLO
+	add rsi, 15*8 ; RSI APUNTE A LA DIRECCION DE RETORNO A LA FUNCION QUE FALLO
 	mov rdx, rsp
-	add rdx, rax
+	add rdx, 15*8
 	add rdx, 3*8 ; RDX APUNTE A LA DIRECCION DE STACK DE LA FUNCION QUE FALLO
 
 	mov rdi, %1 ; pasaje de parametro
@@ -117,7 +154,18 @@ _halt:
 
 ;Timer (Timer Tick)
 _irq00Handler:
-	irqHandlerMaster 0
+	;irqHandlerMaster 0
+	pushState
+	mov rdi, rsp
+	call schedule
+	mov rsp, rax
+
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
+
+	popState
+	iretq
 
 ;Keyboard
 _irq01Handler:
@@ -236,7 +284,7 @@ _beep_start:
 	ret
 
 _beep_stop:
-  in al, 61h
+  	in al, 61h
 	and al, 0xFC
 	out 61h, al
-  ret
+  	ret

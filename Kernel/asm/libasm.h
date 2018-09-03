@@ -27,6 +27,9 @@ void _irq00Handler();
 void _irq01Handler();
 void _int80handler();
 
+//scheduler
+void * _initialize_stack_frame(void * rip, void * rsp);
+
 #endif
 
 

@@ -8,6 +8,7 @@
 #include <drivers/speaker.h>
 #include <interruptions/idt.h>
 #include <asm/libasm.h>
+#include "scheduler.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -52,6 +53,17 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
+long int i = 0;
+
+void pruebaTask() {
+	while(1) {
+		/*if(i % 99999999 == 0)
+			printf("\nHola mundo!\n");
+		i++;*/
+		_halt();
+	}
+}
+
 int main()
 {
 	init_VM_Driver();
@@ -59,6 +71,8 @@ int main()
 	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
 	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
 	init_memoryManager((void *)((char *)sampleCodeModuleAddress + 100000), mem_amount_bytes);
+
+	scheduler_init();
 
 	setFontSize(1);
 
@@ -68,6 +82,13 @@ int main()
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
+
+	scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+
+	scheduler_newProcess("Prueba", &pruebaTask, 4, 4);
+	
+	while(1)
+		_halt();
 
 	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
