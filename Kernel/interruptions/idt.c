@@ -97,7 +97,7 @@ void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP) {
 
 	printf("Origen del error: %s\n\n", msg);
 
-	printf("Direccion del instruction pointer: %X\n", RIP);
+	printf("Direccion del instruction pointer: %X\n", *RIP);
 	printf("Direccion del stack pointer: %X\n", RSP);
 	printString("Registros:\n");
 	printf("RDI: %X, RSI: %X, RAX: %X, RBX: %X, RCX: %X, RDX: %X\n", oldRSP[8*5], oldRSP[8*6], oldRSP[8*0], oldRSP[8*1], oldRSP[8*2], oldRSP[8*3]);

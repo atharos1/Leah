@@ -118,6 +118,7 @@ int scheduler_newProcess(char * name, void * code, int stack_size, int heap_size
         freeMemory( process );
         return NULL;
     }
+    process->stack.base += stack_size * PAGE_SIZE;
     process->stack.size = stack_size * PAGE_SIZE;
 
     plist_node * pnode = getMemory( sizeof(plist_node) );

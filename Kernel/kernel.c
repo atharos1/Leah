@@ -75,6 +75,14 @@ void pruebaTask() {
 	}
 }
 
+void end() {
+	while(1) {
+		printf("\nFIN DEL PROCESO\n");
+		_halt();
+	}
+
+}
+
 int main()
 {
 	init_VM_Driver();

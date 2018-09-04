@@ -34,6 +34,8 @@ EXTERN exDispatcher
 EXTERN int80Handler
 EXTERN schedule
 
+EXTERN end
+
 section .bss
 	stackPointerBackup:  resq 1
 	instructionPointerBackup: resq 1
@@ -67,7 +69,7 @@ _initialize_stack_frame:
 	push 0x202 
 	push 0x08 
 	push rdi
-	push 0x0 
+	push 0x0
 	pushStateNoRax
 	mov rax, rsp
 	mov rsp, rcx
