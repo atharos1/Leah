@@ -8,6 +8,7 @@
 #include <drivers/speaker.h>
 #include <interruptions/idt.h>
 #include <asm/libasm.h>
+#include "scheduler.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -52,6 +53,39 @@ void * initializeKernelBinary()
 
 	//////////// INITIALIZATIONS ////////////
 
+void pruebaTask() {
+	//return;
+	long int i = 0;
+	int j = 0;
+	int colors[7] = {
+		0x4444DD,
+		0x11aabb,
+		0xaacc22,
+		0xd0c310,
+		0xff9933,
+		0xff4422,
+		0x72a4c9
+	};
+	while(1) {
+		if(i % 9999999 == 0) {
+			setFontColor( colors[j%7] );
+			j++;
+			i = 0;
+		}
+		i++;
+	}
+}
+
+void end() {
+	while(1) {
+		printf("\nFIN DEL PROCESO\n");
+		_halt();
+	}
+
+}
+
+int main()
+{
 	init_VM_Driver();
 
 	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
@@ -59,13 +93,8 @@ void * initializeKernelBinary()
 	uint32_t * userlandSize = 600000;
 	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
 
-	writeIDT();
+	scheduler_init();
 
-	return getStackBase();
-}
-
-int main()
-{
 	setFontSize(1);
 
 	extern uint64_t * instructionPointerBackup;
@@ -73,7 +102,18 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	((EntryPoint)sampleCodeModuleAddress)();
+	scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+
+	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
+	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
+	
+	while(1)
+		_halt();
+
+	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
+	// printf("Userlandsize\n");
+	// printBase(userlandSize, 16);
 
 	return 0;
 }
