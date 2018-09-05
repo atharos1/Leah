@@ -54,6 +54,7 @@ void * initializeKernelBinary()
 }
 
 void pruebaTask() {
+	//return;
 	long int i = 0;
 	int j = 0;
 	int colors[7] = {
@@ -105,13 +106,13 @@ int main()
 	scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 
 	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
-	//scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
+	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
 	
 	while(1)
 		_halt();
 
-	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
-	printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
+	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 	// printf("Userlandsize\n");
 	// printBase(userlandSize, 16);
 

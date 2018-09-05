@@ -59,6 +59,9 @@ section .text
     push r15
 %endmacro
 
+_executionWrapper:
+	call rax
+
 _initialize_stack_frame:
 	pop rbx
 	mov rcx, rsp 

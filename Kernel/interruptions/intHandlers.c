@@ -9,6 +9,12 @@
 
 int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 	switch(rax) {
+		case 1: //Exit
+			while(1) {
+				printf("Codigo de salida: %d\n", rdi);
+				_halt();
+			}
+			break;
 		case 3: //Read
 			if( rdi == 1 ) { //stdin
 				char * buff = (char*)rsi;

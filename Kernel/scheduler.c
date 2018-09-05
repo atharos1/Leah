@@ -42,7 +42,7 @@ void strcpy(char * dest, char * origin) {
 }
 
 
-/*plist_node * scheduler_dequeue() {
+/* plist_node * scheduler_dequeue() {
     plist_node * ret = READY_LIST->first;
     READY_LIST->count--;
 
@@ -50,9 +50,7 @@ void strcpy(char * dest, char * origin) {
         READY_LIST->first = READY_LIST->last = NULL;
         runningTasks = 0;
     } else {
-        READY_LIST->first
-
-
+        READY_LIST->first = READY_LIST->first->next;
     }
 
 }*/
@@ -132,6 +130,8 @@ int scheduler_newProcess(char * name, void * code, int stack_size, int heap_size
 
     process->stack.current = _initialize_stack_frame(code, process->stack.base);
     process->pid = ++last_pdi;
+
+    printf("Proceso: %s | Direccion del stack: %X\n", name, process->stack.current);
 
     scheduler_enqueue(pnode);
 
