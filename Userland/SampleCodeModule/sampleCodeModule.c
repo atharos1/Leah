@@ -103,6 +103,23 @@ int parseCommand(char * cmd, int l) {
 	return 0;
 }
 
+char hist[100][100];
+unsigned int histCurrentIndex = 0;
+unsigned int histAccessIndex = 0;
+unsigned int histSize = 0;
+
+void clearCmd(char cmd[]) {
+	for(int i = 0; i < 100; i++) {
+		cmd[i] = 0;
+	}
+}
+
+void clearLine(unsigned int lineLong) {
+	for (int i = 0; i < lineLong; i++) {
+		printf("\b");
+	}
+}
+
 void commandListener() {
 
 	char c;
@@ -120,28 +137,47 @@ void commandListener() {
 	while(c = getchar(), c != '\n') {
 
 		if( c != EOF ) {
+			printf("%d\n",c);
 
-			switch(c) {
-				case 8: //backspace
-					if(cursor > 0) {
+			if (c == 8) { //backspace
+						if(cursor > 0) {
 
-						for(int i = cursor; i < lastChar; i++)
-							cmd[i] = cmd[i + 1];
+							for(int i = cursor; i < lastChar; i++)
+								cmd[i] = cmd[i + 1];
 
-						cmd[lastChar] = '\0';
-						lastChar--;
-						cursor--;
+							cmd[lastChar] = '\0';
+							lastChar--;
+							cursor--;
+							putchar(c);
+						}
+			} else if ( c == 133 || c == 134) { //up or down arrow
+						if (c == 133) {
+								if (histAccessIndex > 0) {
+									histAccessIndex--;
+								} else if (histSize > 0) {
+									histAccessIndex = histSize - 1;
+								}
+						} else {
+								if (histAccessIndex < (histSize - 1)) {
+									histAccessIndex ++;
+								} else {
+									histAccessIndex = 0;
+								}
+						}
+						clearLine(cursor);
+						clearCmd(cmd);
+						cursor = 0;
+						while (hist[histAccessIndex][cursor] != 0)
+							cursor ++;
+						strcpy(cmd,hist[histAccessIndex]);
+						printf("%s",cmd);
+			} else {
+						if (c >= ' ' && c < 0x80) {
+							cmd[cursor] = c;
+							cursor++;
+							lastChar++;
+						}
 						putchar(c);
-					}
-					break;
-				default:
-					if (c >= ' ' && c < 0x80) {
-						cmd[cursor] = c;
-						cursor++;
-						lastChar++;
-					}
-					putchar(c);
-					break;
 			}
 		}
 	}
@@ -153,6 +189,18 @@ void commandListener() {
 	cmd[lastChar] = '\0';
 
 	putchar('\n');
+
+	if (histCurrentIndex >= 100) {
+		histCurrentIndex = 0;
+	}
+
+	strcpy(hist[histCurrentIndex++], cmd);
+
+	if (histSize != 100) {
+		histSize ++;
+	}
+
+	histAccessIndex = histCurrentIndex;
 
 	parseCommand(cmd, lastChar);
 }
