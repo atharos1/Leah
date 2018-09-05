@@ -40,18 +40,30 @@ void * getStackBase()
 
 void * initializeKernelBinary()
 {
-	char buffer[10];
+  char buffer[10];
 
-	void * moduleAddresses[] = {
-		sampleCodeModuleAddress,
-		sampleDataModuleAddress
-	};
+  void * moduleAddresses[] = {
+    sampleCodeModuleAddress,
+    sampleDataModuleAddress
+  };
 
-	loadModules(&endOfKernelBinary, moduleAddresses);
+  loadModules(&endOfKernelBinary, moduleAddresses);
 
-	clearBSS(&bss, &endOfKernel - &bss);
+  clearBSS(&bss, &endOfKernel - &bss);
 
-	//////////// INITIALIZATIONS ////////////
+  //////////// INITIALIZATIONS ////////////
+
+  init_VM_Driver();
+
+  uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
+  uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
+  uint32_t * userlandSize = 600000;
+  init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
+
+	scheduler_init();
+
+  return getStackBase();
+}
 
 void pruebaTask() {
 	//return;
@@ -81,19 +93,11 @@ void end() {
 		printf("\nFIN DEL PROCESO\n");
 		_halt();
 	}
-
 }
 
 int main()
 {
-	init_VM_Driver();
-
-	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
-	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
-	uint32_t * userlandSize = 600000;
-	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
-
-	scheduler_init();
+  writeIDT();
 
 	setFontSize(1);
 
@@ -106,7 +110,7 @@ int main()
 
 	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
 	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
-	
+
 	while(1)
 		_halt();
 
