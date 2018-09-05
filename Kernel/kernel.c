@@ -20,7 +20,6 @@ typedef int (*EntryPoint)();
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
 static void * const  systemVar = (void *)0x0000000000005A00;
-static const uint64_t PageSize = 0x1000;
 
 void clearBSS(void * bssAddress, uint64_t bssSize)
 {
@@ -31,6 +30,11 @@ void * getStackBase()
 {
 	uint32_t stackSize = 32768; // 32KiB
 	return (void *)((uint32_t)getMemory(stackSize) + stackSize);
+	// return (void*)(
+	// 	(uint64_t)&endOfKernel
+	// 	+ PAGE_SIZE * 8				//The size of the stack itself, 32KiB
+	// 	- sizeof(uint64_t)			//Begin at the top of the stack
+	// );
 }
 
 void * initializeKernelBinary()
@@ -46,27 +50,29 @@ void * initializeKernelBinary()
 
 	clearBSS(&bss, &endOfKernel - &bss);
 
+	//////////// INITIALIZATIONS ////////////
+
+	init_VM_Driver();
+
+	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
+	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
+	init_memoryManager((void *)((char *)sampleDataModuleAddress + 1000), mem_amount_bytes);
+
+	writeIDT();
+
 	return getStackBase();
 }
 
 int main()
 {
-	init_VM_Driver();
-
-	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
-	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
-	init_memoryManager((void *)((char *)sampleCodeModuleAddress + 100000), mem_amount_bytes);
-
 	setFontSize(1);
-
-	writeIDT();
 
 	extern uint64_t * instructionPointerBackup;
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
+	((EntryPoint)sampleCodeModuleAddress)();
 
 	//printf("Userlandsize\n");
 	//printBase(userlandSize, 16);

@@ -6,3 +6,5 @@ Image/
 *.o
 
 *.img
+
+\.bash_history
