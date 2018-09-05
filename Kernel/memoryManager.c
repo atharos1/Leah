@@ -118,12 +118,18 @@ static int nextPagesIndexToSearch(int pagesIndex, uint32_t * currentOrder, uint6
 
   } else {
 
-    while (IS_RIGHT_CHILD(pagesIndex) && pagesIndex >= 0) {
-      (*currentOrder)--;
-      (*currentBlockSize) *= 2;
-      pagesIndex = PARENT_INDEX(pagesIndex);
-    }
+    int done = FALSE;
 
+    while (pagesIndex >= 0 && done == FALSE ) {
+        (*currentOrder)--;
+        (*currentBlockSize) *= 2;
+        pagesIndex = PARENT_INDEX(pagesIndex);
+
+        if (IS_LEFT_CHILD(pagesIndex)) {
+            pagesIndex ++;
+            done = TRUE;
+        }
+    }
   }
   return pagesIndex;
 }
@@ -144,7 +150,7 @@ static void markUsedNodes(int pagesIndex) {
   } else {
     while (pagesIndex > 0) {
       pagesIndex = PARENT_INDEX(pagesIndex);
-      memoryManager.pages[pagesIndex] = PART_USED;
+      memoryManager.pages[pagesIndex] = SPLIT;
     }
   }
 }
