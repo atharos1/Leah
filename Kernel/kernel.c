@@ -29,13 +29,11 @@ void clearBSS(void * bssAddress, uint64_t bssSize)
 
 void * getStackBase()
 {
-	uint32_t stackSize = 32768; // 32KiB
-	return (void *)((uint32_t)getMemory(stackSize) + stackSize);
-	// return (void*)(
-	// 	(uint64_t)&endOfKernel
-	// 	+ PAGE_SIZE * 8				//The size of the stack itself, 32KiB
-	// 	- sizeof(uint64_t)			//Begin at the top of the stack
-	// );
+	return (void*)(
+		(uint64_t)&endOfKernel
+		+ PAGE_SIZE * 8				//The size of the stack itself, 32KiB
+		- sizeof(uint64_t)			//Begin at the top of the stack
+	);
 }
 
 void * initializeKernelBinary()

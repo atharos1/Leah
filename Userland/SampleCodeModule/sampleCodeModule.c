@@ -137,7 +137,6 @@ void commandListener() {
 	while(c = getchar(), c != '\n') {
 
 		if( c != EOF ) {
-			printf("%d\n",c);
 
 			if (c == 8) { //backspace
 						if(cursor > 0) {
@@ -150,8 +149,9 @@ void commandListener() {
 							cursor--;
 							putchar(c);
 						}
-			} else if ( c == 133 || c == 134) { //up or down arrow
-						if (c == 133) {
+			} else if ( c == 18446744073709551511 || c == 18446744073709551512) { //up or down arrow
+				printf("vio up");
+						if (c == 18446744073709551511) {
 								if (histAccessIndex > 0) {
 									histAccessIndex--;
 								} else if (histSize > 0) {
@@ -346,19 +346,20 @@ void cmd_memoryManagerTest() {
 				}
 
 		} else {
-
-				if (notNum == 0) {
-					sys_memoryManagerTest(bytes);
-					blocksAllocated ++;
-					bytes = 0;
-					if (blocksAllocated < 16)
-							printf("Inserte numero de bytes para reservar: ");
-				} else {
-					printf("\nSolo se aceptan numeros!\n\n");
-					printf("Inserte numero de bytes para reservar: ");
+				if (bytes != 0) {
+					if (notNum == 0) {
+						sys_memoryManagerTest(bytes);
+						blocksAllocated ++;
+						bytes = 0;
+						if (blocksAllocated < 16)
+								printf("Inserte numero de bytes para reservar: ");
+					} else {
+						printf("\nSolo se aceptan numeros!\n\n");
+						printf("Inserte numero de bytes para reservar: ");
+					}
+					notNum = 0;
+					cursor = 0;
 				}
-				notNum = 0;
-				cursor = 0;
 		}
 	}
 	if (blocksAllocated < 16)

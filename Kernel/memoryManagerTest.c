@@ -19,7 +19,7 @@ void memoryManagerTest(int bytes) {
 
         if (memory == 0) {
 
-            printf("Error in memory");
+            printf("\n\n      Error in memory");
 
         } else {
 
