@@ -149,9 +149,8 @@ void commandListener() {
 							cursor--;
 							putchar(c);
 						}
-			} else if ( c == 18446744073709551511 || c == 18446744073709551512) { //up or down arrow
-				printf("vio up");
-						if (c == 18446744073709551511) {
+			} else if ( c == 1 || c == 2) { //up or down arrow
+						if (c == 1) {
 								if (histAccessIndex > 0) {
 									histAccessIndex--;
 								} else if (histSize > 0) {
@@ -167,8 +166,10 @@ void commandListener() {
 						clearLine(cursor);
 						clearCmd(cmd);
 						cursor = 0;
-						while (hist[histAccessIndex][cursor] != 0)
-							cursor ++;
+						while (hist[histAccessIndex][cursor] != 0) {
+							cursor++;
+							lastChar++;
+						}
 						strcpy(cmd,hist[histAccessIndex]);
 						printf("%s",cmd);
 			} else {
