@@ -398,6 +398,22 @@ void program_Snake(char * args) {
 
 }
 
+void cmd_listDir(char * args) {
+	sys_listDir(args);
+}
+
+void cmd_makeDirectory(char * args) {
+	sys_makeFile(args, 0);
+}
+
+void cmd_touch(char * args) {
+	sys_makeFile(args, 1);
+}
+
+void cmd_removeFile(char * args) {
+	sys_removeFile(args);
+}
+
 void program_digitalClock() {
 	digitalClock();
 	cmd_resetScreen();
@@ -426,6 +442,10 @@ int main() {
 	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
+	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado");
+	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
+	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
+	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 
 	while(programStatus != 1) {
 		commandListener();

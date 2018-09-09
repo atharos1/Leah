@@ -8,6 +8,7 @@
 #include <drivers/speaker.h>
 #include <interruptions/idt.h>
 #include <asm/libasm.h>
+#include <fileSystem.h>
 #include "scheduler.h"
 
 extern uint8_t text;
@@ -57,6 +58,7 @@ void * initializeKernelBinary()
   uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
   uint32_t * userlandSize = 600000;
   init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
+	init_fileSystem();
 
 	scheduler_init();
 

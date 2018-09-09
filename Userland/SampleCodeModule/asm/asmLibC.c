@@ -62,6 +62,18 @@ void sys_memoryManagerTest(int bytes) {
     return _systemCall(17, bytes, 0, 0, 0);
 }
 
+void sys_listDir(char * path) {
+    return _systemCall(18, path, 0, 0, 0);
+}
+
+void sys_makeFile(char * path, int type) {
+    return _systemCall(19, path, type, 0, 0);
+}
+
+void sys_removeFile(char * path) {
+    return _systemCall(20, path, 0, 0, 0);
+}
+
 void sys_timerAppend(function f, unsigned long int ticks) {
     _systemCall(100, f, ticks, 0, 0);
 }

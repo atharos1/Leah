@@ -8,22 +8,6 @@ int currQuantum;
 int last_pdi;
 int runningTasks;
 
-void scheduler_init() {
-
-    READY_LIST = getMemory( sizeof(READY_LIST) );
-    if(READY_LIST == NULL) {
-        //Se pudre todo? Hace falta verificar?
-    }
-
-    READY_LIST->first = READY_LIST->last = NULL;
-    READY_LIST->count = 0;
-    currQuantum = 0;
-    last_pdi = 0;
-    runningTasks = 0;
-}
-
-
-
 
 int strlen(char * str) {
     int i = 0;
@@ -39,6 +23,21 @@ void strcpy(char * dest, char * origin) {
         dest[i] = origin[i];
 
     dest[i+1] = 0;
+}
+
+
+void scheduler_init() {
+
+    READY_LIST = getMemory( sizeof(READY_LIST) );
+    if(READY_LIST == NULL) {
+        //Se pudre todo? Hace falta verificar?
+    }
+
+    READY_LIST->first = READY_LIST->last = NULL;
+    READY_LIST->count = 0;
+    currQuantum = 0;
+    last_pdi = 0;
+    runningTasks = 0;
 }
 
 
