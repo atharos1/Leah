@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <string.h>
+//#include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <memoryManager.h>
@@ -10,6 +10,7 @@
 #include <asm/libasm.h>
 #include <fileSystem.h>
 #include "scheduler.h"
+#include "process.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -39,33 +40,31 @@ void * getStackBase()
 
 void * initializeKernelBinary()
 {
-  char buffer[10];
 
-  void * moduleAddresses[] = {
-    sampleCodeModuleAddress,
-    sampleDataModuleAddress
-  };
+	void * moduleAddresses[] = {
+		sampleCodeModuleAddress,
+		sampleDataModuleAddress
+	};
 
-  loadModules(&endOfKernelBinary, moduleAddresses);
+	loadModules(&endOfKernelBinary, moduleAddresses);
 
-  clearBSS(&bss, &endOfKernel - &bss);
+	clearBSS(&bss, &endOfKernel - &bss);
 
-  //////////// INITIALIZATIONS ////////////
+	//////////// INITIALIZATIONS ////////////
+	init_VM_Driver();
 
-  init_VM_Driver();
-
-  uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
-  uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
-  uint32_t * userlandSize = 600000;
-  init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
+	uint32_t * mem_amount = (void *)(systemVar + 132); //En MiB
+	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
+	uint32_t * userlandSize = (uint32_t *)600000;
+	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
 	init_fileSystem();
 
 	scheduler_init();
 
-  return getStackBase();
+	return getStackBase();
 }
 
-void pruebaTask() {
+int pruebaTask() {
 	//return;
 	long int i = 0;
 	int j = 0;
@@ -86,18 +85,13 @@ void pruebaTask() {
 		}
 		i++;
 	}
-}
-
-void end() {
-	while(1) {
-		printf("\nFIN DEL PROCESO\n");
-		_halt();
-	}
+	return 0;
 }
 
 int main()
 {
-  writeIDT();
+
+  	writeIDT();
 
 	setFontSize(1);
 
@@ -106,14 +100,18 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+	/*scheduler_newProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 
 	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
-	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);
+	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);*/
 
-	while(1)
+	createProcess("Arcoiris", &pruebaTask, 4, 4);
+	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+
+	while(1) {
 		_halt();
-
+	}
+		
 	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 	// printf("Userlandsize\n");

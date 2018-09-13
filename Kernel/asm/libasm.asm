@@ -63,20 +63,19 @@ _executionWrapper:
 	call rax
 
 _initialize_stack_frame:
-	pop rbx
 	mov rcx, rsp 
-	mov rsp, rsi
+	mov rsp, rdx
 	;mov rax, rsi
 	push 0x0
-	push rsi 
+	push rdx 
 	push 0x202 
 	push 0x08 
 	push rdi
+	mov rdi, rsi
 	push 0x0
 	pushStateNoRax
 	mov rax, rsp
 	mov rsp, rcx
-	push rbx 
 	ret
 
 _rsp:

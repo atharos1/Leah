@@ -2,21 +2,11 @@
 #define SCHEDULER_H
 
 #include "memoryManager.h"
-
-typedef struct process_memory_block {
-    void * base;
-    int size;
-    void * current;
-} process_memory_block;
-
-typedef struct pcb {
-    int pid;
-    char * name;
-    process_memory_block stack;
-} pcb;
+#include "stdlib.h"
+#include "process.h"
 
 typedef struct plist_node {
-    pcb * process;
+    thread_t * thread;
     struct plist_node * next;
 } plist_node;
 
@@ -35,6 +25,8 @@ typedef struct plist {
 
 void scheduler_init();
 void * schedule(void * oldRSP);
-int scheduler_newProcess(char * name, void * code, int stack_size, int heap_size);
+//int scheduler_newProcess(char * name, void * code, int stack_size, int heap_size);
+void scheduler_enqueue(thread_t * thread);
+
 
 #endif

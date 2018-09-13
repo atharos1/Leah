@@ -77,6 +77,7 @@ void writeIDT() {
 	_picSlaveMask(0xFF);
 
 	_sti();
+
 }
 
 void irqDispatcher(int n) {

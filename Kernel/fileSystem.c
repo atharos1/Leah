@@ -1,7 +1,8 @@
 #include <fileSystem.h>
-#include <stdint.h>
+//#include <stdint.h>
 #include <memoryManager.h>
 #include <drivers/console.h>
+#include "stdlib.h"
 
 #define BUFFER_SIZE 4092
 
@@ -40,7 +41,7 @@ typedef struct openedFile {
 } opened_file_t;
 
 
-static int strcmp(char string1[], char string2[] )
+/*static int strcmp(char string1[], char string2[] )
 {
     for (int i = 0; ; i++)
     {
@@ -62,7 +63,7 @@ static void strcpy(char * dest, char * origin) {
         dest[i] = origin[i];
 
     dest[i+1] = 0;
-}
+}*/
 
 
 file_t * root;
