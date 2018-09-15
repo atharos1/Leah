@@ -4,29 +4,26 @@
 #include "memoryManager.h"
 #include "stdlib.h"
 #include "process.h"
+#include "circularList.h"
 
-typedef struct plist_node {
-    thread_t * thread;
-    struct plist_node * next;
-} plist_node;
+#define MAX_QUEUE_COUNT 1
 
-/*typedef struct plist {
-    plist_node * first;
-    plist_node * last;
-    plist_node * current;
-    int count;
-} plist;*/
+typedef thread_t * (*nextThreadFunction)();
 
-typedef struct plist {
-    plist_node * first;
-    plist_node * last;
-    int count;
-} plist;
+typedef struct {
+    NODE * queue;
+    nextThreadFunction nextThread;
+    int threadCount;
+    void * queueData;
+} SCHEDULER_QUEUE;
 
 void scheduler_init();
 void * schedule(void * oldRSP);
-//int scheduler_newProcess(char * name, void * code, int stack_size, int heap_size);
 void scheduler_enqueue(thread_t * thread);
-
+thread_t * getCurrentThread();
+int getCurrentPID();
+void scheduler_dequeue_current();
+//void scheduler_dequeue(thread_t * thread);
+void scheduler_dequeue_process(int pid);
 
 #endif

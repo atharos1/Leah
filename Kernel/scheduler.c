@@ -3,76 +3,88 @@
 #include "asm/libasm.h"
 #include "lib.h"
 
-plist * READY_LIST;
-static const int QUANTUM = 5;
+#include "roundRobin.h"
+
+
+NODE * CURRENT_QUEUE = NULL;
+
+//SCHEDULER_QUEUE Queues[MAX_QUEUE_COUNT];
+NODE * mainQueue;
+
+static const int QUANTUM = 3;
 int currQuantum = 0;
 int runningTasks;
 
+struct currentThread {
+    thread_t * thread;
+    SCHEDULER_QUEUE * queue;
+} currentThread;
+
+int threadCount = 0;
+
 void scheduler_init() {
 
-    READY_LIST = getMemory( sizeof(READY_LIST) );
-    if(READY_LIST == NULL) {
-        //Se pudre todo? Hace falta verificar?
-    }
+    currentThread.thread = NULL;
+    currentThread.queue = NULL;
 
-    READY_LIST->first = READY_LIST->last = NULL;
-    READY_LIST->count = 0;
+    SCHEDULER_QUEUE * q1 = roundRobin_newQueue(3);
+    mainQueue = insertAtHead(mainQueue, q1);
+
     currQuantum = 0;
-    //lastPID = 0;
     runningTasks = 0;
+    threadCount = 0;
+
+    purgeProcessList(); //Esto va acá?
+    
 }
 
+/*void scheduler_dequeue_current() {
+    return;
+}
 
-/* plist_node * scheduler_dequeue() {
-    plist_node * ret = READY_LIST->first;
-    READY_LIST->count--;
-
-    if(READY_LIST->count == 0) {
-        READY_LIST->first = READY_LIST->last = NULL;
-        runningTasks = 0;
-    } else {
-        READY_LIST->first = READY_LIST->first->next;
-    }
-
+void scheduler_dequeue_process(int pid) {
+    //printf("hola");
+    return;
 }*/
 
 void scheduler_enqueue(thread_t * thread) {
-    plist_node * n = getMemory( sizeof(plist_node) );
-    if(n == NULL) {
-        //return NULL;
-    }
-        
-    n->thread = thread;
-    
-    if(READY_LIST->count == 0) {
-        READY_LIST->first = READY_LIST->last = n;
-    }
 
-    READY_LIST->last->next = n;
-    READY_LIST->last = n;
-    n->next = READY_LIST->first;
+    SCHEDULER_QUEUE * q = getFirst(mainQueue);
 
-    READY_LIST->count++;
+    q->queue = insertAtEnd(q->queue, thread);
+    q->threadCount++;
+    threadCount++;
+
 }
 
 void * scheduler_nextTask(void * oldRSP) {
-    if( READY_LIST->count == 0 || (READY_LIST->count == 1 && runningTasks == 1 ) )
+
+    if( threadCount == 0 || (threadCount == 1 && runningTasks == 1 ) )
         return oldRSP;
 
-    plist_node * oldFirst = READY_LIST->first;
-    if(runningTasks == 1)
-        oldFirst->thread->stack.current = oldRSP;
+    NODE * auxQueue = mainQueue;
 
+    if(runningTasks == 1) {
+        getCurrentThread()->stack.current = oldRSP;
+    }
     runningTasks = 1;
 
-    READY_LIST->first = oldFirst->next;
-    READY_LIST->last = oldFirst;
+    thread_t * nextThread = NULL;    
+    SCHEDULER_QUEUE * currQueue;
 
-    //printf("Sale: %X | Entra: %X\n", oldRSP, READY_LIST->first->thread->stack.current);
+    while(1) {
+        currQueue = getFirst(auxQueue);
+        nextThread = currQueue->nextThread(auxQueue->data);
 
-    //printf("\nSale: %s | Entra: %s\n", oldFirst->process->name, READY_LIST->first->process->name);
+        if(nextThread != NULL) {
+            currentThread.thread = nextThread;
+            currentThread.queue = currQueue;
+            return nextThread->stack.current;
+        }
+        auxQueue = next(auxQueue);
+    }
 
-    return READY_LIST->first->thread->stack.current;
+    return NULL;
 }
 
 
@@ -87,3 +99,35 @@ void * schedule(void * oldRSP) {
     return scheduler_nextTask(oldRSP);
 
 }
+
+thread_t * getCurrentThread() {
+    return currentThread.thread;
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+    printf("hola");
+}
+
+int getCurrentPID() {
+    return currentThread.thread->process;
+}
+
+/*int scheduler_dequeue(thread_t * thread) {
+    NODE * auxQueue = mainQueue;
+    SCHEDULER_QUEUE * q, *aux;
+    int deletionStatus;
+    do {
+        q = aux = getFirst(auxQueue);
+        
+        //auxQueue->data
+
+        auxQueue = next(auxQueue);
+    } while( auxQueue != mainQueue );
+
+    return 0;
+}*/

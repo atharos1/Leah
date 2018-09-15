@@ -2,6 +2,7 @@
 #define PROCESS_MOD_H
 
 #define MAX_THREAD_COUNT 25
+#define MAX_PROCESS_COUNT 100
 
 #include "memoryManager.h"
 #include "stdlib.h"
@@ -16,22 +17,22 @@ typedef struct memblock_t {
     void * current;
 } memblock_t;
 
-typedef struct process_t {
-    int pid;
-    char * name;
-    memblock_t heap;
-    int threadNum;
-    //thread_t threadList[MAX_THREAD_COUNT];
-} process_t;
-
 typedef struct thread_t {
-    process_t * process;
+    int process;
     int status;
     memblock_t stack;
 } thread_t;
 
-//process_t * processList[250];
+typedef struct process_t {
+    int pid;
+    char * name;
+    memblock_t heap;
+    int threadCount;
+    thread_t * threadList[MAX_THREAD_COUNT];
+} process_t;
 
-process_t * createProcess(char * name, void * code, int stack_size, int heap_size);
+int createProcess(char * name, void * code, int stack_size, int heap_size);
 thread_t * createThread(process_t * process, void * code, int stack_size);
+process_t * getProcessByPID(int pid);
+void purgeProcessList();
 #endif

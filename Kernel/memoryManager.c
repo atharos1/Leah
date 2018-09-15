@@ -177,6 +177,10 @@ static uint64_t pageSizeMultiple(uint64_t bytesToAllocate) {
 }
 
 uint32_t freeMemory(void * addressToFree) {
+
+  if(addressToFree == NULL)
+    return ERROR;
+
   uint64_t skippedPages = getSkippedPages(addressToFree);
   uint64_t pagesPerOrder = pagesQuantity();
   uint32_t pagesIndex = 0;

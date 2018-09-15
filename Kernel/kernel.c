@@ -105,8 +105,8 @@ int main()
 	scheduler_newProcess("Arcoiris", &pruebaTask, 4, 4);
 	scheduler_newProcess("BBBBBB", &pruebaTask, 4, 4);*/
 
-	createProcess("Arcoiris", &pruebaTask, 4, 4);
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+	createProcess("Arcoiris", &pruebaTask, 4, 4);
 
 	while(1) {
 		_halt();
