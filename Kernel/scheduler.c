@@ -11,7 +11,7 @@ NODE * CURRENT_QUEUE = NULL;
 //SCHEDULER_QUEUE Queues[MAX_QUEUE_COUNT];
 NODE * mainQueue;
 
-static const int QUANTUM = 3;
+static const int QUANTUM = 50;
 int currQuantum = 0;
 int runningTasks;
 
@@ -38,11 +38,17 @@ void scheduler_init() {
     
 }
 
-/*void scheduler_dequeue_current() {
-    return;
+int pointer_cmp(void * p1, void * p2) {
+    return p1 == p2;
 }
 
-void scheduler_dequeue_process(int pid) {
+thread_t * scheduler_dequeue_current() {
+    int status;
+    (currentThread.queue)->queue = deleteByValue((currentThread.queue)->queue, currentThread.thread, pointer_cmp, &status);
+    return currentThread.thread;
+}
+
+/*void scheduler_dequeue_process(int pid) {
     //printf("hola");
     return;
 }*/
@@ -57,6 +63,8 @@ void scheduler_enqueue(thread_t * thread) {
 
 }
 
+int boludeo = 0;
+
 void * scheduler_nextTask(void * oldRSP) {
 
     if( threadCount == 0 || (threadCount == 1 && runningTasks == 1 ) )
@@ -69,8 +77,14 @@ void * scheduler_nextTask(void * oldRSP) {
     }
     runningTasks = 1;
 
+    boludeo++;
+
+    /*if(boludeo > 3)
+        scheduler_dequeue_current();*/
+
     thread_t * nextThread = NULL;    
     SCHEDULER_QUEUE * currQueue;
+    
 
     while(1) {
         currQueue = getFirst(auxQueue);
@@ -89,12 +103,11 @@ void * scheduler_nextTask(void * oldRSP) {
 
 
 void * schedule(void * oldRSP) {
-
-    if(currQuantum % QUANTUM != 0) {
-        currQuantum++;
+    currQuantum++;
+    
+    if(currQuantum % (QUANTUM+1) != 0) {  
         return oldRSP;
     }
-    currQuantum = 0;
 
     return scheduler_nextTask(oldRSP);
 
@@ -102,32 +115,25 @@ void * schedule(void * oldRSP) {
 
 thread_t * getCurrentThread() {
     return currentThread.thread;
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
-    printf("hola");
 }
 
 int getCurrentPID() {
     return currentThread.thread->process;
 }
 
-/*int scheduler_dequeue(thread_t * thread) {
+void scheduler_dequeue(thread_t * thread) {
     NODE * auxQueue = mainQueue;
-    SCHEDULER_QUEUE * q, *aux;
-    int deletionStatus;
+    SCHEDULER_QUEUE * q;
+    int deletionStatus = 2;
     do {
-        q = aux = getFirst(auxQueue);
-        
-        //auxQueue->data
+        q = getFirst(auxQueue);
+        q->queue = deleteByValue(q->queue, thread, pointer_cmp, &deletionStatus);
+        if(deletionStatus == 1) {
+            return;
+        }
 
         auxQueue = next(auxQueue);
     } while( auxQueue != mainQueue );
 
-    return 0;
-}*/
+    return;
+}

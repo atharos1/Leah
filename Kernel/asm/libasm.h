@@ -30,6 +30,9 @@ void _int80handler();
 //scheduler
 void * _initialize_stack_frame(void * wrapper, void * rip, void * rsp);
 
+void _force_timer_tick();
+void _force_scheduler();
+
 #endif
 
 

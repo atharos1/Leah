@@ -113,7 +113,9 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 	*status = 0;
 	if (tail == NULL) return tail;
 	else if (tail == tail -> next) {
+		//printf("\nBorro 1: %X %X\n", tail -> data, data);
 		if ( cmp(tail -> data, data) == 0 ) {
+			printf("borro final\n");
 			tail = NULL;
 			free(current);
 			*status = 1;
@@ -124,6 +126,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 		previous = current;
 		current = current -> next;
 		if ( cmp(tail -> data, data) == 0 ) {
+			printf("borro\n");
 			previous -> next = current -> next;
 			if (current == tail) tail = previous;
 			free(current);

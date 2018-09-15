@@ -22,7 +22,7 @@ void * schedule(void * oldRSP);
 void scheduler_enqueue(thread_t * thread);
 thread_t * getCurrentThread();
 int getCurrentPID();
-void scheduler_dequeue_current();
+thread_t * scheduler_dequeue_current();
 //void scheduler_dequeue(thread_t * thread);
 void scheduler_dequeue_process(int pid);
 

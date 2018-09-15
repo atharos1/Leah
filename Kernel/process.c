@@ -26,16 +26,18 @@ void erasePCB(process_t * process) {
     freeMemory(process);
 }
 
-/*void eraseTCB(thread_t * thread) {
+void eraseTCB(thread_t * thread) {
     freeMemory(thread->stack.base);
     freeMemory(thread);
 }
 
 void killThread(int pid, int tid) {
     //REMOVE FROM SCHEDULER
+    scheduler_dequeue_current();
     //REMOVE FROM IPC
 
     eraseTCB(processList[pid]->threadList[tid]);
+    _force_scheduler();
 }
 
 void killProcess(int pid) {
@@ -47,7 +49,7 @@ void killProcess(int pid) {
             killThread(pid, i);
 
     erasePCB(processList[pid]);
-}*/
+}
 
 int createProcess(char * name, void * code, int stack_size, int heap_size) {
     

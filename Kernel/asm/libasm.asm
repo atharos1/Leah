@@ -28,11 +28,15 @@ GLOBAL instructionPointerBackup
 
 GLOBAL _initialize_stack_frame
 
+GLOBAL _force_timer_tick
+GLOBAL _force_scheduler
+
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
 EXTERN schedule
+EXTERN scheduler_nextTask
 
 EXTERN end
 
@@ -152,9 +156,20 @@ _rsp:
 	iretq
 %endmacro
 
+_force_timer_tick:
+	int 80h
+	ret
+
 _halt:
 	hlt
 	ret
+
+_force_scheduler:
+	mov rdi, 0
+	call scheduler_nextTask
+	mov rsp, rax
+	popState
+	iretq
 
 ;Timer (Timer Tick)
 _irq00Handler:
