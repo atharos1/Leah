@@ -33,7 +33,7 @@ void eraseTCB(thread_t * thread) {
 
 void killThread(int pid, int tid) {
     //REMOVE FROM SCHEDULER
-    scheduler_dequeue_current();
+    //scheduler_dequeue_current();
     //REMOVE FROM IPC
 
     eraseTCB(processList[pid]->threadList[tid]);

@@ -3,6 +3,8 @@
         "memorymanager.h": "c",
         "scheduler.h": "c",
         "console.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "roundrobin.h": "c",
+        "circularlist.h": "c"
     }
 }

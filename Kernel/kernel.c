@@ -83,62 +83,12 @@ int pruebaTask() {
 			setFontColor( colors[j%7] );
 			j++;
 			i = 0;
-			printf("t0\n");
 		}
 		i++;
 	}
 	return 0;
 }
 
-int pruebaTask4() {
-	long int i = 0;
-	int j = 0;
-	int colors[7] = {
-		0x4444DD,
-		0x11aabb,
-		0xaacc22,
-		0xd0c310,
-		0xff9933,
-		0xff4422,
-		0x72a4c9
-	};
-	while(1) {
-		if(i % 9999999 == 0) {
-			setFontColor( colors[j%7] );
-			j++;
-			i = 0;
-			printf("t4\n");
-		}
-		i++;
-	}
-	return 0;
-	
-}
-
-int pruebaTask5() {
-	long int i = 0;
-	int j = 0;
-	int colors[7] = {
-		0x4444DD,
-		0x11aabb,
-		0xaacc22,
-		0xd0c310,
-		0xff9933,
-		0xff4422,
-		0x72a4c9
-	};
-	while(1) {
-		if(i % 9999999 == 0) {
-			setFontColor( colors[j%7] );
-			j++;
-			i = 0;
-			printf("t5\n");
-		}
-		i++;
-	}
-	return 0;
-	
-}
 
 int main()
 {
@@ -152,8 +102,8 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
+	createProcess("Arcoiris", &pruebaTask, 4, 4);	
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
-	//createProcess("Arcoiris", &pruebaTask, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
 
