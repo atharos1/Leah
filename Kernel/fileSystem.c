@@ -1,17 +1,18 @@
 #include <fileSystem.h>
 #include <memoryManager.h>
 #include <drivers/console.h>
+#include <malloc.h>
 #include "stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
 
 static void * createBuffer();
 static void * createDirectory();
-static void * createLinearFile();
+static void * createRegularFile();
 
 static void removeDirectory(file_t * file);
 static void removeBuffer(file_t * file);
-static void removeLinearFile(file_t * file);
+static void removeRegularFile(file_t * file);
 
 static file_t * newFile(char name[], int type);
 
@@ -23,11 +24,11 @@ typedef struct buffer {
   char content[BUFFER_SIZE];
 } buffer_t;
 
-typedef struct linear_file {
+typedef struct regular_file {
   char * content;
   uint32_t size;
   uint32_t totalSize;
-} linear_file_t;
+} regular_file_t;
 
 
 file_t * root;
@@ -40,7 +41,7 @@ void init_fileSystem() {
   firstOpenedFile = NULL;
 
   makeFile("Test dir", DIRECTORY);
-  makeFile("Test file", LINEAR_FILE);
+  makeFile("Test file", REGULAR_FILE);
 }
 
 
@@ -127,8 +128,8 @@ static file_t * newFile(char name[], int type) {
 
   if (type == DIRECTORY)
     newFile->implementation = createDirectory();
-  else if (type == LINEAR_FILE)
-    newFile->implementation = createLinearFile();
+  else if (type == REGULAR_FILE)
+    newFile->implementation = createRegularFile();
   else if (type == BUFFER)
     newFile->implementation = createBuffer();
 
@@ -146,8 +147,8 @@ static void * createDirectory() {
   return (void*)dir;
 }
 
-static void * createLinearFile() {
-  linear_file_t * file = getMemory(sizeof(linear_file_t));
+static void * createRegularFile() {
+  regular_file_t * file = getMemory(sizeof(regular_file_t));
   file->content = getMemory(PAGE_SIZE);
   file->size = 0;
   file->totalSize = PAGE_SIZE;
@@ -162,8 +163,8 @@ static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
   if (currFile == targetFile) {
     if (currFile->type == DIRECTORY)
       removeDirectory(currFile);
-    else if (currFile->type == LINEAR_FILE)
-      removeLinearFile(currFile);
+    else if (currFile->type == REGULAR_FILE)
+      removeRegularFile(currFile);
     else if (currFile->type == BUFFER)
       removeBuffer(currFile);
 
@@ -204,10 +205,10 @@ static void removeBuffer(file_t * file) {
   freeMemory(file->implementation);
 }
 
-static void removeLinearFile(file_t * file) {
-  linear_file_t * linearFile = (linear_file_t*)(file->implementation);
-  freeMemory(linearFile->content);
-  freeMemory(linearFile);
+static void removeRegularFile(file_t * file) {
+  regular_file_t * regularFile = (regular_file_t*)(file->implementation);
+  freeMemory(regularFile->content);
+  freeMemory(regularFile);
 }
 
 
@@ -230,9 +231,9 @@ typedef struct opened_buffer {
 
 static opened_buffer_t * openBuffer();
 static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
-static uint32_t writeLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes);
+static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes);
 
-static uint32_t readLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
+static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
 static void updateReaders(opened_buffer_t * openedBuffer);
 
@@ -324,8 +325,8 @@ uint32_t writeFile(opened_file_t * openedFile, char * buff, uint32_t bytes, int 
   if (bytes == 0 || openedFile == NULL)
     return 0;
 
-  if (openedFile->file->type == LINEAR_FILE)
-    return writeLinearFile(openedFile, buff, bytes);
+  if (openedFile->file->type == REGULAR_FILE)
+    return writeRegularFile(openedFile, buff, bytes);
 
   if (openedFile->file->type == BUFFER)
     return writeBuffer(openedFile, buff, bytes);
@@ -333,17 +334,17 @@ uint32_t writeFile(opened_file_t * openedFile, char * buff, uint32_t bytes, int 
   return 0;
 }
 
-static uint32_t writeLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes) {
-  linear_file_t * linearFile = (linear_file_t*)(openedFile->file->implementation);
-  int availableBytes = linearFile->totalSize - linearFile->size;
+static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes) {
+  regular_file_t * regularFile = (regular_file_t*)(openedFile->file->implementation);
+  int availableBytes = regularFile->totalSize - regularFile->size;
   availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
 
   if (availableBytes <= 0)
     return 0;
 
   for (int i = 0; i < availableBytes; i++) {
-    linearFile->content[linearFile->size] = buff[i];
-    linearFile->size++;
+    regularFile->content[regularFile->size] = buff[i];
+    regularFile->size++;
   }
 
   return availableBytes;
@@ -374,8 +375,8 @@ uint32_t readFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint3
   if (bytes == 0 || openedFile == NULL)
     return 0;
 
-  if (openedFile->file->type == LINEAR_FILE)
-    return readLinearFile(openedFile, buff, bytes, position);
+  if (openedFile->file->type == REGULAR_FILE)
+    return readRegularFile(openedFile, buff, bytes, position);
 
   if (openedFile->file->type == BUFFER)
     return readBuffer(openedFile, buff, bytes);
@@ -383,16 +384,16 @@ uint32_t readFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint3
   return 0;
 }
 
-static uint32_t readLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position) {
-  linear_file_t * linearFile = (linear_file_t*)(openedFile->file->implementation);
-  int availableBytes = linearFile->size - position;
+static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position) {
+  regular_file_t * regularFile = (regular_file_t*)(openedFile->file->implementation);
+  int availableBytes = regularFile->size - position;
   availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
 
   if (availableBytes <= 0)
     return 0;
 
   for (int i = 0; i < availableBytes; i++) {
-    buff[i] = linearFile->content[position];
+    buff[i] = regularFile->content[position];
     position++;
   }
 
@@ -437,7 +438,7 @@ void listDir(char * path) {
     printf("\n%s", current->name);
     if (current->type == DIRECTORY)
       printf(" (dir)");
-    else if (current->type == LINEAR_FILE)
+    else if (current->type == REGULAR_FILE)
       printf(" (regular file)");
     else if (current->type == BUFFER)
       printf(" (buffer)");

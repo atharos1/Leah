@@ -7,6 +7,7 @@
 #include "asm/asmLibC.h"
 
 #define MAX_COMMANDS 255
+#define MAX_COMMAND_LENGTH 100
 
 unsigned int currFontColor = 0xFFFFFF;
 unsigned int currBackColor = 0x000000;
@@ -103,7 +104,7 @@ int parseCommand(char * cmd, int l) {
 	return 0;
 }
 
-char hist[100][100];
+char hist[100][MAX_COMMAND_LENGTH];
 unsigned int histCurrentIndex = 0;
 unsigned int histAccessIndex = 0;
 unsigned int histSize = 0;
@@ -123,7 +124,7 @@ void clearLine(unsigned int lineLong) {
 void commandListener() {
 
 	char c;
-	char cmd[100];
+	char cmd[MAX_COMMAND_LENGTH];
 	int cursor = 0;
 	int lastChar = 0;
 
@@ -158,7 +159,7 @@ void commandListener() {
 								}
 						} else {
 								if (histAccessIndex < (histSize - 1)) {
-									histAccessIndex ++;
+									histAccessIndex++;
 								} else {
 									histAccessIndex = 0;
 								}
@@ -166,6 +167,7 @@ void commandListener() {
 						clearLine(cursor);
 						clearCmd(cmd);
 						cursor = 0;
+						lastChar = 0;
 						while (hist[histAccessIndex][cursor] != 0) {
 							cursor++;
 							lastChar++;
@@ -173,12 +175,14 @@ void commandListener() {
 						strcpy(cmd,hist[histAccessIndex]);
 						printf("%s",cmd);
 			} else {
-						if (c >= ' ' && c < 0x80) {
-							cmd[cursor] = c;
-							cursor++;
-							lastChar++;
+						if (cursor < MAX_COMMAND_LENGTH) {
+								if (c >= ' ' && c < 0x80) {
+										cmd[cursor] = c;
+										cursor++;
+										lastChar++;
+								}
+								putchar(c);
 						}
-						putchar(c);
 			}
 		}
 	}
@@ -227,11 +231,11 @@ void cmd_help() {
 		setFontColor(0xFF6347);
 		printf("%s\n", commandList[i].name);
 		setFontColor(currFontColor);
-			if(commandList[i].desc != '\0') {
+			//if(commandList[i].desc != '\0') {
 				printf("  %s", commandList[i].desc);
 				if( i < commandsNum - 1)
 					putchar('\n');
-			}
+			//}
 	}
 }
 

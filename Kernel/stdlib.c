@@ -13,7 +13,7 @@ void strcpy(char * dest, char * origin) {
     for(i = 0; origin[i] != 0; i++)
         dest[i] = origin[i];
 
-    dest[i+1] = 0;
+    dest[i] = 0;
 }
 
 int strcmp(char string1[], char string2[] ) {
