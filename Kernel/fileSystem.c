@@ -1,20 +1,17 @@
 #include <fileSystem.h>
-//#include <stdint.h>
 #include <memoryManager.h>
 #include <drivers/console.h>
 #include "stdlib.h"
 
-#define BUFFER_SIZE 4092
+#define BUFFER_SIZE PAGE_SIZE
 
 static void * createBuffer();
 static void * createDirectory();
 static void * createLinearFile();
-//static void * (*createFileArr[3])();
 
 static void removeDirectory(file_t * file);
 static void removeBuffer(file_t * file);
 static void removeLinearFile(file_t * file);
-//static void (*removeFileArr[3])(file_t*);
 
 static file_t * newFile(char name[], int type);
 
@@ -24,8 +21,6 @@ typedef struct directory {
 
 typedef struct buffer {
   char content[BUFFER_SIZE];
-  uint32_t writeCursor;
-  uint32_t readCursor;
 } buffer_t;
 
 typedef struct linear_file {
@@ -34,75 +29,47 @@ typedef struct linear_file {
   uint32_t totalSize;
 } linear_file_t;
 
-typedef struct openedFile {
-  file_t * file;
-  struct openedFile * next;
-  int timesOpened;
-} opened_file_t;
-
-
-/*static int strcmp(char string1[], char string2[] )
-{
-    for (int i = 0; ; i++)
-    {
-        if (string1[i] != string2[i])
-        {
-            return string1[i] < string2[i] ? -1 : 1;
-        }
-
-        if (string1[i] == '\0')
-        {
-            return 0;
-        }
-    }
-}
-
-static void strcpy(char * dest, char * origin) {
-    int i;
-    for(i = 0; origin[i] != 0; i++)
-        dest[i] = origin[i];
-
-    dest[i+1] = 0;
-}*/
-
 
 file_t * root;
+opened_file_t * firstOpenedFile;
 
 void init_fileSystem() {
   root = newFile("root", DIRECTORY);
   root->directory = NULL;
 
-  makeFile("Test dir", DIRECTORY);
-  makeFile("Test file", LINEAR_FILE);;
+  firstOpenedFile = NULL;
 
-  /*createFileArr[DIRECTORY] = createDirectory;
-  createFileArr[LINEAR_FILE] = createLinearFile;
-  createFileArr[BUFFER] = createBuffer;
-  removeFileArr[DIRECTORY] = removeDirectory;
-  removeFileArr[LINEAR_FILE] = removeLinearFile;
-  removeFileArr[BUFFER] = removeBuffer;*/
+  makeFile("Test dir", DIRECTORY);
+  makeFile("Test file", LINEAR_FILE);
 }
 
 
 static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAME_LENGTH], int getFile) {
   int i;
 
-  for (i = 0; path[i] != '/' && path[i] != 0 && i < MAX_NAME_LENGTH + 1; i++)
+  for (i = 0; path[i] != '/' && path[i] != 0 && i < MAX_NAME_LENGTH + 2; i++) {
     name[i] = path[i];
+  }
+
+  if (i == MAX_NAME_LENGTH + 2)
+    return NULL;
 
   name[i] = 0;
 
-  if (i == 0)
-    return dir;
+  if (i == 0) {
+    if (path[i] == 0)
+      return dir;
+    else
+      return NULL;
+  }
 
   file_t * prevFile = NULL;
-  file_t * currFile = ((directory_t*)dir->implementation)->first;
+  file_t * currFile = ((directory_t*)(dir->implementation))->first;
 
   int cmp;
   while (currFile != NULL && (cmp = strcmp(currFile->name, name)) < 0) {
-    if (cmp == 0)
-      return currFile;
-
+    //if (cmp == 0)
+    //  return currFile;
     prevFile = currFile;
     currFile = currFile->next;
   }
@@ -113,13 +80,18 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
     else {
       if (getFile)
         return NULL;
+
       file_t * file = newFile(name, type);
+
+      if (file == NULL)
+        return NULL;
+
       file->next = currFile;
       file->directory = dir;
       if (prevFile != NULL)
         prevFile->next = file;
       else
-        ((directory_t*)dir->implementation)->first = file;
+        ((directory_t*)(dir->implementation))->first = file;
 
       return file;
     }
@@ -138,7 +110,6 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
 file_t * makeFile(char * path, int type) {
   char name[MAX_NAME_LENGTH];
   return makeFileR(path, root, type, name, 0);
-  //return makeFileR(path, (directory_t*)root->implementation, type, name);
 }
 
 
@@ -166,8 +137,6 @@ static file_t * newFile(char name[], int type) {
 
 static void * createBuffer() {
   buffer_t * buff = getMemory(sizeof(buffer_t));
-  buff->writeCursor = 0;
-  buff->readCursor = 0;
   return (void*)buff;
 }
 
@@ -241,6 +210,219 @@ static void removeLinearFile(file_t * file) {
   freeMemory(linearFile);
 }
 
+
+//////////// I/O OPERATIONS ////////////
+
+typedef struct pending_reader {
+  int PID;
+  uint32_t bytes;
+  char * dest;
+  int * ret;
+} pending_reader_t;
+
+typedef struct opened_buffer {
+  uint32_t writeCursor;
+  uint32_t readCursor;
+  int hasEOF;
+  pending_reader_t * first;
+  pending_reader_t * last;
+} opened_buffer_t;
+
+static opened_buffer_t * openBuffer();
+static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
+static uint32_t writeLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes);
+
+static uint32_t readLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
+static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
+static void updateReaders(opened_buffer_t * openedBuffer);
+
+opened_file_t * openFile(char * path, int mode) {
+  file_t * file = getFile(path);
+
+  if (file == NULL || file->type == DIRECTORY)
+    return NULL;
+
+  opened_file_t * openedFile = firstOpenedFile;
+  while(openedFile != NULL && openedFile->file != file)
+    openedFile = openedFile->next;
+
+  if (openedFile == NULL) {
+    openedFile = getMemory(sizeof(opened_file_t));
+    openedFile->next = firstOpenedFile;
+    firstOpenedFile = openedFile;
+    openedFile->file = file;
+    openedFile->readers = 0;
+    openedFile->writers = 0;
+
+    if (file->type == BUFFER)
+      openedFile->implementation = (void*)openBuffer();
+  }
+
+  if (mode == O_RDONLY || mode == O_RDWR)
+    openedFile->readers++;
+  if (mode == O_WRONLY || mode == O_RDWR) {
+    openedFile->writers++;
+    if (file->type == BUFFER)
+      ((opened_buffer_t*)(openedFile->implementation))->hasEOF = 0;
+  }
+
+  return openedFile;
+}
+
+void closeFile(opened_file_t * openedFile, int mode) {
+  if (openedFile == NULL)
+    return;
+
+  if (mode == O_RDONLY || mode == O_RDWR)
+    openedFile->readers--;
+  if (mode == O_WRONLY || mode == O_RDWR) {
+    openedFile->writers--;
+    if (openedFile->writers == 0 && openedFile->file->type == BUFFER) {
+      ((opened_buffer_t*)openedFile->implementation)->hasEOF = 1;
+      updateReaders((opened_buffer_t*)(openedFile->implementation));
+    }
+  }
+
+  if (openedFile->readers == 0 && openedFile->writers == 0) {
+    opened_file_t * previous = NULL;
+    opened_file_t * current = firstOpenedFile;
+
+    while (current != openedFile) {
+      if (current == NULL)
+        return;
+      previous = current;
+      current = current->next;
+    }
+
+    if (previous == NULL)
+      firstOpenedFile = current->next;
+    else
+      previous->next = current->next;
+
+    if (openedFile->file->type == BUFFER)
+      freeMemory(openedFile->implementation);
+
+    freeMemory(openedFile);
+  }
+}
+
+static opened_buffer_t * openBuffer() {
+  opened_buffer_t * openedBuffer = getMemory(sizeof(opened_buffer_t));
+  openedBuffer->writeCursor = 0;
+  openedBuffer->readCursor = 0;
+  openedBuffer->hasEOF = 0;
+  openedBuffer->first = NULL;
+  openedBuffer->last = NULL;
+  return openedBuffer;
+}
+
+
+uint32_t writeFile(opened_file_t * openedFile, char * buff, uint32_t bytes, int mode) {
+  if (mode != O_WRONLY && mode != O_RDWR)
+    return 0;
+
+  if (bytes == 0 || openedFile == NULL)
+    return 0;
+
+  if (openedFile->file->type == LINEAR_FILE)
+    return writeLinearFile(openedFile, buff, bytes);
+
+  if (openedFile->file->type == BUFFER)
+    return writeBuffer(openedFile, buff, bytes);
+
+  return 0;
+}
+
+static uint32_t writeLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes) {
+  linear_file_t * linearFile = (linear_file_t*)(openedFile->file->implementation);
+  int availableBytes = linearFile->totalSize - linearFile->size;
+  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+
+  if (availableBytes <= 0)
+    return 0;
+
+  for (int i = 0; i < availableBytes; i++) {
+    linearFile->content[linearFile->size] = buff[i];
+    linearFile->size++;
+  }
+
+  return availableBytes;
+}
+
+static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes) {
+  opened_buffer_t * openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+  buffer_t * buffer = (buffer_t*)(openedFile->file->implementation);
+  int availableBytes = openedBuffer->readCursor - openedBuffer->writeCursor;
+  availableBytes = (availableBytes >= 0) ? availableBytes : BUFFER_SIZE + availableBytes;
+  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+
+  for (int i = 0; i < availableBytes; i++) {
+    buffer->content[openedBuffer->writeCursor] = buff[i];
+    openedBuffer->writeCursor++;
+    if (openedBuffer->writeCursor == BUFFER_SIZE)
+      openedBuffer->writeCursor = 0;
+  }
+
+  return availableBytes;
+}
+
+
+uint32_t readFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position, int mode) {
+  if (mode != O_RDONLY && mode != O_RDWR)
+    return 0;
+
+  if (bytes == 0 || openedFile == NULL)
+    return 0;
+
+  if (openedFile->file->type == LINEAR_FILE)
+    return readLinearFile(openedFile, buff, bytes, position);
+
+  if (openedFile->file->type == BUFFER)
+    return readBuffer(openedFile, buff, bytes);
+
+  return 0;
+}
+
+static uint32_t readLinearFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position) {
+  linear_file_t * linearFile = (linear_file_t*)(openedFile->file->implementation);
+  int availableBytes = linearFile->size - position;
+  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+
+  if (availableBytes <= 0)
+    return 0;
+
+  for (int i = 0; i < availableBytes; i++) {
+    buff[i] = linearFile->content[position];
+    position++;
+  }
+
+  return availableBytes;
+}
+
+static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes) {
+  opened_buffer_t * openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+  buffer_t * buffer = (buffer_t*)(openedFile->file->implementation);
+  int availableBytes = openedBuffer->writeCursor - openedBuffer->readCursor;
+  availableBytes = (availableBytes >= 0) ? availableBytes : BUFFER_SIZE + availableBytes;
+  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+
+  for (int i = 0; i < availableBytes; i++) {
+    buff[i] = buffer->content[openedBuffer->readCursor];
+    openedBuffer->readCursor++;
+    if (openedBuffer->readCursor == BUFFER_SIZE)
+      openedBuffer->readCursor = 0;
+  }
+
+  return availableBytes;
+}
+
+static void updateReaders(opened_buffer_t * openedBuffer) {
+  //ToDo
+}
+
+
+///// TESTING FUNCTIONS /////
+
 void listDir(char * path) {
   file_t * file = getFile(path);
 
@@ -250,37 +432,34 @@ void listDir(char * path) {
   if (file->type != DIRECTORY)
     return;
 
-  file_t * current = ((directory_t*)file->implementation)->first;
+  file_t * current = ((directory_t*)(file->implementation))->first;
   while(current != NULL) {
     printf("\n%s", current->name);
     if (current->type == DIRECTORY)
       printf(" (dir)");
     else if (current->type == LINEAR_FILE)
-      printf(" (reg file)");
+      printf(" (regular file)");
     else if (current->type == BUFFER)
       printf(" (buffer)");
     current = current->next;
   }
 }
 
-void openFile(char * path) {
-  //verifica si esta abierto
-  //devuelve una instancia de archivo abierto
+void cat(char * path) {
+  char str[16];
+  opened_file_t * openedFile = openFile(path, O_RDONLY);
+  int cursor = 0;
+  int aux;
+  while ((aux = readFile(openedFile, str, 1, cursor, O_RDONLY)) > 0) {
+    cursor += aux;
+    str[aux + 1] = 0;
+    printf("%s", str);
+  }
+  closeFile(openedFile, O_RDONLY);
 }
 
-void closeFile(char * path) {
-  //busca al archivo en los archivos abiertos
-  //decrementa la cantidad de veces abierto
-  //si es un buffer y llega a 0, se borra
+void writeTo(char * path, char * str) {
+  opened_file_t * openedFile = openFile(path, O_WRONLY);
+  writeFile(openedFile, str, strlen(str), O_WRONLY);
+  closeFile(openedFile, O_WRONLY);
 }
-
-/*int readFile(file_t * file, char * buff, int bytes) {
-  char * content;
-  uint32_t position;
-
-  memcpy(buff, content + position, bytes);
-}
-
-int readBuffer() {
-  char * content = ((buffer_t*)file->implementation)->content;
-}*/

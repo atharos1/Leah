@@ -59,19 +59,27 @@ int sys_getScreenWidth() {
 }
 
 void sys_memoryManagerTest(int bytes) {
-    return _systemCall(17, bytes, 0, 0, 0);
+    _systemCall(17, bytes, 0, 0, 0);
 }
 
 void sys_listDir(char * path) {
-    return _systemCall(18, path, 0, 0, 0);
+    _systemCall(18, path, 0, 0, 0);
 }
 
 void sys_makeFile(char * path, int type) {
-    return _systemCall(19, path, type, 0, 0);
+    _systemCall(19, path, type, 0, 0);
 }
 
 void sys_removeFile(char * path) {
-    return _systemCall(20, path, 0, 0, 0);
+    _systemCall(20, path, 0, 0, 0);
+}
+
+void sys_cat(char * path) {
+    _systemCall(21, path, 0, 0, 0);
+}
+
+void sys_writeTo(char * path, char * str) {
+    _systemCall(22, path, str, 0, 0);
 }
 
 void sys_timerAppend(function f, unsigned long int ticks) {

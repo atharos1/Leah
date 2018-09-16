@@ -414,6 +414,49 @@ void cmd_removeFile(char * args) {
 	sys_removeFile(args);
 }
 
+void cmd_cat(char * args) {
+	sys_cat(args);
+}
+
+void cmd_writeTo(char * args) {
+	char c;
+	char buff[100];
+	int cursor = 0;
+	int lastChar = 0;
+
+	printf("Introduzca el texto que desea guardar:\n");
+
+	while(c = getchar(), c != '\n') {
+
+		if( c != EOF ) {
+
+			if (c == 8) { //backspace
+				if(cursor > 0) {
+
+					for(int i = cursor; i < lastChar; i++)
+						buff[i] = buff[i + 1];
+
+					buff[lastChar] = '\0';
+					lastChar--;
+					cursor--;
+					putchar(c);
+			  }
+			} else {
+				if (c >= ' ' && c < 0x80) {
+					buff[cursor] = c;
+					cursor++;
+					lastChar++;
+				}
+				putchar(c);
+			}
+		}
+	}
+
+	buff[lastChar] = 0;
+
+	sys_writeTo(args, buff);
+}
+
 void program_digitalClock() {
 	digitalClock();
 	cmd_resetScreen();
@@ -446,6 +489,8 @@ int main() {
 	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
+	command_register("cat", cmd_cat, "Lee el archivo especificado");
+	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
 
 	while(programStatus != 1) {
 		commandListener();
