@@ -35,6 +35,8 @@ file_t * root;
 opened_file_t * firstOpenedFile;
 
 void init_fileSystem() {
+  init_malloc(5*1024*1024);
+
   root = newFile("root", DIRECTORY);
   root->directory = NULL;
 
@@ -69,8 +71,6 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
 
   int cmp;
   while (currFile != NULL && (cmp = strcmp(currFile->name, name)) < 0) {
-    //if (cmp == 0)
-    //  return currFile;
     prevFile = currFile;
     currFile = currFile->next;
   }
@@ -121,7 +121,11 @@ file_t * getFile(char * path) {
 
 
 static file_t * newFile(char name[], int type) {
-  file_t * newFile = getMemory(sizeof(file_t));
+  file_t * newFile = malloc(sizeof(file_t));
+
+  if (newFile == NULL)
+    return NULL;
+
   strcpy(newFile->name, name);
   newFile->next = NULL;
   newFile->type = type;
@@ -137,18 +141,18 @@ static file_t * newFile(char name[], int type) {
 }
 
 static void * createBuffer() {
-  buffer_t * buff = getMemory(sizeof(buffer_t));
+  buffer_t * buff = malloc(sizeof(buffer_t));
   return (void*)buff;
 }
 
 static void * createDirectory() {
-  directory_t * dir = getMemory(sizeof(directory_t));
+  directory_t * dir = malloc(sizeof(directory_t));
   dir->first = NULL;
   return (void*)dir;
 }
 
 static void * createRegularFile() {
-  regular_file_t * file = getMemory(sizeof(regular_file_t));
+  regular_file_t * file = malloc(sizeof(regular_file_t));
   file->content = getMemory(PAGE_SIZE);
   file->size = 0;
   file->totalSize = PAGE_SIZE;
@@ -168,7 +172,7 @@ static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
     else if (currFile->type == BUFFER)
       removeBuffer(currFile);
 
-    freeMemory(currFile);
+    free(currFile);
     return currFile->next;
   }
   currFile->next = removeFileR(currFile->next, targetFile);
@@ -198,17 +202,17 @@ void removeFileFromPath(char * path) {
 }
 
 static void removeDirectory(file_t * file) {
-  freeMemory(file->implementation);
+  free(file->implementation);
 }
 
 static void removeBuffer(file_t * file) {
-  freeMemory(file->implementation);
+  free(file->implementation);
 }
 
 static void removeRegularFile(file_t * file) {
   regular_file_t * regularFile = (regular_file_t*)(file->implementation);
   freeMemory(regularFile->content);
-  freeMemory(regularFile);
+  free(regularFile);
 }
 
 
@@ -248,7 +252,7 @@ opened_file_t * openFile(char * path, int mode) {
     openedFile = openedFile->next;
 
   if (openedFile == NULL) {
-    openedFile = getMemory(sizeof(opened_file_t));
+    openedFile = malloc(sizeof(opened_file_t));
     openedFile->next = firstOpenedFile;
     firstOpenedFile = openedFile;
     openedFile->file = file;
@@ -301,14 +305,14 @@ void closeFile(opened_file_t * openedFile, int mode) {
       previous->next = current->next;
 
     if (openedFile->file->type == BUFFER)
-      freeMemory(openedFile->implementation);
+      free(openedFile->implementation);
 
-    freeMemory(openedFile);
+    free(openedFile);
   }
 }
 
 static opened_buffer_t * openBuffer() {
-  opened_buffer_t * openedBuffer = getMemory(sizeof(opened_buffer_t));
+  opened_buffer_t * openedBuffer = malloc(sizeof(opened_buffer_t));
   openedBuffer->writeCursor = 0;
   openedBuffer->readCursor = 0;
   openedBuffer->hasEOF = 0;

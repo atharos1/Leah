@@ -47,7 +47,8 @@ static void split(block_t *block, uint32_t size) {
   if (block->size - size > sizeof(block_t)) {
     block_t *aux = block->next;
     block->next = (block_t*)((char*)(block+1) + size);
-    block->next->size = block->size -= size;
+    block->next->size = block->size - size - sizeof(block_t);
+    block->size = size;
     block->next->next = aux;
     block->next->prev = block;
     block->next->state = FREE;
