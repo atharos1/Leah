@@ -90,19 +90,16 @@ int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 		case 17: //sys_memoryManagerTest
 			memoryManagerTest(rdi);
 			break;
-		case 18: //sys_memoryManagerTest
+		case 18: //sys_listDir
 			listDir((char*)rdi);
 			break;
-		case 19: //sys_memoryManagerTest
+		case 19: //sys_makeFile
 			makeFile((char*)rdi, rsi);
 			break;
-		case 20: //sys_memoryManagerTest
+		case 20: //sys_removeFile
 			removeFileFromPath((char*)rdi);
 			break;
-		case 40: //sleep thread
-			printf("AAAAA\n\n");
-			sleepCurrentThread(rdi);
-			break;
+		case 21: //sys_cat
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rdi %d rsi %d RDX %d\n", rax, rdi, rsi, rdx);
 			return timer_appendFunction( (function)rdi, rsi );
