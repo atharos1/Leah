@@ -157,7 +157,7 @@ _rsp:
 %endmacro
 
 _force_timer_tick:
-	int 80h
+	int 20h
 	ret
 
 _halt:

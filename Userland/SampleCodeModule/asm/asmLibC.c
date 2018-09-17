@@ -51,11 +51,11 @@ void sys_setGraphicCursorStatus(unsigned int status) {
 }
 
 int sys_getScreenHeight() {
-    _systemCall(15, 0, 0, 0, 0);
+    return _systemCall(15, 0, 0, 0, 0);
 }
 
 int sys_getScreenWidth() {
-    _systemCall(16, 0, 0, 0, 0);
+    return _systemCall(16, 0, 0, 0, 0);
 }
 
 void sys_memoryManagerTest(int bytes) {
@@ -88,4 +88,8 @@ void sys_beep(int nFrequence, unsigned char duration) {
 
 int sys_rtc(int fetch) {
     return _systemCall(200, fetch, 0, 0, 0);
+}
+
+void sys_sleep(int millis) {
+    return _systemCall(40, millis, 0, 0, 0);
 }

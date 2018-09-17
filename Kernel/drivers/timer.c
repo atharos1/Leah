@@ -1,6 +1,7 @@
 #define MAX_FUNCTIONS 255
 
 #include <drivers/timer.h>
+//#include "../sleep.h"
 
 typedef struct {
 	function f;
@@ -16,6 +17,8 @@ void timer_Restart() {
 }
 
 void timer_Tick() {
+
+	sleep_update();
 
 	for(int i = 0; i < MAX_FUNCTIONS && timerFunctions[i].f != 0; i++) {
 		timerFunctions[i].remainingTicks--;

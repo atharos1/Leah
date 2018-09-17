@@ -421,6 +421,12 @@ void program_digitalClock() {
 
 int main() {
 
+	while(1) {
+		printf("hola\n");
+		sys_sleep(500);
+	}
+
+	return 0;
 
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();

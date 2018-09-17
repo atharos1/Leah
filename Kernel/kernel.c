@@ -81,6 +81,12 @@ int pruebaTask() {
 	while(1) {
 		if(i % 9999999 == 0) {
 			setFontColor( colors[j%7] );
+			/*if(j%7 == 4) {
+				printf("Duermo");
+				sleepCurrentThread(5000);
+				printf("Despierto");
+			}*/
+				
 			j++;
 			i = 0;
 		}
@@ -108,10 +114,11 @@ int main()
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
 
 	_force_scheduler();
+	//_force_timer_tick();
 
-	while(1) {
-		_halt();
-	}
+	//while(1) {
+	//	_halt();
+	//}
 		
 	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);

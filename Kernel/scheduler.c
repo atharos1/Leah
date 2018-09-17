@@ -8,14 +8,9 @@
 #define TRUE 1
 #define FALSE 0
 
-NODE * CURRENT_QUEUE = NULL;
-
 SCHEDULER_QUEUE * Queues[MAX_QUEUE_COUNT];
 int queueCount = 0;
-NODE * mainQueue;
 
-static const int QUANTUM = 3;
-int currQuantum = 0;
 int runningTasks;
 
 struct currentThread {
@@ -24,18 +19,15 @@ struct currentThread {
 } currentThread;
 
 int threadCount = 0;
+int FORCE = FALSE;
 
 void scheduler_init() {
 
     currentThread.thread = NULL;
     currentThread.queue = 0;
 
-    Queues[queueCount++] = roundRobin_newQueue(3);
+    Queues[queueCount++] = roundRobin_newQueue(2);
 
-    /*SCHEDULER_QUEUE * q1 = roundRobin_newQueue(3);
-    mainQueue = insertAtHead(mainQueue, q1);*/
-
-    currQuantum = 0;
     runningTasks = FALSE;
     threadCount = 0;
 
@@ -47,11 +39,15 @@ int pointer_cmp(void * p1, void * p2) {
     return p1 == p2;
 }
 
-/*thread_t * scheduler_dequeue_current() {
-    int status;
+thread_t * scheduler_dequeue_current() {
+    int status = 0;
     (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status);
+
+    Queues[currentThread.queue]->threadCount--;
+    threadCount--;
+    FORCE = TRUE;
     return currentThread.thread;
-}*/
+}
 
 /*void scheduler_dequeue_process(int pid) {
     //printf("hola");
@@ -60,25 +56,22 @@ int pointer_cmp(void * p1, void * p2) {
 
 void scheduler_enqueue(thread_t * thread) {
 
-    //SCHEDULER_QUEUE * q = getFirst(mainQueue);
     SCHEDULER_QUEUE * q = Queues[0];
 
     q->queue = insertAtEnd(q->queue, thread);
     q->threadCount++;
     threadCount++;
 
-    //printf("Registro task: %X\n", thread);
-
 }
 
 void * scheduler_nextTask(void * oldRSP) {
 
-    if( threadCount == 0 || (threadCount == 1 && runningTasks == TRUE ) )
+    if( threadCount == 0 || (threadCount == 1 && runningTasks == TRUE && FORCE == FALSE ) ) {
+        //printf("cambio");
         return oldRSP;
-
-    /*NODE * auxQueue = mainQueue;
-    SCHEDULER_QUEUE * currQueue;*/
-
+    }
+       
+    FORCE == FALSE;
     if(runningTasks == TRUE) {
         getCurrentThread()->stack.current = oldRSP;
     }
@@ -87,39 +80,28 @@ void * scheduler_nextTask(void * oldRSP) {
     thread_t * nextThread = NULL;    
     
     
+    
     int currQueue;
 
     for(currQueue = 0; currQueue < queueCount; currQueue++) {
         nextThread = Queues[currQueue]->nextThreadFunction(Queues[currQueue], oldRSP);
         if( nextThread != NULL ) {
+            //printf("Sale: %s | Entra: %s\n", getProcessByPID(getCurrentThread()->process)->name, getProcessByPID(nextThread->process)->name);
             currentThread.thread = nextThread;
             currentThread.queue = currQueue;
+            FORCE = FALSE;
             return nextThread->stack.current;
         }
     }
 
     return oldRSP;
 
-    /*while(1) {
-        currQueue = getFirst(auxQueue);
-        nextThread = currQueue->nextThreadFunction(auxQueue->data, oldRSP);
-
-        if(nextThread != NULL) {
-            currentThread.thread = nextThread;
-            currentThread.queue = currQueue;
-            //return nextThread;
-            return nextThread->stack.current;
-        }
-        auxQueue = next(auxQueue);
-    }
-
-    return NULL;*/
 }
 
 
 void * schedule(void * oldRSP) {
 
-    if( Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) )
+    if( Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) || FORCE == TRUE )
         return scheduler_nextTask(oldRSP);
     else
         return oldRSP;

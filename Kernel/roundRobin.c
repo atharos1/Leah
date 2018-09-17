@@ -4,6 +4,9 @@
 
 
 thread_t * roundRobin_nextThread(SCHEDULER_QUEUE * q, void * oldRSP) {
+    data_RoundRubin * data = q->queueData;
+    data->currQuantum = 0;
+    
     q->queue = next(q->queue);
 
     return getFirst(q->queue);
@@ -15,9 +18,9 @@ int roundRobin_checkEvict(SCHEDULER_QUEUE * q) {
 
     data->currQuantum++;
 
-    if(data->currQuantum % (data->quantum+1) == 0)
+    if(data->currQuantum % data->quantum == 0)
         return TRUE;
-        
+
     return FALSE;
 
 }

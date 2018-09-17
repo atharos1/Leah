@@ -7,6 +7,8 @@
 #include <memoryManagerTest.h>
 #include <asm/libasm.h>
 #include <fileSystem.h>
+#include <sleep.h>
+#include <scheduler.h>
 
 int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 	switch(rax) {
@@ -96,6 +98,10 @@ int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 			break;
 		case 20: //sys_memoryManagerTest
 			removeFileFromPath((char*)rdi);
+			break;
+		case 40: //sleep thread
+			printf("AAAAA\n\n");
+			sleepCurrentThread(rdi);
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rdi %d rsi %d RDX %d\n", rax, rdi, rsi, rdx);
