@@ -66,12 +66,11 @@ void scheduler_enqueue(thread_t * thread) {
 
 void * scheduler_nextTask(void * oldRSP) {
 
-    if( threadCount == 0 || (threadCount == 1 && runningTasks == TRUE && FORCE == FALSE ) ) {
-        //printf("cambio");
+    if( threadCount == 0 ) {
         return oldRSP;
     }
        
-    FORCE == FALSE;
+    FORCE = FALSE;
     if(runningTasks == TRUE) {
         getCurrentThread()->stack.current = oldRSP;
     }
@@ -90,6 +89,7 @@ void * scheduler_nextTask(void * oldRSP) {
             currentThread.thread = nextThread;
             currentThread.queue = currQueue;
             FORCE = FALSE;
+
             return nextThread->stack.current;
         }
     }

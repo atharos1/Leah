@@ -79,18 +79,10 @@ int pruebaTask() {
 		0x72a4c9
 	};
 	while(1) {
-		if(i % 9999999 == 0) {
-			setFontColor( colors[j%7] );
-			/*if(j%7 == 4) {
-				printf("Duermo");
-				sleepCurrentThread(5000);
-				printf("Despierto");
-			}*/
-				
-			j++;
-			i = 0;
-		}
-		i++;
+		printf("%d", j);
+		j++;
+		setFontColor( colors[j%7] );
+		sleepCurrentThread(60);
 	}
 	return 0;
 }
@@ -108,8 +100,8 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	createProcess("Arcoiris", &pruebaTask, 4, 4);	
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+	createProcess("Arcoiris", &pruebaTask, 4, 4);	
 	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
 

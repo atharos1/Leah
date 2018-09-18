@@ -18,8 +18,8 @@ void sleep(thread_t * thread, int millis) {
     sleepingThreadNode * n = getMemory( sizeof(sleepingThreadNode) );
 
     n->thread = thread;
-    int calMillis = (millis / 1000) * TICKS_PER_SECOND;
-    n->ticks_remaining = (calMillis > 0 ? calMillis : 1);
+    int calMillis = (millis * TICKS_PER_SECOND) / 1000;
+    n->ticks_remaining = (calMillis > 1 ? calMillis : 2);
 
     n->next = sleepingThreadList;
     sleepingThreadList = n;
