@@ -32,6 +32,7 @@ typedef struct process_t {
     int threadCount;
     thread_t * threadList[MAX_THREAD_COUNT];
     opened_file_t * fd_table[MAX_FD_COUNT];
+    file_t * cwd;
 } process_t;
 
 int createProcess(char * name, void * code, int stack_size, int heap_size);
