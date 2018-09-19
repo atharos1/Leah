@@ -33,6 +33,9 @@ void * _initialize_stack_frame(void * wrapper, void * rip, void * rsp);
 void _force_timer_tick();
 void _force_scheduler();
 
+void _sem_increment();
+void _sem_decrement();
+
 #endif
 
 

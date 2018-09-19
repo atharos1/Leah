@@ -42,7 +42,7 @@ void init_fileSystem() {
 
   firstOpenedFile = NULL;
 
-  makeFile("Test dir", DIRECTORY);
+  makeFile("dev", DIRECTORY);
   makeFile("Test file", REGULAR_FILE);
 }
 

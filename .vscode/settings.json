@@ -5,6 +5,7 @@
         "console.h": "c",
         "stdint.h": "c",
         "roundrobin.h": "c",
-        "circularlist.h": "c"
+        "circularlist.h": "c",
+        "libasm.h": "c"
     }
 }

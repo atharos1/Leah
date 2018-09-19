@@ -31,8 +31,8 @@ GLOBAL _initialize_stack_frame
 GLOBAL _force_timer_tick
 GLOBAL _force_scheduler
 
-GLOBAL _acquire_lock
-GLOBAL _release_lock
+GLOBAL _sem_increment
+GLOBAL _sem_decrement
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
@@ -313,10 +313,11 @@ _beep_stop:
 	out 61h, al
   	ret
 
-_acquire_lock:
-	; save int parameters
-	mov eax, 1
-	xchg eax, lock_value
-	cmp eax, 0
+_sem_decrement:
+_sem_increment:
+;	; save int parameters
+;	mov eax, 1
+;	xchg eax, lock_value
+;	cmp eax, 0
 	;jne addProcessToQueue
-	ret
+;	ret
