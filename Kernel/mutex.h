@@ -12,9 +12,9 @@ typedef struct {
 
 typedef mutex_struct * mutex_t;
 
-mutex_t mutex_create(char * name);
-mutex_t mutex_open(char * name);
+mutex_t mutex_create();
+//mutex_t mutex_open(char * name);
 void mutex_lock(mutex_t mutex);
-void mutex_signal(mutex_t mutex);
+void mutex_unlock(mutex_t mutex);
 
 #endif

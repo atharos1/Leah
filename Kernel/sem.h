@@ -2,10 +2,12 @@
 #define IPC_SEM_H
 
 #include "circularList.h"
+#include "mutex.h"
 
 typedef struct {
 	int value;
 	NODE * lockedQueue;
+	mutex_t mutex;
 } sem_struct;
 
 typedef sem_struct * sem_t;
