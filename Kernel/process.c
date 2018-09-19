@@ -3,6 +3,10 @@
 #include "asm/libasm.h"
 #include "drivers/console.h"
 
+int getFreePID();
+int getFreeTID(process_t * process);
+void purgeThreadList(process_t * process);
+
 process_t * processList[MAX_PROCESS_COUNT];
 int process_count = 0;
 
@@ -52,25 +56,25 @@ void killProcess(int pid) {
 }
 
 int createProcess(char * name, void * code, int stack_size, int heap_size) {
-    
+
     if( process_count >= MAX_PROCESS_COUNT ) //No entran más
         return 0;
 
     process_t * process = getMemory( sizeof(process_t) );
     if(process == NULL)
-        return NULL;
+        return 0;
 
     process->name = getMemory( strlen(name) );
     if(process->name == NULL) {
         erasePCB( process );
-        return NULL;
+        return 0;
     }
     strcpy(process->name, name);
 
     process->heap.base = getMemory( heap_size * PAGE_SIZE );
     if(process->heap.base == NULL) {
         erasePCB( process );
-        return NULL;
+        return 0;
     }
     process->heap.size = heap_size * PAGE_SIZE;
 
@@ -152,7 +156,7 @@ struct processData {
 
 void getProcessList() {
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
-        
+
     }
 }*/
 

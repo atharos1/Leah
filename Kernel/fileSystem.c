@@ -441,7 +441,7 @@ void listDir(char * path) {
   while(current != NULL) {
     printf("\n%s", current->name);
     if (current->type == DIRECTORY)
-      printf(" (dir)");
+      printf(" (directory)");
     else if (current->type == REGULAR_FILE)
       printf(" (regular file)");
     else if (current->type == BUFFER)

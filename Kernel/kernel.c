@@ -9,6 +9,7 @@
 #include <interruptions/idt.h>
 #include <asm/libasm.h>
 #include <fileSystem.h>
+#include <sleep.h>
 #include "scheduler.h"
 #include "process.h"
 
@@ -67,7 +68,6 @@ void * initializeKernelBinary()
 
 
 int pruebaTask() {
-	long int i = 0;
 	int j = 0;
 	int colors[7] = {
 		0x4444DD,

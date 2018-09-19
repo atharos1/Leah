@@ -18,6 +18,7 @@ struct currentThread {
     int queue;
 } currentThread;
 
+
 int threadCount = 0;
 int FORCE = FALSE;
 
@@ -116,6 +117,7 @@ int getCurrentPID() {
     return currentThread.thread->process;
 }
 
+
 /*void scheduler_dequeue(thread_t * thread) {
 
     int deleted = FALSE;
@@ -123,7 +125,7 @@ int getCurrentPID() {
     for(int i = 0; (i < queueCount && deleted == FALSE); i++)
         Queues[i]->queue = deleteByValue(Queues[i]->queue, thread, pointer_cmp, &deleted);
 
-    /*NODE * auxQueue = mainQueue;
+    NODE * auxQueue = mainQueue;
     SCHEDULER_QUEUE * q;
 
     do {
@@ -134,7 +136,7 @@ int getCurrentPID() {
         }
 
         auxQueue = next(auxQueue);
-    } while( auxQueue != mainQueue );*/
+    } while( auxQueue != mainQueue );
 
-    /*return;
+    return;
 }*/

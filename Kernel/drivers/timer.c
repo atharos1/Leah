@@ -1,7 +1,7 @@
 #define MAX_FUNCTIONS 255
 
 #include <drivers/timer.h>
-//#include "../sleep.h"
+#include <sleep.h>
 
 typedef struct {
 	function f;
@@ -9,7 +9,7 @@ typedef struct {
 	unsigned long int remainingTicks;
 } timerFunction;
 
-static timerFunction timerFunctions[MAX_FUNCTIONS] = {0}; //CONIRMAR SI GARANTIZA QUE TODOS LOS VALORES DE F VAN A EMPEZAR EN 0
+static timerFunction timerFunctions[MAX_FUNCTIONS] = {{0}}; //CONIRMAR SI GARANTIZA QUE TODOS LOS VALORES DE F VAN A EMPEZAR EN 0
 
 void timer_Restart() {
 	for(int i = 0; i < MAX_FUNCTIONS; i++)
@@ -26,7 +26,7 @@ void timer_Tick() {
 			timerFunctions[i].remainingTicks = timerFunctions[i].ticks;
 			timerFunctions[i].f();
 		}
-	}			
+	}
 }
 
 int timer_appendFunction(function f, unsigned long int ticks) {

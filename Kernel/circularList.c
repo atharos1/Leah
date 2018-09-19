@@ -106,7 +106,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 		if ( cmp(tail -> data, data) == 0 ) {
 			tail = NULL;
 			free(current);
-			*status++;
+			(*status)++;
 		}
 		return tail;
 	}
@@ -117,7 +117,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 			previous -> next = current -> next;
 			if (current == tail) tail = previous;
 			free(current);
-			*status++;
+			(*status)++;
 			//current = previous -> next;
 			//return tail;
 		}
@@ -125,12 +125,12 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 	return tail;
 }
 
-NODE * deleteHead(NODE * tail) {
-	return deleteByLocation;
+/*NODE * deleteHead(NODE * tail) {
+	return deleteByLocation(tail, 0);
 }
 
 NODE * deleteByLocation(NODE * tail, int location) {
-	NODE * current, * previous = tail;
+	NODE * current = tail, * previous = tail;
 	int len = length(tail), i;
 	if (location < 1 || location > len) {
 		printf("Invalid Location to delete");
@@ -149,7 +149,7 @@ NODE * deleteByLocation(NODE * tail, int location) {
 	}
 
 	return tail;
-}
+}*/
 
 NODE * sort(NODE * tail, comparator cmp) {
 	if (length(tail) < 2) return tail;

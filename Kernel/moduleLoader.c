@@ -6,7 +6,7 @@
 static uint32_t loadModule(uint8_t ** module, void * targetModuleAddress);
 static uint32_t readUint32(uint8_t ** address);
 
-uint32_t * userlandSize = 600000;
+uint32_t * userlandSize = (uint32_t*)600000;
 
 void loadModules(void * payloadStart, void ** targetModuleAddress)
 {

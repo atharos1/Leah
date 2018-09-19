@@ -1,5 +1,6 @@
 #include "sleep.h"
 #include <asm/libasm.h>
+#include <scheduler.h>
 
 #define TICKS_PER_SECOND 18.2
 
