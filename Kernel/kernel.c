@@ -79,10 +79,10 @@ int pruebaTask() {
 		0x72a4c9
 	};
 	while(1) {
-		printf("%d", j);
+		//printf("%d", j);
 		j++;
 		setFontColor( colors[j%7] );
-		sleepCurrentThread(20);
+		sleepCurrentThread(500);
 	}
 	return 0;
 }

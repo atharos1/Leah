@@ -106,7 +106,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 		if ( cmp(tail -> data, data) == 0 ) {
 			tail = NULL;
 			free(current);
-			*status = 1;
+			*status++;
 		}
 		return tail;
 	}
@@ -117,7 +117,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 			previous -> next = current -> next;
 			if (current == tail) tail = previous;
 			free(current);
-			*status = 1;
+			*status++;
 			//current = previous -> next;
 			//return tail;
 		}
