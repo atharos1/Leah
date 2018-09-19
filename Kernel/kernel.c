@@ -87,6 +87,21 @@ int pruebaTask() {
 	return 0;
 }
 
+void initThread() {
+
+	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+	createProcess("Arcoiris", &pruebaTask, 4, 4);
+
+	thread_t * me = scheduler_dequeue_current();
+
+	_force_scheduler();
+
+	while(1) {
+		printf("En init\n");
+		_halt();
+	}
+
+}
 
 int main()
 {
@@ -100,12 +115,14 @@ int main()
 	extern void * stackPointerBackup;
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
-	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
-	createProcess("Arcoiris", &pruebaTask, 4, 4);
+	createProcess("Init", &initThread, 1, 0);
+
+	_force_scheduler();
+	
+	//createProcess("Arcoiris", &pruebaTask, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
 
-	_force_scheduler();
 	//_force_timer_tick();
 
 	//while(1) {

@@ -35,4 +35,6 @@ int createProcess(char * name, void * code, int stack_size, int heap_size);
 thread_t * createThread(process_t * process, void * code, int stack_size);
 process_t * getProcessByPID(int pid);
 void purgeProcessList();
+void listProcess();
+
 #endif

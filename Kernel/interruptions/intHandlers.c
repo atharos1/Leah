@@ -100,6 +100,18 @@ int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 			removeFileFromPath((char*)rdi);
 			break;
 		case 21: //sys_cat
+			cat((char *)rdi);
+			break;
+		case 22: //write_to
+			writeTo((char *)rdi, (char *)rsi);
+			break;
+		case 40: //sleep
+			//printf("%d\n", rdi);
+			sleepCurrentThread(rdi);
+			break;
+		case 41: //ps
+			listProcess();
+			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rdi %d rsi %d RDX %d\n", rax, rdi, rsi, rdx);
 			return timer_appendFunction( (function)rdi, rsi );

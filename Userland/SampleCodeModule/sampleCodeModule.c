@@ -422,6 +422,10 @@ void cmd_cat(char * args) {
 	sys_cat(args);
 }
 
+void cmd_ps(char * args) {
+	sys_listProcess();
+}
+
 void cmd_writeTo(char * args) {
 	char c;
 	char buff[100];
@@ -468,6 +472,8 @@ void program_digitalClock() {
 
 int main() {
 
+	//sys_sleep(5000);
+
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();
 	currFontColor = getFontColor();
@@ -494,6 +500,7 @@ int main() {
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("cat", cmd_cat, "Lee el archivo especificado");
 	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
+	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 
 	while(programStatus != 1) {
 		commandListener();

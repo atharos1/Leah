@@ -99,5 +99,9 @@ int sys_rtc(int fetch) {
 }
 
 void sys_sleep(int millis) {
-    return _systemCall(40, millis, 0, 0, 0);
+    _systemCall(40, millis, 0, 0, 0);
+}
+
+void sys_listProcess() {
+    _systemCall(41, 0, 0, 0, 0);
 }

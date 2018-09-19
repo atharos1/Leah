@@ -28,4 +28,6 @@ void sys_timerRemove(function f);
 void sys_beep(int nFrequence, unsigned char duration);
 int sys_rtc(int fetch);
 void _throwInvalidOpCode();
+void sys_sleep();
+void sys_listProcess();
 #endif

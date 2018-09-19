@@ -165,10 +165,11 @@ _halt:
 	ret
 
 _force_scheduler:
-	mov rdi, 0
+	mov rdi, rsp
 	call scheduler_nextTask
 	mov rsp, rax
 	popState
+
 	iretq
 
 ;Timer (Timer Tick)

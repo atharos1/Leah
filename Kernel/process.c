@@ -71,12 +71,17 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     }
     strcpy(process->name, name);
 
-    process->heap.base = getMemory( heap_size * PAGE_SIZE );
-    if(process->heap.base == NULL) {
-        erasePCB( process );
-        return 0;
+    if(heap_size != 0) {
+        process->heap.base = getMemory( heap_size * PAGE_SIZE );
+        if(process->heap.base == NULL) {
+            erasePCB( process );
+            return 0;
+        }
+    } else {
+        process->heap.base == NULL;
     }
     process->heap.size = heap_size * PAGE_SIZE;
+
 
     process->pid = getFreePID();
     processList[process->pid] = process;
@@ -153,13 +158,15 @@ struct processData {
     char name[25];
     int threadCount;
 };
-
-void getProcessList() {
+*/
+void listProcess() {
+    printf("PID    |    NAME\n");
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
-
+        if(processList[i] != NULL) {
+            printf("%d        %s        %X        %X\n", processList[i]->pid, processList[i]->name, processList[i]->threadList[0]->stack.current, processList[i]->threadList[0]->stack.base);
+        }
     }
-}*/
-
+}
 
 process_t * getProcessByPID(int pid) {
     return processList[pid];

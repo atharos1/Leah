@@ -67,14 +67,17 @@ void scheduler_enqueue(thread_t * thread) {
 
 void * scheduler_nextTask(void * oldRSP) {
 
-    if( threadCount == 0 ) {
-        return oldRSP;
-    }
-
     FORCE = FALSE;
     if(runningTasks == TRUE) {
         getCurrentThread()->stack.current = oldRSP;
     }
+
+    if( threadCount == 0 ) {
+        //printf("\n\n%X\n\n", getProcessByPID(0)->threadList[0]->stack.current);
+        return oldRSP;
+        //return getProcessByPID(0)->threadList[0]->stack.current;
+    }
+
     runningTasks = TRUE;
 
     thread_t * nextThread = NULL;
