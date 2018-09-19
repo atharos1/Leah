@@ -82,7 +82,7 @@ int pruebaTask() {
 		printf("%d", j);
 		j++;
 		setFontColor( colors[j%7] );
-		sleepCurrentThread(60);
+		sleepCurrentThread(20);
 	}
 	return 0;
 }
@@ -101,7 +101,7 @@ int main()
 	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
 
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
-	createProcess("Arcoiris", &pruebaTask, 4, 4);	
+	createProcess("Arcoiris", &pruebaTask, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
 
@@ -111,7 +111,7 @@ int main()
 	//while(1) {
 	//	_halt();
 	//}
-		
+
 	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
 	// printf("Userlandsize\n");

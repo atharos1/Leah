@@ -19,7 +19,7 @@ void sleep(thread_t * thread, int millis) {
 
     n->thread = thread;
     int calMillis = (millis * TICKS_PER_SECOND) / 1000;
-    n->ticks_remaining = (calMillis > 1 ? calMillis : 2);
+    n->ticks_remaining = (calMillis > 0 ? calMillis : 1);
 
     n->next = sleepingThreadList;
     sleepingThreadList = n;

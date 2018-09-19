@@ -32,11 +32,11 @@ void scheduler_init() {
     threadCount = 0;
 
     purgeProcessList(); //Esto va acá?
-    
+
 }
 
 int pointer_cmp(void * p1, void * p2) {
-    return p1 == p2;
+    return !(p1 == p2);
 }
 
 thread_t * scheduler_dequeue_current() {
@@ -69,17 +69,17 @@ void * scheduler_nextTask(void * oldRSP) {
     if( threadCount == 0 ) {
         return oldRSP;
     }
-       
+
     FORCE = FALSE;
     if(runningTasks == TRUE) {
         getCurrentThread()->stack.current = oldRSP;
     }
     runningTasks = TRUE;
 
-    thread_t * nextThread = NULL;    
-    
-    
-    
+    thread_t * nextThread = NULL;
+
+
+
     int currQueue;
 
     for(currQueue = 0; currQueue < queueCount; currQueue++) {
@@ -125,7 +125,7 @@ int getCurrentPID() {
 
     /*NODE * auxQueue = mainQueue;
     SCHEDULER_QUEUE * q;
-    
+
     do {
         q = getFirst(auxQueue);
         q->queue = deleteByValue(q->queue, thread, pointer_cmp, &deletionStatus);

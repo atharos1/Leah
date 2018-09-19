@@ -109,16 +109,17 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 			*status = 1;
 		}
 		return tail;
-	} 
+	}
 	do {
 		previous = current;
 		current = current -> next;
-		if ( cmp(tail -> data, data) == 0 ) {
+		if ( cmp(current -> data, data) == 0 ) {
 			previous -> next = current -> next;
 			if (current == tail) tail = previous;
 			free(current);
 			*status = 1;
-			current = previous -> next;
+			//current = previous -> next;
+			//return tail;
 		}
 	} while (current != tail);
 	return tail;
