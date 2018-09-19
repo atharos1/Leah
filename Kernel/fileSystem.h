@@ -6,6 +6,7 @@
 #define DIRECTORY 0
 #define REGULAR_FILE 1
 #define BUFFER 2
+#define SYMBOLIC_LINK 3
 
 #define MAX_NAME_LENGTH 64
 

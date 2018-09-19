@@ -86,6 +86,8 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     process->pid = getFreePID();
     processList[process->pid] = process;
 
+    purgeFdList(process);
+
     purgeThreadList(process);
     thread_t * mainThread = createThread(process, code, stack_size);
     process->threadList[getFreeTID(process)] = mainThread;
@@ -142,11 +144,26 @@ int getFreeTID(process_t * process) {
             return i;
 }
 
+int getFreeFD(process_t * process) {
+    for(int i = 0; i < MAX_FD_COUNT; i++)
+        if(process->fd_table[i] == NULL)
+            return i;
+}
+
 void purgeThreadList(process_t * process) {
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
         if(process->threadList[i] != NULL) {
             //killThread(process->pid, i);
             process->threadList[i] = NULL;
+        }
+    }
+}
+
+void purgeFdList(process_t * process) {
+    for(int i = 0; i < MAX_FD_COUNT; i++) {
+        if(process->fd_table[i] != NULL) {
+            //cerrar archivo?
+            process->fd_table[i] = NULL;
         }
     }
 }
@@ -170,4 +187,8 @@ void listProcess() {
 
 process_t * getProcessByPID(int pid) {
     return processList[pid];
+}
+
+int registerFD(int pid, opened_file_t * file) {
+    processList[pid]->fd_table[getFreeFD(processList[pid])] = file;
 }

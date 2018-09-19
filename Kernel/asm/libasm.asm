@@ -34,6 +34,8 @@ GLOBAL _force_scheduler
 GLOBAL _sem_increment
 GLOBAL _sem_decrement
 
+GLOBAL _mutex_acquire
+
 EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
@@ -315,6 +317,18 @@ _beep_stop:
 
 _sem_decrement:
 _sem_increment:
+
+
+_mutex_acquire:
+	push rbp
+	mov rbp, rsp
+
+	mov eax, 1
+	xchg eax, [rdi]
+
+	mov rsp, rbp
+	pop rbp
+
 ;	; save int parameters
 ;	mov eax, 1
 ;	xchg eax, lock_value

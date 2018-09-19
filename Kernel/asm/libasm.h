@@ -36,6 +36,8 @@ void _force_scheduler();
 void _sem_increment();
 void _sem_decrement();
 
+int _mutex_acquire(int * lockValue);
+
 #endif
 
 

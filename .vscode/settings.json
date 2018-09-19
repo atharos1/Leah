@@ -6,6 +6,7 @@
         "stdint.h": "c",
         "roundrobin.h": "c",
         "circularlist.h": "c",
-        "libasm.h": "c"
+        "libasm.h": "c",
+        "sem.h": "c"
     }
 }

@@ -3,9 +3,11 @@
 
 #define MAX_THREAD_COUNT 25
 #define MAX_PROCESS_COUNT 100
+#define MAX_FD_COUNT 25
 
 #include "memoryManager.h"
 #include "stdlib.h"
+#include "fileSystem.h"
 
 //Estados de threads
 #define READY 0
@@ -29,6 +31,7 @@ typedef struct process_t {
     memblock_t heap;
     int threadCount;
     thread_t * threadList[MAX_THREAD_COUNT];
+    opened_file_t * fd_table[MAX_FD_COUNT];
 } process_t;
 
 int createProcess(char * name, void * code, int stack_size, int heap_size);
@@ -36,5 +39,6 @@ thread_t * createThread(process_t * process, void * code, int stack_size);
 process_t * getProcessByPID(int pid);
 void purgeProcessList();
 void listProcess();
+int registerFD(int pid, opened_file_t * file);
 
 #endif
