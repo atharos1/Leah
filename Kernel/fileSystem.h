@@ -30,6 +30,12 @@ typedef struct opened_file {
   void * implementation;
 } opened_file_t;
 
+typedef struct file_descriptor {
+  opened_file_t * openedFile;
+  int mode;
+  int cursor;
+} fd_t;
+
 void init_fileSystem();
 
 file_t * makeFile(char * path, int type);
@@ -38,11 +44,12 @@ file_t * getFile(char * path);
 void removeFile(file_t * file);
 void removeFileFromPath(char * path);
 
-opened_file_t * openFile(char * path, int mode);
-void closeFile(opened_file_t * openedFile, int mode);
+fd_t * openFileFromPath(char * path, int mode);
+void closeFile(fd_t * fd);
+//fd_t * cloneOpenedFile(fd_t * fd);
 
-uint32_t writeFile(opened_file_t * openedFile, char * buff, uint32_t bytes, int mode);
-uint32_t readFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position, int mode);
+uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes);
+uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes);
 
 void listDir(char * path);
 void cat(char * path);

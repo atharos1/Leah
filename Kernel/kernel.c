@@ -5,6 +5,7 @@
 #include <memoryManager.h>
 #include <drivers/console.h>
 #include <drivers/video_vm.h>
+#include <drivers/kb_driver.h>
 #include <drivers/speaker.h>
 #include <interruptions/idt.h>
 #include <asm/libasm.h>
@@ -59,6 +60,7 @@ void * initializeKernelBinary()
 	uint32_t * userlandSize = (uint32_t *)600000;
 	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
 	init_fileSystem();
+	init_kb();
 
 	scheduler_init();
 
@@ -118,7 +120,7 @@ int main()
 	createProcess("Init", &initThread, 1, 0);
 
 	_force_scheduler();
-	
+
 	//createProcess("Arcoiris", &pruebaTask, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
 	//createProcess("Arcoiris", &pruebaTask5, 4, 4);

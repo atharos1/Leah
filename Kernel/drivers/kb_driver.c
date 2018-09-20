@@ -3,6 +3,7 @@
 #include <drivers/kb_driver.h>
 #include <asm/libasm.h>
 #include <drivers/kb_layout.h>
+#include <fileSystem.h>
 
 #define BUFF_SIZE 0xFF
 
@@ -29,10 +30,13 @@ static char lshift=0;
 static char rshift=0;
 static char blockm=0;
 
+fd_t * stdin = NULL;
+
 //unsigned char readKey();
 
-static void insert(unsigned char c);
+static void insert(char c);
 int isAlpha(char c);
+
 typedef struct{
 	unsigned char array[BUFF_SIZE];
 	int i;
@@ -41,6 +45,10 @@ typedef struct{
 } CIRC_BUFFER;
 
 CIRC_BUFFER buff={{0},0,0,0};
+
+void init_kb() {
+	stdin = openFileFromPath("dev/stdin", O_RDWR);
+}
 
 /*
  * Fetches a char from the keyboard.
@@ -102,6 +110,7 @@ char kb_fetch(){
 	return 1;
 }
 
+/*
 static void insert(unsigned char c){
 	buff.array[buff.i]=c;
 	buff.i++;
@@ -110,19 +119,34 @@ static void insert(unsigned char c){
 	if(buff.not_read==BUFF_SIZE+1){
 		buff.not_read=0;
 	}
+}*/
+
+static void insert(char c){
+	if (stdin != NULL) {
+		writeFile(stdin, &c, 1);
+	}
 }
 
 /*
  * Returns a char from the buffer.
  * -1 if no chars to read
  */
-int8_t getChar(){
+/*int8_t getChar(){
 	if(buff.not_read==0) return -1;
 	unsigned ans = buff.array[buff.j];
 	buff.j++;
 	if(buff.j==BUFF_SIZE) buff.j=0;
 	buff.not_read--;
 	return ans;
+}*/
+
+char getChar() {
+	if (stdin != NULL) {
+		char c;
+		if (readFile(stdin, &c, 1) == 0) return -1;
+		return c;
+	}
+	return -1;
 }
 
 /*
@@ -130,19 +154,19 @@ int8_t getChar(){
  * to the buffer.
  * -1 if no chars inserted
  */
-unsigned char peekChar(){
+/*unsigned char peekChar(){
 	if(buff.not_read==0) return -1;
 	if(buff.i==0){
 		return buff.array[BUFF_SIZE-1];
 	}
 	return buff.array[buff.i-1];
-}
+}*/
 
 /*
  * Decreases the read pointer by one and
  * restores the given char.
  */
-void ungetc(unsigned char c){
+/*void ungetc(unsigned char c){
 	if(buff.j==0){
 		buff.j=BUFF_SIZE-1;
 	}else{
@@ -150,7 +174,7 @@ void ungetc(unsigned char c){
 	}
 	buff.not_read++;
 	buff.array[buff.j]=c;
-}
+}*/
 
 int isAlpha(char c){
 	return (c>=65 && c<=90) || (c>=97 && c<=122) ;

@@ -3,9 +3,10 @@
 
 #define EOF -1
 
+void init_kb();
 char kb_fetch();
-int8_t getChar();
-unsigned char peekChar();
-void ungetc(unsigned char c);
+char getChar();
+//unsigned char peekChar();
+//void ungetc(unsigned char c);
 
 #endif

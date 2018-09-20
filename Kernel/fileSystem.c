@@ -2,9 +2,13 @@
 #include <memoryManager.h>
 #include <drivers/console.h>
 #include <malloc.h>
+#include <scheduler.h>
 #include "stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
+
+#define WRITE 0
+#define READ 1
 
 static void * createBuffer();
 static void * createDirectory();
@@ -43,7 +47,9 @@ void init_fileSystem() {
   firstOpenedFile = NULL;
 
   makeFile("dev", DIRECTORY);
-  makeFile("Test file", REGULAR_FILE);
+  makeFile("dev/shm", DIRECTORY);
+  makeFile("dev/stdin", BUFFER);
+  makeFile("TestFile", REGULAR_FILE);
 }
 
 
@@ -147,13 +153,27 @@ static void * createBuffer() {
 
 static void * createDirectory() {
   directory_t * dir = malloc(sizeof(directory_t));
+
+  if (dir == NULL)
+    return NULL;
+
   dir->first = NULL;
   return (void*)dir;
 }
 
 static void * createRegularFile() {
   regular_file_t * file = malloc(sizeof(regular_file_t));
+
+  if (file == NULL)
+    return NULL;
+
   file->content = getMemory(PAGE_SIZE);
+
+  if (file->content == NULL) {
+    free(file);
+    return NULL;
+  }
+
   file->size = 0;
   file->totalSize = PAGE_SIZE;
   return (void*)file;
@@ -218,19 +238,20 @@ static void removeRegularFile(file_t * file) {
 
 //////////// I/O OPERATIONS ////////////
 
-typedef struct pending_reader {
-  int PID;
+typedef struct pending_operator {
+  thread_t * thread;
+  int operation;
   uint32_t bytes;
-  char * dest;
+  char * buff;
   int * ret;
-} pending_reader_t;
+} pending_operator_t;
 
 typedef struct opened_buffer {
   uint32_t writeCursor;
   uint32_t readCursor;
   int hasEOF;
-  pending_reader_t * first;
-  pending_reader_t * last;
+  pending_operator_t * first;
+  pending_operator_t * last;
 } opened_buffer_t;
 
 static opened_buffer_t * openBuffer();
@@ -239,12 +260,16 @@ static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32
 
 static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
-static void updateReaders(opened_buffer_t * openedBuffer);
+static void updateOperators(opened_buffer_t * openedBuffer);
 
-opened_file_t * openFile(char * path, int mode) {
-  file_t * file = getFile(path);
+
+static fd_t * openFile(file_t * file, int mode) {
 
   if (file == NULL || file->type == DIRECTORY)
+    return NULL;
+
+  fd_t * fd = malloc(sizeof(fd_t));
+  if (fd == NULL)
     return NULL;
 
   opened_file_t * openedFile = firstOpenedFile;
@@ -253,14 +278,21 @@ opened_file_t * openFile(char * path, int mode) {
 
   if (openedFile == NULL) {
     openedFile = malloc(sizeof(opened_file_t));
+    if (openedFile == NULL)
+      return NULL;
     openedFile->next = firstOpenedFile;
     firstOpenedFile = openedFile;
     openedFile->file = file;
     openedFile->readers = 0;
     openedFile->writers = 0;
 
-    if (file->type == BUFFER)
+    if (file->type == BUFFER) {
       openedFile->implementation = (void*)openBuffer();
+      if (openedFile->implementation == NULL) {
+        free(openedFile);
+        return NULL;
+      }
+    }
   }
 
   if (mode == O_RDONLY || mode == O_RDWR)
@@ -271,20 +303,31 @@ opened_file_t * openFile(char * path, int mode) {
       ((opened_buffer_t*)(openedFile->implementation))->hasEOF = 0;
   }
 
-  return openedFile;
+  fd->openedFile = openedFile;
+  fd->mode = mode;
+  fd->cursor = 0;
+
+  return fd;
 }
 
-void closeFile(opened_file_t * openedFile, int mode) {
-  if (openedFile == NULL)
+fd_t * openFileFromPath(char * path, int mode) {
+  return openFile(getFile(path), mode);
+}
+
+void closeFile(fd_t * fd) {
+  if (fd == NULL)
     return;
+
+  opened_file_t * openedFile = fd->openedFile;
+  int mode = fd->mode;
 
   if (mode == O_RDONLY || mode == O_RDWR)
     openedFile->readers--;
   if (mode == O_WRONLY || mode == O_RDWR) {
     openedFile->writers--;
     if (openedFile->writers == 0 && openedFile->file->type == BUFFER) {
-      ((opened_buffer_t*)openedFile->implementation)->hasEOF = 1;
-      updateReaders((opened_buffer_t*)(openedFile->implementation));
+      ((opened_buffer_t*)(openedFile->implementation))->hasEOF = 1;
+      updateOperators(openedFile);
     }
   }
 
@@ -309,10 +352,14 @@ void closeFile(opened_file_t * openedFile, int mode) {
 
     free(openedFile);
   }
+
+  free(fd);
 }
 
 static opened_buffer_t * openBuffer() {
   opened_buffer_t * openedBuffer = malloc(sizeof(opened_buffer_t));
+  if (openedBuffer == NULL)
+    return NULL;
   openedBuffer->writeCursor = 0;
   openedBuffer->readCursor = 0;
   openedBuffer->hasEOF = 0;
@@ -322,18 +369,18 @@ static opened_buffer_t * openBuffer() {
 }
 
 
-uint32_t writeFile(opened_file_t * openedFile, char * buff, uint32_t bytes, int mode) {
-  if (mode != O_WRONLY && mode != O_RDWR)
+uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes) {
+  if (fd->mode != O_WRONLY && fd->mode != O_RDWR)
     return 0;
 
-  if (bytes == 0 || openedFile == NULL)
+  if (bytes == 0 || fd == NULL)
     return 0;
 
-  if (openedFile->file->type == REGULAR_FILE)
-    return writeRegularFile(openedFile, buff, bytes);
+  if (fd->openedFile->file->type == REGULAR_FILE)
+    return writeRegularFile(fd->openedFile, buff, bytes);
 
-  if (openedFile->file->type == BUFFER)
-    return writeBuffer(openedFile, buff, bytes);
+  if (fd->openedFile->file->type == BUFFER)
+    return writeBuffer(fd->openedFile, buff, bytes);
 
   return 0;
 }
@@ -358,7 +405,7 @@ static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t by
   opened_buffer_t * openedBuffer = (opened_buffer_t*)(openedFile->implementation);
   buffer_t * buffer = (buffer_t*)(openedFile->file->implementation);
   int availableBytes = openedBuffer->readCursor - openedBuffer->writeCursor;
-  availableBytes = (availableBytes >= 0) ? availableBytes : BUFFER_SIZE + availableBytes;
+  availableBytes = (availableBytes > 0) ? availableBytes : BUFFER_SIZE + availableBytes;
   availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
 
   for (int i = 0; i < availableBytes; i++) {
@@ -368,22 +415,31 @@ static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t by
       openedBuffer->writeCursor = 0;
   }
 
+  /*if (availableBytes == 0) {
+    int ret;
+    addOperator(openedBuffer, openedscheduler_dequeue_current(), READ, bytes, buff, &ret);
+    return *ret;
+  }*/
+
   return availableBytes;
 }
 
 
-uint32_t readFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position, int mode) {
-  if (mode != O_RDONLY && mode != O_RDWR)
+uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes) {
+  if (fd->mode != O_RDONLY && fd->mode != O_RDWR)
     return 0;
 
-  if (bytes == 0 || openedFile == NULL)
+  if (bytes == 0 || fd == NULL)
     return 0;
 
-  if (openedFile->file->type == REGULAR_FILE)
-    return readRegularFile(openedFile, buff, bytes, position);
+  if (fd->openedFile->file->type == REGULAR_FILE) {
+    int ret = readRegularFile(fd->openedFile, buff, bytes, fd->cursor);
+    fd->cursor += ret;
+    return ret;
+  }
 
-  if (openedFile->file->type == BUFFER)
-    return readBuffer(openedFile, buff, bytes);
+  if (fd->openedFile->file->type == BUFFER)
+    return readBuffer(fd->openedFile, buff, bytes);
 
   return 0;
 }
@@ -418,11 +474,50 @@ static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t byt
       openedBuffer->readCursor = 0;
   }
 
+  /*if (availableBytes == 0 && !(openedBuffer->hasEOF)) {
+    int ret;
+    addOperator(openedBuffer, openedscheduler_dequeue_current(), READ, bytes, buff, &ret);
+    return *ret;
+  }*/
+
   return availableBytes;
 }
 
-static void updateReaders(opened_buffer_t * openedBuffer) {
-  //ToDo
+static void updateOperators(opened_file_t * openedFile) {
+  /*if (openedFile->file->type != BUFFER)
+    return;
+
+  opened_buffer_t * openedBuffer = (openedBuffer*)(openedFile->implementation);
+  pending_operator_t * current = openedBuffer->first;
+  pending_operator_t * previous = NULL;
+
+  int ret;
+
+  while(current != NULL) {
+    if (current->operation == READ)
+      ret = readBuffer(openedFile, current->buff, current->bytes);
+    if (current->operation == WRITE)
+      ret = writeBuffer(openedFile, current->buff, current->bytes);
+
+    if (ret == 0) {
+      if (openedBuffer->hasEOF)
+        *(current->ret) = -1;
+      else
+        break;
+    }
+
+    if (current == openedBuffer->first)
+      openedBuffer->first = openedBuffer->first->next;
+
+
+    scheduler_enqueue(current->thread);
+
+    current = current->next;
+  }*/
+}
+
+static void addOperator(opened_buffer_t * openedBuffer, thread_t * thread, int operation, uint32_t bytes, char * buff, int * ret) {
+
 }
 
 
@@ -452,19 +547,20 @@ void listDir(char * path) {
 
 void cat(char * path) {
   char str[16];
-  opened_file_t * openedFile = openFile(path, O_RDONLY);
-  int cursor = 0;
+  fd_t * fd = openFileFromPath(path, O_RDONLY);
   int aux;
-  while ((aux = readFile(openedFile, str, 1, cursor, O_RDONLY)) > 0) {
-    cursor += aux;
-    str[aux + 1] = 0;
+
+
+  while ((aux = readFile(fd, str, 15)) > 0) {
+    str[aux] = 0;
     printf("%s", str);
   }
-  closeFile(openedFile, O_RDONLY);
+
+  closeFile(fd);
 }
 
 void writeTo(char * path, char * str) {
-  opened_file_t * openedFile = openFile(path, O_WRONLY);
-  writeFile(openedFile, str, strlen(str), O_WRONLY);
-  closeFile(openedFile, O_WRONLY);
+  fd_t * fd = openFileFromPath(path, O_WRONLY);
+  writeFile(fd, str, strlen(str));
+  closeFile(fd);
 }
