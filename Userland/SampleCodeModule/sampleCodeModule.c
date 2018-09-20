@@ -224,6 +224,7 @@ void cmd_time(char * args) {
 
 void cmd_prueba() {
 	printf("HOLA %5d \7", 1234);
+	sys_sleep(1000);
 }
 
 void cmd_help() {
@@ -472,7 +473,7 @@ void program_digitalClock() {
 
 int main() {
 
-	//sys_sleep(1000);
+	sys_sleep(1000);
 
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();

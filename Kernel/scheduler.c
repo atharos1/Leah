@@ -43,7 +43,6 @@ int pointer_cmp(void * p1, void * p2) {
 thread_t * scheduler_dequeue_current() {
     int status = 0;
     (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status);
-    printf("%d", status);
     //(Queues[currentThread.queue])->queue = deleteHead((Queues[currentThread.queue])->queue);
 
     Queues[currentThread.queue]->threadCount--;
@@ -79,6 +78,7 @@ void * scheduler_nextTask(void * oldRSP) {
     if( threadCount == 0 ) {
         //printf("\n\n%X\n\n", getProcessByPID(0)->threadList[0]->stack.current);
         //return oldRSP;
+        runningTasks = FALSE;
         return getProcessByPID(0)->threadList[0]->stack.current;
     }
 

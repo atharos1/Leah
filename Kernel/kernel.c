@@ -93,14 +93,14 @@ void initThread() {
 
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 	createProcess("Arcoiris", &pruebaTask, 4, 4);
-	
+
 	thread_t * me = scheduler_dequeue_current();
 	printf("%s", getProcessByPID(me->process)->name);
 	//_force_scheduler();
 
 	while(1) {
-		//printf("En init\n");
-		//_halt();
+		printf("En init\n");
+		_halt();
 	}
 
 }
