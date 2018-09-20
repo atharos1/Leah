@@ -105,3 +105,7 @@ void sys_sleep(int millis) {
 void sys_listProcess() {
     _systemCall(41, 0, 0, 0, 0);
 }
+
+int sys_newThread(int * thread, void *(*start_routine) (void *), void *arg) {
+    _systemCall(50, thread, start_routine, arg, 0);
+}

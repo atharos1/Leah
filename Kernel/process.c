@@ -17,11 +17,17 @@ void threadWrapper(int code()) {
     int (*thread_code)() = code;
     thread_code();
 
-    int ret = code();
+    thread_t * t = scheduler_dequeue_current();
+    eraseTCB(t);
+    _force_scheduler();
 
-    printf("\nEl programa finalizó con código de respuesta: %d\n", ret);
+    //int ret = code();
+
+
+
+    /*printf("\nEl programa finalizó con código de respuesta: %d\n", ret);
     while(1)
-        _halt();
+        _halt();*/
 }
 
 void erasePCB(process_t * process) {
@@ -89,12 +95,10 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     purgeFdList(process);
 
     purgeThreadList(process);
-    thread_t * mainThread = createThread(process, code, stack_size);
-    process->threadList[getFreeTID(process)] = mainThread;
-    process->threadCount = 1;
+    process->threadCount = 0;
 
-    scheduler_enqueue(mainThread);
-
+    createThread(process, code, stack_size);
+    
     return process->pid;
 }
 
@@ -119,6 +123,11 @@ thread_t * createThread(process_t * process, void * code, int stack_size) {
     thread->process = process->pid;
 
     thread->status = READY;
+
+    process->threadList[getFreeTID(process)] = thread;
+    process->threadCount++;
+
+    scheduler_enqueue(thread);
 
     return thread;
 }

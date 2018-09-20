@@ -125,7 +125,7 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 	return tail;
 }
 
-/*NODE * deleteHead(NODE * tail) {
+NODE * deleteHead(NODE * tail) {
 	return deleteByLocation(tail, 0);
 }
 
@@ -149,7 +149,7 @@ NODE * deleteByLocation(NODE * tail, int location) {
 	}
 
 	return tail;
-}*/
+}
 
 NODE * sort(NODE * tail, comparator cmp) {
 	if (length(tail) < 2) return tail;

@@ -112,6 +112,9 @@ int int80Handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx) {
 		case 41: //ps
 			listProcess();
 			break;
+		case 50: //new thread
+			createThread(getProcessByPID(getCurrentPID), rsi, 4);
+			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rdi %d rsi %d RDX %d\n", rax, rdi, rsi, rdx);
 			return timer_appendFunction( (function)rdi, rsi );
