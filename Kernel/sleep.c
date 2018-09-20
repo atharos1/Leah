@@ -10,7 +10,7 @@ void sleepCurrentThread(int millis) {
     thread_t * thread = getCurrentThread();
     sleep(thread, millis);
     scheduler_dequeue_current();
-    _force_timer_tick();
+    _force_scheduler();
 }
 
 void sleep(thread_t * thread, int millis) {
@@ -36,7 +36,7 @@ void sleep_update() {
     while(n != NULL) {
         n->ticks_remaining--;
         if(n->ticks_remaining == 0) {
-            if(prev == NULL) //soy el primero
+            if(n == sleepingThreadList) //soy el primero
                 sleepingThreadList = n->next;
             else
                 prev->next = n->next;

@@ -1,9 +1,8 @@
-#include "scheduler.h"
-#include "drivers/console.h"
-#include "asm/libasm.h"
-#include "lib.h"
-
-#include "roundRobin.h"
+#include <scheduler.h>
+#include <drivers/console.h>
+#include <asm/libasm.h>
+#include <lib.h>
+#include <roundRobin.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -68,42 +67,34 @@ void scheduler_enqueue(thread_t * thread) {
 
 void * scheduler_nextTask(void * oldRSP) {
 
-    //printf("next");
-
     FORCE = FALSE;
+
     if(runningTasks == TRUE) {
         getCurrentThread()->stack.current = oldRSP;
     }
 
     if( threadCount == 0 ) {
-        //printf("\n\n%X\n\n", getProcessByPID(0)->threadList[0]->stack.current);
         //return oldRSP;
         runningTasks = FALSE;
-        return getProcessByPID(0)->threadList[0]->stack.current;
+        return getProcessByPID(0)->threadList[0]->stack.current; //Se ejecuta init
     }
 
     runningTasks = TRUE;
 
     thread_t * nextThread = NULL;
 
-
-
     int currQueue;
 
     for(currQueue = 0; currQueue < queueCount; currQueue++) {
-        nextThread = Queues[currQueue]->nextThreadFunction(Queues[currQueue], oldRSP);
+        nextThread = Queues[currQueue]->nextThreadFunction(Queues[currQueue]);
         if( nextThread != NULL ) {
-            //printf("Sale: %s | Entra: %s\n", getProcessByPID(getCurrentThread()->process)->name, getProcessByPID(nextThread->process)->name);
             currentThread.thread = nextThread;
             currentThread.queue = currQueue;
-            FORCE = FALSE;
-
             return nextThread->stack.current;
         }
     }
 
     return oldRSP;
-
 }
 
 

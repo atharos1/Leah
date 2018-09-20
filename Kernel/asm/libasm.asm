@@ -1,46 +1,44 @@
-GLOBAL _cpuVendor
-
-GLOBAL _RTC
 GLOBAL _readKey
 
-GLOBAL _picMasterMask
-GLOBAL _picSlaveMask
+GLOBAL _RTC
 
-GLOBAL _int80handler
-GLOBAL _irq00Handler
-GLOBAL _irq01Handler
+GLOBAL _halt
+GLOBAL _rsp
+GLOBAL _cpuVendor
 
 GLOBAL _sti
 GLOBAL _cli
+GLOBAL _picMasterMask
+GLOBAL _picSlaveMask
 
-GLOBAL _halt
-
-GLOBAL _beep_start
-GLOBAL _beep_stop
-
+;Handlers
 GLOBAL _ex00Handler
 GLOBAL _ex06Handler
 
-GLOBAL _rsp
+GLOBAL _irq00Handler
+GLOBAL _irq01Handler
+GLOBAL _int80handler
 
-GLOBAL stackPointerBackup
-GLOBAL instructionPointerBackup
+;Beeper functions
+GLOBAL _beep_start
+GLOBAL _beep_stop
 
+;Scheduler
 GLOBAL _initialize_stack_frame
-
-GLOBAL _force_timer_tick
 GLOBAL _force_scheduler
 
 GLOBAL _sem_increment
 GLOBAL _sem_decrement
-
 GLOBAL _mutex_acquire
+
+GLOBAL stackPointerBackup
+GLOBAL instructionPointerBackup
 
 EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
+EXTERN noTimer
 EXTERN schedule
-EXTERN scheduler_nextTask
 
 EXTERN end
 
@@ -71,13 +69,13 @@ _executionWrapper:
 	call rax
 
 _initialize_stack_frame:
-	mov rcx, rsp 
+	mov rcx, rsp
 	mov rsp, rdx
 	;mov rax, rsi
 	push 0x0
-	push rdx 
-	push 0x202 
-	push 0x08 
+	push rdx
+	push 0x202
+	push 0x08
 	push rdi
 	mov rdi, rsi
 	push 0x0
@@ -160,21 +158,14 @@ _rsp:
 	iretq
 %endmacro
 
-_force_timer_tick:
-	int 20h
-	ret
-
 _halt:
 	hlt
 	ret
 
 _force_scheduler:
-	mov rdi, rsp
-	call scheduler_nextTask
-	mov rsp, rax
-	popState
-
-	iretq
+	call noTimer
+	int 20h
+	ret
 
 ;Timer (Timer Tick)
 _irq00Handler:
@@ -205,7 +196,7 @@ _ex00Handler:
 _ex06Handler:
 	exHandlerMaster 6
 
-_int80handler: ;hay que recibir si o si en los regsitros de 32 bits? Y si una direccion de memoria no entra en uno de 32 bits?
+_int80handler:
 	push rbp
 	mov rbp, rsp
 

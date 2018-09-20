@@ -3,6 +3,8 @@
 #include <drivers/timer.h>
 #include <sleep.h>
 
+int timer = 1;
+
 typedef struct {
 	function f;
 	unsigned long int ticks;
@@ -16,7 +18,15 @@ void timer_Restart() {
 		timerFunctions[i].f = 0;
 }
 
+void noTimer() {
+	timer = 0;
+}
+
 void timer_Tick() {
+	if (!timer) {
+		timer = 1;
+		return;
+	}
 
 	sleep_update();
 

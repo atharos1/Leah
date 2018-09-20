@@ -6,7 +6,7 @@ void strcat(char *original, char *add)
 {
    while(*original)
       original++;
- 
+
    while(*add)
    {
       *original = *add;
@@ -48,7 +48,7 @@ void mutex_lock(mutex_t mutex) {
         mutex->owner = getCurrentThread();
     } else {
         mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, scheduler_dequeue_current());
-		_force_scheduler();
+		    _force_scheduler();
     }
 }
 

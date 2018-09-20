@@ -99,7 +99,7 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     process->threadCount = 0;
 
     createThread(process, code, stack_size);
-    
+
     return process->pid;
 }
 

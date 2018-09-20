@@ -3,7 +3,7 @@
 #include "drivers/console.h"
 
 
-thread_t * roundRobin_nextThread(SCHEDULER_QUEUE * q, void * oldRSP) {
+thread_t * roundRobin_nextThread(SCHEDULER_QUEUE * q) {
     data_RoundRubin * data = q->queueData;
     data->currQuantum = 0;
 
@@ -19,11 +19,12 @@ int roundRobin_checkEvict(SCHEDULER_QUEUE * q) {
 
     data->currQuantum++;
 
-    if(data->currQuantum % data->quantum == 0)
+    if(data->currQuantum % data->quantum == 0) {
+        data->currQuantum = 0;
         return TRUE;
+    }
 
     return FALSE;
-
 }
 
 SCHEDULER_QUEUE * roundRobin_newQueue(int quantum) {
@@ -42,4 +43,3 @@ SCHEDULER_QUEUE * roundRobin_newQueue(int quantum) {
 
     return q;
 }
-

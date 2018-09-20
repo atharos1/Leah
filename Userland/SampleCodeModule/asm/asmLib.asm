@@ -6,7 +6,7 @@ GLOBAL _systemCall
 
 section .text
 
-_systemCall: ;en rcx recibe el código de la syscall
+_systemCall: ;en rdx recibe el código de la syscall
 	push rbp
 	mov rbp, rsp
 

@@ -1,5 +1,4 @@
 #include <stdint.h>
-//#include <string.h>
 #include <lib.h>
 #include <moduleLoader.h>
 #include <memoryManager.h>
@@ -11,8 +10,8 @@
 #include <asm/libasm.h>
 #include <fileSystem.h>
 #include <sleep.h>
-#include "scheduler.h"
-#include "process.h"
+#include <scheduler.h>
+#include <process.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -95,11 +94,9 @@ void initThread() {
 	createProcess("Arcoiris", &pruebaTask, 4, 4);
 
 	thread_t * me = scheduler_dequeue_current();
-	printf("%s", getProcessByPID(me->process)->name);
-	//_force_scheduler();
+	_force_scheduler();
 
 	while(1) {
-		printf("En init\n");
 		_halt();
 	}
 
@@ -108,7 +105,7 @@ void initThread() {
 int main()
 {
 
-  	writeIDT();
+  writeIDT();
 
 	setFontSize(1);
 
@@ -120,16 +117,6 @@ int main()
 	createProcess("Init", &initThread, 1, 0);
 
 	_force_scheduler();
-
-	//createProcess("Arcoiris", &pruebaTask, 4, 4);
-	//createProcess("Arcoiris", &pruebaTask4, 4, 4);
-	//createProcess("Arcoiris", &pruebaTask5, 4, 4);
-
-	//_force_timer_tick();
-
-	//while(1) {
-	//	_halt();
-	//}
 
 	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
 	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);

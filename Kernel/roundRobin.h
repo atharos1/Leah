@@ -9,5 +9,6 @@ typedef struct {
 } data_RoundRubin;
 
 SCHEDULER_QUEUE * roundRobin_newQueue(int quantum);
+void roundRobin_yield(SCHEDULER_QUEUE * q);
 
 #endif
