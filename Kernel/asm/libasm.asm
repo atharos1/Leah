@@ -334,4 +334,4 @@ _mutex_acquire:
 ;	xchg eax, lock_value
 ;	cmp eax, 0
 	;jne addProcessToQueue
-;	ret
+	ret

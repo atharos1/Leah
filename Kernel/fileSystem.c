@@ -260,7 +260,7 @@ static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32
 
 static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
-static void updateOperators(opened_buffer_t * openedBuffer);
+static void updateOperators(opened_file_t * openedFile);
 
 
 static fd_t * openFile(file_t * file, int mode) {

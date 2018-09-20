@@ -7,8 +7,9 @@
 sleepingThreadNode * sleepingThreadList = NULL;
 
 void sleepCurrentThread(int millis) {
-    thread_t * thread = scheduler_dequeue_current();
+    thread_t * thread = getCurrentThread();
     sleep(thread, millis);
+    scheduler_dequeue_current();
     _force_timer_tick();
 }
 

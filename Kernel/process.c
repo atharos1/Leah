@@ -18,6 +18,7 @@ void threadWrapper(int code()) {
     thread_code();
 
     thread_t * t = scheduler_dequeue_current();
+    //REMOVE FROM PCB THREAD TABLE
     eraseTCB(t);
     _force_scheduler();
 

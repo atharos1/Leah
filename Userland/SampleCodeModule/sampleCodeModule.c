@@ -472,7 +472,7 @@ void program_digitalClock() {
 
 int main() {
 
-	//sys_sleep(5000);
+	//sys_sleep(1000);
 
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();
