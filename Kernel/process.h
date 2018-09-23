@@ -31,7 +31,7 @@ typedef struct process_t {
     memblock_t heap;
     int threadCount;
     thread_t * threadList[MAX_THREAD_COUNT];
-    fd_t * fd_table[MAX_FD_COUNT];
+    opened_file_t * fd_table[MAX_FD_COUNT];
     file_t * cwd;
 } process_t;
 
@@ -40,9 +40,6 @@ thread_t * createThread(process_t * process, void * code, int stack_size);
 process_t * getProcessByPID(int pid);
 void purgeProcessList();
 void listProcess();
-int getFreeFD(int pid);
-int registerFD(int pid, fd_t * file);
-fd_t * unregisterFD(int pid, int fdIndex);
-fd_t * getFD(int pid, int fd);
+int registerFD(int pid, opened_file_t * file);
 
 #endif

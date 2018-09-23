@@ -85,7 +85,7 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
             return 0;
         }
     } else {
-        process->heap.base = NULL;
+        process->heap.base == NULL;
     }
     process->heap.size = heap_size * PAGE_SIZE;
 
@@ -154,11 +154,10 @@ int getFreeTID(process_t * process) {
             return i;
 }
 
-int getFreeFD(int pid) {
+int getFreeFD(process_t * process) {
     for(int i = 0; i < MAX_FD_COUNT; i++)
-        if(processList[pid]->fd_table[i] == NULL)
+        if(process->fd_table[i] == NULL)
             return i;
-    return -1;
 }
 
 void purgeThreadList(process_t * process) {
@@ -200,24 +199,6 @@ process_t * getProcessByPID(int pid) {
     return processList[pid];
 }
 
-int registerFD(int pid, fd_t * file) {
-    int fdIndex = getFreeFD(pid);
-    if (fdIndex != -1) {
-      processList[pid]->fd_table[fdIndex] = file;
-    }
-    return fdIndex;
-}
-
-fd_t * unregisterFD(int pid, int fdIndex) {
-  if (fdIndex < 0 || fdIndex >= MAX_FD_COUNT)
-    return NULL;
-  fd_t * ret = processList[pid]->fd_table[fdIndex];
-  processList[pid]->fd_table[fdIndex] = NULL;
-  return ret;
-}
-
-fd_t * getFD(int pid, int fdIndex) {
-  if (fdIndex < 0 || fdIndex >= MAX_FD_COUNT)
-    return NULL;
-  return processList[pid]->fd_table[fdIndex];
+int registerFD(int pid, opened_file_t * file) {
+    processList[pid]->fd_table[getFreeFD(processList[pid])] = file;
 }

@@ -18,6 +18,11 @@ void strcat(char *original, char *add)
 }
 
 mutex_t mutex_create() {
+    /*char path[strlen(name) + strlen("dev/shm/mutex-") + 1];
+    strcpy(path, "dev/shm/");
+    strcat(path, name);
+
+    makeFile(path, SYMBOLIC_LINK);*/
 
 	mutex_t m = getMemory(sizeof(mutex_struct));
 	m->value = 0;
@@ -26,9 +31,19 @@ mutex_t mutex_create() {
 	return m;
 }
 
-void mutex_delete(mutex_t mutex) {
-  freeMemory(mutex);
-}
+/*mutex_t mutex_open(char * name) {
+    char path[strlen(name) + strlen("dev/shm/mutex-") + 1];
+    strcpy(path, "dev/shm/");
+    strcat(path, name);
+
+    opened_file_t * fd = openFile(path, O_RDONLY);
+    registerFD(getCurrentPID(), fd);
+
+	mutex_t m = getMemory(sizeof(mutex_struct));
+	*(m->value) = 0;
+	m->lockedQueue = NULL;
+	return m;
+}*/
 
 void mutex_lock(mutex_t mutex) {
     if (getCurrentThread() == NULL)

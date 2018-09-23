@@ -6,7 +6,7 @@
 #define DIRECTORY 0
 #define REGULAR_FILE 1
 #define BUFFER 2
-#define SEMAPHORE 3
+#define SYMBOLIC_LINK 3
 
 #define MAX_NAME_LENGTH 64
 
@@ -45,18 +45,11 @@ void removeFile(file_t * file);
 void removeFileFromPath(char * path);
 
 fd_t * openFileFromPath(char * path, int mode);
-int openFileToFD(char * path, int mode);
 void closeFile(fd_t * fd);
-void closeFileFromFD(int fd);
 //fd_t * cloneOpenedFile(fd_t * fd);
 
 uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes);
 uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes);
-
-void semCreate(char * path, int value);
-void semSet(int fdIndex, int value);
-void semWait(int fdIndex);
-void semSignal(int fd);
 
 void listDir(char * path);
 void cat(char * path);

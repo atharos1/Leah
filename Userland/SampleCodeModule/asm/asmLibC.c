@@ -74,40 +74,12 @@ void sys_removeFile(char * path) {
     _systemCall(20, path, 0, 0, 0);
 }
 
-int sys_openFile(char * path, int mode) {
-    return _systemCall(21, path, mode, 0, 0);
+void sys_cat(char * path) {
+    _systemCall(21, path, 0, 0, 0);
 }
 
-void sys_closeFile(int fd) {
-    _systemCall(22, fd, 0, 0, 0);
-}
-
-void sys_semCreate(char * path, int value) {
-    _systemCall(23, path, value, 0, 0);
-}
-
-void sys_semSet(int sem, int value) {
-    _systemCall(24, sem, value, 0, 0);
-}
-
-void sys_semWait(int sem) {
-    _systemCall(25, sem, 0, 0, 0);
-}
-
-void sys_semSignal(int sem) {
-    _systemCall(26, sem, 0, 0, 0);
-}
-
-void sys_sleep(int millis) {
-    _systemCall(40, millis, 0, 0, 0);
-}
-
-void sys_listProcess() {
-    _systemCall(41, 0, 0, 0, 0);
-}
-
-int sys_newThread(int * thread, void *(*start_routine) (void *), void *arg) {
-    _systemCall(50, thread, start_routine, arg, 0);
+void sys_writeTo(char * path, char * str) {
+    _systemCall(22, path, str, 0, 0);
 }
 
 void sys_timerAppend(function f, unsigned long int ticks) {
@@ -124,4 +96,16 @@ void sys_beep(int nFrequence, unsigned char duration) {
 
 int sys_rtc(int fetch) {
     return _systemCall(200, fetch, 0, 0, 0);
+}
+
+void sys_sleep(int millis) {
+    _systemCall(40, millis, 0, 0, 0);
+}
+
+void sys_listProcess() {
+    _systemCall(41, 0, 0, 0, 0);
+}
+
+int sys_newThread(int * thread, void *(*start_routine) (void *), void *arg) {
+    _systemCall(50, thread, start_routine, arg, 0);
 }
