@@ -4,7 +4,6 @@
 #include <asm/libasm.h>
 #include <drivers/kb_layout.h>
 #include <fileSystem.h>
-#include <scheduler.h>
 
 #define BUFF_SIZE 0xFF
 
@@ -48,7 +47,7 @@ typedef struct{
 CIRC_BUFFER buff={{0},0,0,0};
 
 void init_kb() {
-	stdin = openFileFromPath("dev/stdin", O_RDWR);
+	stdin = openFileFromPath("/dev/stdin", O_RDWR);
 }
 
 /*

@@ -12,7 +12,9 @@ typedef struct {
 
 typedef sem_struct * sem_t;
 
-sem_t sem_create(char * name, int startValue);
+sem_t sem_create(int startValue);
+void sem_delete(sem_t sem);
+void sem_set_value(sem_t sem, int value);
 void sem_wait(sem_t sem);
 void sem_signal(sem_t sem);
 

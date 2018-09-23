@@ -99,11 +99,23 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 20: //sys_removeFile
 			removeFileFromPath((char*)rsi);
 			break;
-		case 21: //sys_cat
-			cat((char *)rsi);
+		case 21: //sys_open
+			return openFileToFD((char*)rsi, rdx);
 			break;
-		case 22: //write_to
-			writeTo((char *)rsi, (char *)rdx);
+		case 22: //sys_close
+			closeFileFromFD(rsi);
+			break;
+		case 23: //sys_close
+			semCreate((char*)rsi, rdx);
+			break;
+		case 24:
+			semSet(rsi, rdx);
+			break;
+		case 25:
+			semWait(rsi);
+			break;
+		case 26:
+			semSignal(rsi);
 			break;
 		case 40: //sleep
 			//printf("%d\n", rsi);
@@ -113,7 +125,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			listProcess();
 			break;
 		case 50: //new thread
-			createThread(getProcessByPID(getCurrentPID), rdx, 4);
+			createThread(getProcessByPID(getCurrentPID()), rdx, 4);
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rsi %d rdx %d RDX %d\n", rdi, rsi, rdx, rcx);
