@@ -83,12 +83,13 @@ int pruebaTask() {
 		//printf("%d", j);
 		j++;
 		setFontColor( colors[j%7] );
-		sleepCurrentThread(1000);
+		sleepCurrentThread(500);
 	}
 	return 0;
 }
 
 void initThread() {
+
 	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 	createProcess("Arcoiris", &pruebaTask, 4, 4);
 
@@ -96,7 +97,6 @@ void initThread() {
 	_force_scheduler();
 
 	while(1) {
-		//printf("En init");
 		_halt();
 	}
 

@@ -5,8 +5,8 @@
 #include "process.h"
 
 typedef struct {
-	int value;
-  thread_t * owner;
+	int * value;
+    thread_t * owner;
 	NODE * lockedQueue;
 } mutex_struct;
 

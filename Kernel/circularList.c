@@ -134,7 +134,7 @@ NODE * deleteByLocation(NODE * tail, int location) {
 	NODE * current = tail, * previous = tail;
 	int len = length(tail), i;
 	if (location < 1 || location > len) {
-		return tail;
+		printf("Invalid Location to delete");
 	} else if (len == 1) {
 		tail = NULL;
 		free(current);
