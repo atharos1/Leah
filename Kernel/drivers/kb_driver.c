@@ -47,7 +47,7 @@ typedef struct{
 CIRC_BUFFER buff={{0},0,0,0};
 
 void init_kb() {
-	stdin = openFileFromPath("dev/stdin", O_RDWR);
+	stdin = openFileFromPath("/dev/stdin", O_RDWR);
 }
 
 /*

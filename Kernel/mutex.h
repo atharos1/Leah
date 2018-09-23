@@ -5,14 +5,15 @@
 #include "process.h"
 
 typedef struct {
-	int * value;
-    thread_t * owner;
+	int value;
+  thread_t * owner;
 	NODE * lockedQueue;
 } mutex_struct;
 
 typedef mutex_struct * mutex_t;
 
 mutex_t mutex_create();
+void mutex_delete(mutex_t mutex);
 //mutex_t mutex_open(char * name);
 void mutex_lock(mutex_t mutex);
 void mutex_unlock(mutex_t mutex);

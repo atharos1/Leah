@@ -40,6 +40,8 @@ int pointer_cmp(void * p1, void * p2) {
 }
 
 thread_t * scheduler_dequeue_current() {
+    if (threadCount == 0)
+      return NULL;
     int status = 0;
     (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status);
     //(Queues[currentThread.queue])->queue = deleteHead((Queues[currentThread.queue])->queue);
@@ -56,6 +58,8 @@ thread_t * scheduler_dequeue_current() {
 }*/
 
 void scheduler_enqueue(thread_t * thread) {
+    if (thread == NULL)
+      return;
 
     SCHEDULER_QUEUE * q = Queues[0];
 
@@ -70,7 +74,7 @@ void * scheduler_nextTask(void * oldRSP) {
     FORCE = FALSE;
 
     if(runningTasks == TRUE) {
-        getCurrentThread()->stack.current = oldRSP;
+        currentThread.thread->stack.current = oldRSP;
     }
 
     if( threadCount == 0 ) {
@@ -100,7 +104,7 @@ void * scheduler_nextTask(void * oldRSP) {
 
 void * schedule(void * oldRSP) {
 
-    if( Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) || FORCE == TRUE )
+    if( FORCE == TRUE || Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) )
         return scheduler_nextTask(oldRSP);
     else
         return oldRSP;
@@ -108,6 +112,8 @@ void * schedule(void * oldRSP) {
 }
 
 thread_t * getCurrentThread() {
+    if (threadCount == 0)
+      return NULL;
     return currentThread.thread;
 }
 
