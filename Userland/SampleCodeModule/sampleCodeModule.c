@@ -5,6 +5,7 @@
 #include "programs/snake.h"
 #include "programs/digitalClock.h"
 #include "asm/asmLibC.h"
+#include "sem.h"
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
@@ -419,15 +420,11 @@ void cmd_removeFile(char * args) {
 	sys_removeFile(args);
 }
 
-void cmd_cat(char * args) {
-	sys_cat(args);
-}
-
 void cmd_ps(char * args) {
 	sys_listProcess();
 }
 
-void cmd_writeTo(char * args) {
+/*void cmd_writeTo(char * args) {
 	char c;
 	char buff[100];
 	int cursor = 0;
@@ -464,7 +461,7 @@ void cmd_writeTo(char * args) {
 	buff[lastChar] = 0;
 
 	sys_writeTo(args, buff);
-}
+}*/
 
 void program_digitalClock() {
 	digitalClock();
@@ -497,8 +494,6 @@ int main() {
 	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
-	command_register("cat", cmd_cat, "Lee el archivo especificado");
-	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 
 	while(programStatus != 1) {
