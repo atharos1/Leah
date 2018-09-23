@@ -7,6 +7,7 @@
 #define REGULAR_FILE 1
 #define BUFFER 2
 #define SEMAPHORE 3
+#define MUTEX 4
 
 #define MAX_NAME_LENGTH 64
 
@@ -45,18 +46,29 @@ void removeFile(file_t * file);
 void removeFileFromPath(char * path);
 
 fd_t * openFileFromPath(char * path, int mode);
-int openFileToFD(char * path, int mode);
+int openFileToFD(file_t * file, int mode);
+int openFileFromPathToFD(char * path, int mode);
 void closeFile(fd_t * fd);
-void closeFileFromFD(int fd);
+void closeFileFromFD(int fdIndex);
 //fd_t * cloneOpenedFile(fd_t * fd);
 
 uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes);
 uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes);
 
 void semCreate(char * path, int value);
+void semDelete(char * name);
+int semOpen(char * name);
+void semClose(int fdIndex);
 void semSet(int fdIndex, int value);
 void semWait(int fdIndex);
 void semSignal(int fd);
+
+void mutexCreate(char * name);
+void mutexDelete(char * name);
+int mutexOpen(char * name);
+void mutexClose(int fdIndex);
+void mutexLock(int fdIndex);
+void mutexUnlock(int fdIndex);
 
 void listDir(char * path);
 void cat(char * path);

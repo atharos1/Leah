@@ -25,3 +25,17 @@ int strcmp(char string1[], char string2[] ) {
             return 0;
     }
 }
+
+void strcat(char *original, char *add)
+{
+   while(*original)
+      original++;
+
+   while(*add)
+   {
+      *original = *add;
+      add++;
+      original++;
+   }
+   *original = '\0';
+}

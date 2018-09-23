@@ -82,20 +82,56 @@ void sys_closeFile(int fd) {
     _systemCall(22, fd, 0, 0, 0);
 }
 
-void sys_semCreate(char * path, int value) {
-    _systemCall(23, path, value, 0, 0);
+void sys_semCreate(char * name, int value) {
+    _systemCall(23, name, value, 0, 0);
+}
+
+void sys_semDelete(char * name) {
+    _systemCall(24, name, 0, 0, 0);
+}
+
+int sys_semOpen(char * name) {
+    return _systemCall(25, name, 0, 0, 0);
+}
+
+void sys_semClose(int sem) {
+    _systemCall(26, sem, 0, 0, 0);
 }
 
 void sys_semSet(int sem, int value) {
-    _systemCall(24, sem, value, 0, 0);
+    _systemCall(27, sem, value, 0, 0);
 }
 
 void sys_semWait(int sem) {
-    _systemCall(25, sem, 0, 0, 0);
+    _systemCall(28, sem, 0, 0, 0);
 }
 
 void sys_semSignal(int sem) {
-    _systemCall(26, sem, 0, 0, 0);
+    _systemCall(29, sem, 0, 0, 0);
+}
+
+void sys_mutexCreate(char * name) {
+    _systemCall(30, name, 0, 0, 0);
+}
+
+void sys_mutexDelete(char * name) {
+    _systemCall(31, name, 0, 0, 0);
+}
+
+int sys_mutexOpen(char * name) {
+    return _systemCall(32, name, 0, 0, 0);
+}
+
+void sys_mutexClose(int mutex) {
+    _systemCall(33, mutex, 0, 0, 0);
+}
+
+void sys_mutexLock(int mutex) {
+    _systemCall(34, mutex, 0, 0, 0);
+}
+
+void sys_mutexUnlock(int mutex) {
+    _systemCall(35, mutex, 0, 0, 0);
 }
 
 void sys_sleep(int millis) {
