@@ -13,12 +13,10 @@
 static void * createBuffer();
 static void * createDirectory();
 static void * createRegularFile();
-static void * createSemaphore();
 
 static void removeDirectory(file_t * file);
 static void removeBuffer(file_t * file);
 static void removeRegularFile(file_t * file);
-static void removeSemaphore(file_t * file);
 
 static file_t * newFile(char name[], int type);
 
@@ -36,9 +34,6 @@ typedef struct regular_file {
   uint32_t totalSize;
 } regular_file_t;
 
-typedef struct semaphore {
-  sem_t semaphore;
-} semaphore_t;
 
 file_t * root;
 opened_file_t * firstOpenedFile;
@@ -51,10 +46,10 @@ void init_fileSystem() {
 
   firstOpenedFile = NULL;
 
-  makeFile("/dev", DIRECTORY);
-  makeFile("/dev/shm", DIRECTORY);
-  makeFile("/dev/stdin", BUFFER);
-  makeFile("/TestFile", REGULAR_FILE);
+  makeFile("dev", DIRECTORY);
+  makeFile("dev/shm", DIRECTORY);
+  makeFile("dev/stdin", BUFFER);
+  makeFile("TestFile", REGULAR_FILE);
 }
 
 
@@ -121,17 +116,13 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
 
 file_t * makeFile(char * path, int type) {
   char name[MAX_NAME_LENGTH];
-  if (*path == '/')
-    return makeFileR(path + 1, root, type, name, 0);
-  return NULL;
+  return makeFileR(path, root, type, name, 0);
 }
 
 
 file_t * getFile(char * path) {
   char name[MAX_NAME_LENGTH];
-  if (*path == '/')
-    return makeFileR(path + 1, root, 0, name, 1);
-  return NULL;
+  return makeFileR(path, root, 0, name, 1);
 }
 
 
@@ -151,8 +142,6 @@ static file_t * newFile(char name[], int type) {
     newFile->implementation = createRegularFile();
   else if (type == BUFFER)
     newFile->implementation = createBuffer();
-  else if (type == SEMAPHORE)
-    newFile->implementation = createSemaphore();
 
   return newFile;
 }
@@ -190,16 +179,6 @@ static void * createRegularFile() {
   return (void*)file;
 }
 
-static void * createSemaphore() {
-  semaphore_t * file = malloc(sizeof(semaphore_t));
-
-  if (file == NULL)
-    return NULL;
-
-  file->semaphore = sem_create(0);
-
-  return (void*)file;
-}
 
 static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
   if (currFile == NULL)
@@ -212,8 +191,6 @@ static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
       removeRegularFile(currFile);
     else if (currFile->type == BUFFER)
       removeBuffer(currFile);
-    else if (currFile->type == SEMAPHORE)
-      removeSemaphore(currFile);
 
     free(currFile);
     return currFile->next;
@@ -222,7 +199,7 @@ static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
   return currFile;
 }
 
-
+//HAY UN PROBLEMA AL REMOVER CARPETAS CON ARCHIVOS!
 void removeFile(file_t * file) {
   if (file == NULL)
     return;
@@ -258,12 +235,6 @@ static void removeRegularFile(file_t * file) {
   free(regularFile);
 }
 
-static void removeSemaphore(file_t * file) {
-  semaphore_t * semaphore = (semaphore_t*)(file->implementation);
-  sem_delete(semaphore->semaphore);
-  free(semaphore);
-}
-
 
 //////////// I/O OPERATIONS ////////////
 
@@ -279,7 +250,6 @@ typedef struct opened_buffer {
 } opened_buffer_t;
 
 static opened_buffer_t * openBuffer();
-static void closeBuffer(opened_buffer_t * openedBuffer);
 static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
 static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes);
 
@@ -337,17 +307,6 @@ fd_t * openFileFromPath(char * path, int mode) {
   return openFile(getFile(path), mode);
 }
 
-int openFileToFD(char * path, int mode) {
-  if (getFreeFD(getCurrentPID()) == -1)
-    return -1;
-
-  fd_t * fd = openFileFromPath(path, mode);
-  if (fd == NULL)
-    return -1;
-
-  return registerFD(getCurrentPID(), fd);
-}
-
 void closeFile(fd_t * fd) {
   if (fd == NULL)
     return;
@@ -381,16 +340,12 @@ void closeFile(fd_t * fd) {
       previous->next = current->next;
 
     if (openedFile->file->type == BUFFER)
-      closeBuffer(openedFile->implementation);
+      free(openedFile->implementation);
 
     free(openedFile);
   }
 
   free(fd);
-}
-
-void closeFileFromFD(int fdIndex) {
-  closeFile(unregisterFD(getCurrentPID(), fdIndex));
 }
 
 static opened_buffer_t * openBuffer() {
@@ -401,23 +356,13 @@ static opened_buffer_t * openBuffer() {
   openedBuffer->readCursor = 0;
   openedBuffer->hasEOF = 0;
   openedBuffer->mutex = mutex_create();
-  openedBuffer->readerSem = sem_create(0);
-  openedBuffer->writerSem = sem_create(1);
+  openedBuffer->readerSem = sem_create("rs", 0);
+  openedBuffer->writerSem = sem_create("ws", 1);
   openedBuffer->allowReaders = 0;
   openedBuffer->allowWriters = 1;
   return openedBuffer;
 }
 
-static void closeBuffer(opened_buffer_t * openedBuffer) {
-  if (openedBuffer == NULL)
-    return;
-
-  mutex_delete(openedBuffer->mutex);
-  sem_delete(openedBuffer->readerSem);
-  sem_delete(openedBuffer->writerSem);
-
-  free(openedBuffer);
-}
 
 uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes) {
   if (fd->mode != O_WRONLY && fd->mode != O_RDWR)
@@ -477,7 +422,7 @@ static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t by
     openedBuffer->allowReaders = 1;
     sem_signal(openedBuffer->readerSem);
   }
-
+  
   mutex_unlock(openedBuffer->mutex);
   return bytesToWrite;
 }
@@ -549,38 +494,6 @@ static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t byt
   return bytesToRead;
 }
 
-void semCreate(char * path, int value) {
-  if (getFile(path) == NULL) {
-    file_t * file = makeFile(path, SEMAPHORE);
-    if (file != NULL)
-      sem_set_value(((semaphore_t*)(file->implementation))->semaphore, value);
-  }
-}
-
-void semSet(int fdIndex, int value) {
-  fd_t * fd = getFD(getCurrentPID(), fdIndex);
-
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_set_value(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore, value);
-  }
-}
-
-void semWait(int fdIndex) {
-  fd_t * fd = getFD(getCurrentPID(), fdIndex);
-
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_wait(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore);
-  }
-}
-
-void semSignal(int fdIndex) {
-  fd_t * fd = getFD(getCurrentPID(), fdIndex);
-
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_signal(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore);
-  }
-}
-
 
 ///// TESTING FUNCTIONS /////
 
@@ -602,8 +515,6 @@ void listDir(char * path) {
       printf(" (regular file)");
     else if (current->type == BUFFER)
       printf(" (buffer)");
-    else if (current->type == SEMAPHORE)
-      printf(" (sempahore)");
     current = current->next;
   }
 }
