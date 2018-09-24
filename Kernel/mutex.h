@@ -6,7 +6,7 @@
 
 typedef struct {
 	int value;
-  thread_t * owner;
+  	thread_t * owner;
 	NODE * lockedQueue;
 } mutex_struct;
 

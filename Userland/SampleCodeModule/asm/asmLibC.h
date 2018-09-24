@@ -3,6 +3,9 @@
 
 typedef void (*function)();
 
+typedef int pthread_t;
+
+
 int sys_read(int fileDescriptor, void * buff, int length);
 int sys_write(int fileDescriptor, void * buff, int length);
 void sys_clearScreen();
@@ -34,4 +37,9 @@ int sys_rtc(int fetch);
 void _throwInvalidOpCode();
 void sys_sleep();
 void sys_listProcess();
+
+pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
+void sys_joinThread(pthread_t thread, void ** retVal);
+void sys_cancelThread(pthread_t thread);
+
 #endif

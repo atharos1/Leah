@@ -1,7 +1,6 @@
 #ifndef IPC_SEM_H
 #define IPC_SEM_H
 
-#include "circularList.h"
 #include "mutex.h"
 
 typedef struct {

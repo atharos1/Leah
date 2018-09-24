@@ -125,7 +125,14 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			listProcess();
 			break;
 		case 50: //new thread
-			createThread(getProcessByPID(getCurrentPID()), rdx, 4);
+			return createThread(getProcessByPID(getCurrentPID()), rdx, 4, FALSE)->tid;
+			break;
+		case 51: //thread join
+			threadJoin(rsi, rdx);
+			break;
+		case 52: //thread cancel
+			if( killThread(getCurrentPID(), rsi) )
+				_force_scheduler();
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rsi %d rdx %d RDX %d\n", rdi, rsi, rdx, rcx);

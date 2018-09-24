@@ -31,16 +31,16 @@ void mutex_delete(mutex_t mutex) {
 }
 
 void mutex_lock(mutex_t mutex) {
-    if (getCurrentThread() == NULL)
-      return;
-    if(!_mutex_acquire(&(mutex->value))) {
-        mutex->owner = getCurrentThread();
-    } else {
-        thread_t * thread = getCurrentThread();
-        mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, thread);
-        scheduler_dequeue_current();
-		    _force_scheduler();
-    }
+  if (getCurrentThread() == NULL)
+    return;
+  if(!_mutex_acquire(&(mutex->value))) {
+    mutex->owner = getCurrentThread();
+  } else {
+    thread_t * thread = getCurrentThread();
+    mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, thread);
+    scheduler_dequeue_current();
+		_force_scheduler();
+  }
 }
 
 void mutex_unlock(mutex_t mutex) {

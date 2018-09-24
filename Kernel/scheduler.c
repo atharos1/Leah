@@ -43,7 +43,7 @@ thread_t * scheduler_dequeue_current() {
     if (threadCount == 0)
       return NULL;
     int status = 0;
-    (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status);
+    (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status, 1);
     //(Queues[currentThread.queue])->queue = deleteHead((Queues[currentThread.queue])->queue);
 
     Queues[currentThread.queue]->threadCount--;
@@ -52,10 +52,38 @@ thread_t * scheduler_dequeue_current() {
     return currentThread.thread;
 }
 
-/*void scheduler_dequeue_process(int pid) {
-    //printf("hola");
-    return;
-}*/
+int is_thread_from_process_cmp(thread_t * t, int * pid) {
+    return (t->process == *pid);
+}
+
+void scheduler_dequeue_process(int pid) {
+    if (threadCount == 0)
+      return;
+
+    int status;
+
+    for(int currQueue = 0; currQueue < queueCount; currQueue++) {
+        (Queues[currQueue])->queue = deleteByValue((Queues[currQueue])->queue, &pid, is_thread_from_process_cmp, &status, 0);
+        Queues[currQueue]->threadCount -= status;
+        threadCount -= status;
+    }
+
+    if(currentThread.thread->process == pid)
+        FORCE = TRUE;
+}
+
+void scheduler_dequeue_thread(thread_t * t) {
+    if (threadCount == 0)
+      return;
+
+    int status = 0;
+
+    for(int currQueue = 0; currQueue < queueCount && status == 0; currQueue++) {
+        (Queues[currQueue])->queue = deleteByValue((Queues[currQueue])->queue, t, pointer_cmp, &status, 1);
+        Queues[currQueue]->threadCount -= status;
+        threadCount -= status;
+    }
+}
 
 void scheduler_enqueue(thread_t * thread) {
     if (thread == NULL)
@@ -66,6 +94,9 @@ void scheduler_enqueue(thread_t * thread) {
     q->queue = insertAtEnd(q->queue, thread);
     q->threadCount++;
     threadCount++;
+
+    if(threadCount == 1)
+        _force_scheduler();
 
 }
 
@@ -79,8 +110,9 @@ void * scheduler_nextTask(void * oldRSP) {
 
     if( threadCount == 0 ) {
         //return oldRSP;
+        currentThread.thread = getProcessByPID(0)->threadList[0];
         runningTasks = FALSE;
-        return getProcessByPID(0)->threadList[0]->stack.current; //Se ejecuta init
+        return currentThread.thread->stack.current; //Se ejecuta init
     }
 
     runningTasks = TRUE;

@@ -98,17 +98,19 @@ NODE * insertAtArbitrary(NODE * tail, void * data, int location) {
 	return tail;
 }
 
-NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
+NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * cantDeleted, int limit) {
 	NODE * current = tail, * previous;
-	*status = 0;
+	*cantDeleted = 0;
 	if (tail == NULL) return tail;
 	else if (tail == tail -> next) {
 		if ( cmp(tail -> data, data) == 0 ) {
 			tail = NULL;
 			free(current);
-			(*status)++;
+			(*cantDeleted)++;
+			if(*cantDeleted == limit)
+				return tail;
 		}
-		return tail;
+		//return tail;
 	}
 	do {
 		previous = current;
@@ -117,10 +119,9 @@ NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status) {
 			previous -> next = current -> next;
 			if (current == tail) tail = previous;
 			free(current);
-			(*status)++;
-			return tail;
-			//current = previous -> next;
-			//return tail;
+			(*cantDeleted)++;
+			if(*cantDeleted == limit)
+				return tail;
 		}
 	} while (current != tail);
 	return tail;

@@ -14,7 +14,7 @@ typedef struct Node NODE;
 
 NODE * insertAtHead(NODE * tail, void * data);
 NODE * insertAtEnd(NODE * tail, void * data);
-NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * status);
+NODE * deleteByValue(NODE * tail, void * data, comparator cmp, int * cantDeleted, int limit);
 NODE * deleteByLocation(NODE * tail, int location);
 NODE * deleteHead(NODE * tail);
 int length(NODE * tail);
