@@ -1,10 +1,7 @@
 #include "circularList.h"
 #include "memoryManager.h"
 #include "drivers/console.h"
-
-
-#define malloc getMemory //BORRAR ESTA MONSTRUOSIDAD
-#define free freeMemory
+#include "malloc.h"
 
 NODE * createNewNode(void * data) {
 	NODE * newNode = (NODE *) malloc (sizeof(NODE));

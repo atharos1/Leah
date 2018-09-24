@@ -1,11 +1,10 @@
 #include "sem.h"
 #include "asm/libasm.h"
-#include "memoryManager.h"
 #include "scheduler.h"
 #include "malloc.h"
 
 sem_t sem_create(int startValue) {
-	sem_t sem = getMemory(sizeof(sem_struct));
+	sem_t sem = malloc(sizeof(sem_struct));
 	if (sem == NULL)
 		return NULL;
 	sem->value = startValue;
@@ -16,7 +15,7 @@ sem_t sem_create(int startValue) {
 
 void sem_delete(sem_t sem) {
 	mutex_delete(sem->mutex);
-	freeMemory(sem);
+	free(sem);
 }
 
 void sem_set_value(sem_t sem, int value) {

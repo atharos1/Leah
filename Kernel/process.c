@@ -7,6 +7,7 @@
 int getFreePID();
 int getFreeTID(process_t * process);
 void purgeThreadList(process_t * process);
+void purgeFdList(process_t * process);
 
 process_t * processList[MAX_PROCESS_COUNT];
 int process_count = 0;
@@ -41,7 +42,7 @@ void processWrapper(int code()) {
     int retValue = main_thread_code();
 
     killProcess(getCurrentPID(), retValue);
-    
+
 }
 
 int killThread(int pid, int tid) {

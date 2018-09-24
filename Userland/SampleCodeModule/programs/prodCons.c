@@ -53,7 +53,7 @@ void prodcons() {
 }
 
 void printMenu() {
-  printf("\nEl restaurante Leah tiene un maximo de 20 bandejas\n");
+  printf("\nEl restaurante Leah tiene un maximo de 20 platos\n");
 	printf("Hay 10 chefs y 10 camareros que inicialmente estan descansando\n\n", MAX_PRODCONS, MAX_PRODCONS);
 	printf("Inserte:\n");
   printf("    %c para llamar a un chef\n", INC_CHEF);
@@ -71,7 +71,7 @@ void initTrays(char * trays) {
 }
 
 void printTrays(char * trays) {
-	printf("Trays = ");
+	printf("Platos = ");
 	printf(trays);
 	printf("\n\n\n");
 }

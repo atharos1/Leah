@@ -1,7 +1,7 @@
 #include "roundRobin.h"
 #include "circularList.h"
 #include "drivers/console.h"
-
+#include "malloc.h"
 
 thread_t * roundRobin_nextThread(SCHEDULER_QUEUE * q) {
     data_RoundRubin * data = q->queueData;
@@ -28,8 +28,8 @@ int roundRobin_checkEvict(SCHEDULER_QUEUE * q) {
 }
 
 SCHEDULER_QUEUE * roundRobin_newQueue(int quantum) {
-    SCHEDULER_QUEUE * q = getMemory( sizeof(SCHEDULER_QUEUE) );
-    data_RoundRubin * data = getMemory( sizeof(data_RoundRubin) );
+    SCHEDULER_QUEUE * q = malloc( sizeof(SCHEDULER_QUEUE) );
+    data_RoundRubin * data = malloc( sizeof(data_RoundRubin) );
 
     q->queue = NULL;
     q->threadCount = 0;

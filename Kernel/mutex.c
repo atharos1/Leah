@@ -2,10 +2,11 @@
 #include "scheduler.h"
 #include "fileSystem.h"
 #include "asm/libasm.h"
+#include "malloc.h"
 
 mutex_t mutex_create() {
 
-	mutex_t m = getMemory(sizeof(mutex_struct));
+	mutex_t m = malloc(sizeof(mutex_struct));
 	m->value = 0;
   m->owner = NULL;
 	m->lockedQueue = NULL;
@@ -13,7 +14,7 @@ mutex_t mutex_create() {
 }
 
 void mutex_delete(mutex_t mutex) {
-  freeMemory(mutex);
+  free(mutex);
 }
 
 void mutex_lock(mutex_t mutex) {

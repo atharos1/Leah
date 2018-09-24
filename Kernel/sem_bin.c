@@ -1,8 +1,6 @@
 #include "sem_bin.h"
 #include "asm/libasm.h"
-#include "memoryManager.h"
 #include "scheduler.h"
-#include "malloc.h"
 
 sem_bin_t sem_bin_create(int startValue) {
 
