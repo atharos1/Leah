@@ -470,10 +470,20 @@ void program_digitalClock() {
 	cmd_resetScreen();
 }
 
-void * prueba(void * args) {
+void * hola(void * args) {
 
 	while(1) {
 		printf("hola");
+		sys_sleep(1000);
+	}
+	
+	return 0;
+}
+
+void * chau(void * args) {
+
+	while(1) {
+		printf("chau");
 		sys_sleep(1000);
 	}
 	
