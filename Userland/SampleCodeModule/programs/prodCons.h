@@ -3,8 +3,8 @@
 
 #define QUIT 'q'
 #define INC_CHEF 'c'
-#define DEC_CHEF 'v'
-#define INC_WAITER 'w'
+#define DEC_CHEF 'o'
+#define INC_WAITER 'm'
 #define DEC_WAITER 'e'
 #define MAX_PRODCONS 10
 #define TRAYS_QTY 20
