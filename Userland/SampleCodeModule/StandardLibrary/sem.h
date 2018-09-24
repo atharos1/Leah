@@ -3,12 +3,12 @@
 
 //Si el semaforo ya existe no hace nada
 //Sino lo crea y setea su valor
-void sem_create(char * path, int value);
+void sem_create(char * name, int value);
 
 void sem_delete(char * name);
 
 //Devuelve -1 si no se pudo abrir
-int sem_open(char * path);
+int sem_open(char * name);
 
 void sem_close(int sem);
 

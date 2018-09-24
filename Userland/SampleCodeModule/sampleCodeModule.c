@@ -4,6 +4,7 @@
 #include "StandardLibrary/string.h"
 #include "programs/snake.h"
 #include "programs/digitalClock.h"
+#include "programs/prodCons.h"
 #include "asm/asmLibC.h"
 #include "sem.h"
 #include "mutex.h"
@@ -224,11 +225,6 @@ void cmd_time(char * args) {
 	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", sys_rtc(7), sys_rtc(8), sys_rtc(9), sys_rtc(4), sys_rtc(2), sys_rtc(0));
 }
 
-void cmd_prueba() {
-	printf("HOLA %5d \7", 1234);
-	for (int i = 0; i < 10; i++) sys_sleep(60);
-}
-
 void cmd_help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
@@ -425,13 +421,8 @@ void cmd_ps(char * args) {
 	sys_listProcess();
 }
 
-void cmd_sem(char * args) {
-	mutex_create("mutex");
-	int mutex = mutex_open("mutex");
-	mutex_lock(mutex);
-		mutex_lock(mutex);
-	mutex_close(mutex);
-	mutex_delete("mutex");
+void cmd_prodcons(char * args) {
+	prodcons();
 }
 
 /*void cmd_writeTo(char * args) {
@@ -490,13 +481,11 @@ int main() {
 	command_register("echo", cmd_echo, "Imprime una cadena de caracteres en pantalla. Argumentos: [cadena]");
 	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
 	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
-	command_register("prueba", cmd_prueba, "Comando de prueba");
 	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
 	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
 	command_register("digital-clock", program_digitalClock, "Muestra un reloj digital en pantalla");
 	command_register("div100", cmd_Div100, "Divide 100 por el valor especificado (Prueba ex0). Argumentos: [*divisor]");
 	command_register("invopcode", cmd_throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
-	command_register("exit", cmd_exit, "Cierra la Shell");
 	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
@@ -505,7 +494,8 @@ int main() {
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
-	command_register("sem", cmd_sem, "Lista los procesos con su información asociada");
+	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
+	command_register("exit", cmd_exit, "Cierra la Shell");
 
 	while(programStatus != 1) {
 		commandListener();
