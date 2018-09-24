@@ -46,12 +46,20 @@ void sem_signal(sem_t sem) {
 	if (sem == NULL)
 		return;
 	mutex_lock(sem->mutex);
-	if(sem->lockedQueue != NULL) {
-		thread_t * t = getFirst(sem->lockedQueue);
-		sem->lockedQueue = deleteHead(sem->lockedQueue);
-		scheduler_enqueue(t);
-	} else {
+
+		while(sem->lockedQueue != NULL) {
+			thread_t * t = getFirst(sem->lockedQueue);
+			sem->lockedQueue = deleteHead(sem->lockedQueue);
+
+			if(t->status == DEAD)
+				eraseTCB(t);
+			else {
+				scheduler_enqueue(t);
+				mutex_unlock(sem->mutex);
+				return;
+			}
+		}
 		sem->value++;
-	}
+		
 	mutex_unlock(sem->mutex);
 }

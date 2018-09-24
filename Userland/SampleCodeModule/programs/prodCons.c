@@ -20,7 +20,7 @@ void prodcons() {
 	sem_create("fullSem", TRAYS_QTY);
   full = sem_open("fullSem");
   sem_create("emptySem", 0);
-  empty = sem_open("emprySem");
+  empty = sem_open("emptySem");
 	initTrays(trays);
 
 	printTrays(trays);

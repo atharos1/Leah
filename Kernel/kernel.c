@@ -12,6 +12,7 @@
 #include <sleep.h>
 #include <scheduler.h>
 #include <process.h>
+#include <malloc.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -58,6 +59,7 @@ void * initializeKernelBinary()
 	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
 	uint32_t * userlandSize = (uint32_t *)600000;
 	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
+	init_malloc(5*1024*1024);
 	init_fileSystem();
 	init_kb();
 
@@ -96,7 +98,7 @@ void initThread() {
 	//_force_scheduler();
 
 	while(1) {
-		if(processCount() == 1)
+		if(aliveProcessCount() == 1)
 			createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 			
 		_force_scheduler();

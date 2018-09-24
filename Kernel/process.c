@@ -11,11 +11,15 @@ void purgeFdList(process_t * process);
 
 process_t * processList[MAX_PROCESS_COUNT];
 int process_count = 0;
-
+int alive_process_count = 0;
 int last_pid = 0;
 
 int processCount() {
     return process_count;
+}
+
+int aliveProcessCount() {
+    return alive_process_count;
 }
 
 void erasePCB(process_t * process) {
@@ -63,9 +67,13 @@ int killThread(int pid, int tid) {
     //TODO: REMOVE FROM IPC
 
     if(t->is_someone_joining == FALSE) { //Solo borro si nadie me espera
-        if(thread_in_scheduler) //Ya voló
+        if(thread_in_scheduler) { //Ya voló
             eraseTCB( processList[pid]->threadList[tid] );
+                //if(getProcessByPID(t->process)->threadCount == )
+            }
+
         processList[pid]->threadList[tid] = NULL;
+        processList[pid]->threadCount--;
     } else {
         sem_bin_signal( t->finishedSem ); //Despertamos al thread que hizo join
 
@@ -83,6 +91,8 @@ void killProcess(int pid, int retValue) {
             killThread(pid, i);
 
     processList[pid]->retValue = retValue;
+
+    alive_process_count--;
 
     sem_bin_signal( processList[pid]->awaitSem ); //Despertamos a potencial waitpid
 
@@ -131,6 +141,7 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     process->threadCount = 0;
 
     process_count++;
+    alive_process_count++;
 
     createThread(process, code, NULL, stack_size, TRUE);
 
@@ -271,6 +282,9 @@ fd_t * getFD(int pid, int fdIndex) {
 void threadJoin(int tid, void **retVal) {
 
     thread_t * awaitThread = processList[getCurrentPID()]->threadList[tid];
+
+    if(awaitThread == NULL)
+        return;
 
     awaitThread->is_someone_joining = TRUE;
 

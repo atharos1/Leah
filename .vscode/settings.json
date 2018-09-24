@@ -9,6 +9,7 @@
         "libasm.h": "c",
         "sem.h": "c",
         "asmlibc.h": "c",
-        "asmlibc.h\u0000libc.h": "c"
+        "asmlibc.h\u0000libc.h": "c",
+        "process.h": "c"
     }
 }

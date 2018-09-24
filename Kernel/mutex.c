@@ -31,16 +31,37 @@ void mutex_lock(mutex_t mutex) {
 }
 
 void mutex_unlock(mutex_t mutex) {
-  if (getCurrentThread() == NULL)
+  if (getCurrentThread() == NULL || mutex->owner != getCurrentThread() )
     return;
-  if( mutex->owner == getCurrentThread() ) {
-    thread_t * t = getFirst(mutex->lockedQueue);
-    mutex->owner = t;
-    if (t == NULL) {
-      mutex->value = 0;
-    } else {
+    while( mutex->lockedQueue != NULL ) {
+      thread_t * t = getFirst(mutex->lockedQueue);
       mutex->lockedQueue = deleteHead(mutex->lockedQueue);
-      scheduler_enqueue(t);
+
+      if( t->status == DEAD )
+        eraseTCB(t);
+      else {
+        mutex->owner = t;
+        scheduler_enqueue(t);
+        return;
+      }
     }
-  }
+    mutex->value = 0;
+
+  //printf("Libero mutex");
+  
 }
+
+// void mutex_unlock(mutex_t mutex) {
+//   if (getCurrentThread() == NULL)
+//     return;
+//   if( mutex->owner == getCurrentThread() ) {
+//     thread_t * t = getFirst(mutex->lockedQueue);
+//     mutex->owner = t;
+//     if (t == NULL) {
+//       mutex->value = 0;
+//     } else {
+//       mutex->lockedQueue = deleteHead(mutex->lockedQueue);
+//       scheduler_enqueue(t);
+//     }
+//   }
+// }

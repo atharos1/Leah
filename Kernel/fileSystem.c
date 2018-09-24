@@ -1,7 +1,6 @@
 #include <fileSystem.h>
 #include <memoryManager.h>
 #include <drivers/console.h>
-#include <malloc.h>
 #include <scheduler.h>
 #include <asm/libasm.h>
 #include <sem.h>
@@ -50,8 +49,6 @@ file_t * root;
 opened_file_t * firstOpenedFile;
 
 void init_fileSystem() {
-  init_malloc(5*1024*1024);
-
   root = newFile("root", DIRECTORY);
   root->directory = NULL;
 

@@ -58,6 +58,7 @@ int registerFD(int pid, fd_t * file);
 fd_t * unregisterFD(int pid, int fdIndex);
 fd_t * getFD(int pid, int fd);
 int processCount();
+int aliveProcessCount();
 int waitpid(int pid);
 void threadJoin(int tid, void **retVal);
 void killProcess(int pid, int retValue);

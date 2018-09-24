@@ -482,8 +482,6 @@ void * prueba(void * args) {
 
 int main() {
 
-	pthread_t t = pthread_create(prueba, 0);
-
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();
 	currFontColor = getFontColor();
@@ -509,14 +507,6 @@ int main() {
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("exit", cmd_exit, "Cierra la Shell");
-
-	sys_sleep(2100);
-
-	// int j = 0;
-	// for(int i = 0; i<100000000; i++)
-	// 	j++;
-
-	pthread_cancel(t);
 
 	while(programStatus != 1) {
 		commandListener();

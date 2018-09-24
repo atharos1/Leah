@@ -6,6 +6,8 @@
 #include <drivers/speaker.h>
 #include <asm/libasm.h>
 #include <interruptions/idt.h>
+#include <process.h>
+#include <scheduler.h>
 
 void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP);
 
@@ -123,16 +125,16 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 
 	switch(n) {
 		case 0: //Division by 0
-			*RIP = (uint64_t)instructionPointerBackup;
-			*RSP = (uint64_t)stackPointerBackup;
+			//*RIP = (uint64_t)instructionPointerBackup;
+			//*RSP = (uint64_t)stackPointerBackup;
 			dumpData("EXCEPCION (DIVISION POR CERO)", (uint64_t *)RIP_Back, (uint64_t *)RSP_Back);
 			printf("\n\n");
 			break;
 
 		case 6: //InvalidOpCode
-			//kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP); //Lo dejo porque la pantallita quedaba divertida
-			*RIP = (uint64_t)instructionPointerBackup;
-			*RSP = (uint64_t)stackPointerBackup;
+			kernelPanic("EXCEPCION (CODIGO DE OPERACION INVALIDO)", RIP, RSP); //Lo dejo porque la pantallita quedaba divertida
+			//*RIP = (uint64_t)instructionPointerBackup;
+			//*RSP = (uint64_t)stackPointerBackup;
 			dumpData("EXCEPCION (CODIGO DE OPERACION INVALIDO)", (uint64_t *)RIP_Back, (uint64_t *)RSP_Back);
 			printf("\n\n");
 			break;
@@ -140,5 +142,8 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 
 	setFontColor(fColor);
 	setBackgroundColor(bColor);
+
+	killProcess(getCurrentPID(), -1);
+	_force_scheduler();
 
 }
