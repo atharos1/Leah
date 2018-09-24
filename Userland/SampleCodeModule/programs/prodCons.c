@@ -50,6 +50,7 @@ void prodcons() {
   sem_delete("fullSem");
   sem_delete("emptySem");
 	printf("La simulacion termino\n");
+	return;
 }
 
 void printMenu() {
@@ -77,6 +78,7 @@ void printTrays(char * trays) {
 }
 
 void callChef() {
+
   mutex_lock(mutex);
 	if(chefsQty >= MAX_PRODCONS) {
 		printf("No hay mas chefs descansando\n");

@@ -153,7 +153,7 @@ void sys_joinThread(pthread_t thread, void ** retVal) {
 }
 
 void sys_cancelThread(pthread_t thread) {
-    _systemCall(52, 0, 0, 0);
+    _systemCall(52, thread, 0, 0);
 }
 
 void sys_timerAppend(function f, unsigned long int ticks) {

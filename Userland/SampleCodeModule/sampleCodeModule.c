@@ -8,6 +8,7 @@
 #include "asm/asmLibC.h"
 #include "sem.h"
 #include "mutex.h"
+#include "StandardLibrary/pthread.h"
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
@@ -469,7 +470,19 @@ void program_digitalClock() {
 	cmd_resetScreen();
 }
 
+void * prueba(void * args) {
+
+	while(1) {
+		printf("hola");
+		sys_sleep(1000);
+	}
+	
+	return 0;
+}
+
 int main() {
+
+	pthread_t t = pthread_create(prueba, 0);
 
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();
@@ -496,6 +509,14 @@ int main() {
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("exit", cmd_exit, "Cierra la Shell");
+
+	sys_sleep(2100);
+
+	// int j = 0;
+	// for(int i = 0; i<100000000; i++)
+	// 	j++;
+
+	pthread_cancel(t);
 
 	while(programStatus != 1) {
 		commandListener();

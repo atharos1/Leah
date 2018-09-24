@@ -14,6 +14,10 @@ int process_count = 0;
 
 int last_pid = 0;
 
+int processCount() {
+    return process_count;
+}
+
 void erasePCB(process_t * process) {
     freeMemory(process->name);
     freeMemory(process->heap.base);
@@ -25,7 +29,7 @@ void eraseTCB(thread_t * thread) {
     freeMemory(thread);
 }
 
-void threadWrapper(void * code()) {
+void threadWrapper(void * code(), void * args) {
 
     void * (*thread_code)() = code;
     void * retValue = thread_code();
@@ -48,17 +52,24 @@ void processWrapper(int code()) {
 int killThread(int pid, int tid) {
 
     thread_t * t = getProcessByPID(pid)->threadList[tid];
+    //printf("\npid: %d, tid: %d", pid, tid);
     int isCurrThread = (t == getCurrentThread());
-    scheduler_dequeue_thread(t);
+    int thread_in_scheduler = scheduler_dequeue_thread(t);
 
+    if(!thread_in_scheduler) {
+        t->status = DEAD;
+    }
+        
     //TODO: REMOVE FROM IPC
 
     if(t->is_someone_joining == FALSE) { //Solo borro si nadie me espera
-        eraseTCB( processList[getCurrentPID()]->threadList[tid] );
-        processList[getCurrentPID()]->threadList[tid] = NULL;
-    }
+        if(thread_in_scheduler) //Ya voló
+            eraseTCB( processList[pid]->threadList[tid] );
+        processList[pid]->threadList[tid] = NULL;
+    } else {
+        sem_bin_signal( t->finishedSem ); //Despertamos al thread que hizo join
 
-    sem_bin_signal( t->finishedSem ); //Despertamos al thread que hizo join
+    }
 
     return isCurrThread;
 }
@@ -121,12 +132,12 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
 
     process_count++;
 
-    createThread(process, code, stack_size, TRUE);
+    createThread(process, code, NULL, stack_size, TRUE);
 
     return process->pid;
 }
 
-thread_t * createThread(process_t * process, void * code, int stack_size, int isMain) {
+thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain) {
 
     if(process->threadCount == MAX_THREAD_COUNT)
         return NULL;
@@ -267,8 +278,10 @@ void threadJoin(int tid, void **retVal) {
 
     *retVal = awaitThread->retValue;
 
-    eraseTCB( awaitThread ); //Borramos zombie
     processList[getCurrentPID()]->threadList[tid] = NULL;
+
+    if(awaitThread->status != DEAD)
+        eraseTCB( awaitThread ); //Borramos zombie
 }
 
 int waitpid(int pid) {

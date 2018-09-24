@@ -24,7 +24,7 @@ void scheduler_enqueue(thread_t * thread);
 thread_t * getCurrentThread();
 int getCurrentPID();
 thread_t * scheduler_dequeue_current();
-void scheduler_dequeue_thread(thread_t * t);
+int scheduler_dequeue_thread(thread_t * t);
 void scheduler_dequeue_process(int pid);
 
 #endif

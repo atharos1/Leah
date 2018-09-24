@@ -3,7 +3,7 @@
 #include <drivers/timer.h>
 #include <sleep.h>
 
-int timer = 1;
+int timerSkip = FALSE;
 
 typedef struct {
 	function f;
@@ -19,13 +19,16 @@ void timer_Restart() {
 }
 
 void noTimer() {
-	timer = 0;
+	timerSkip = TRUE;
 }
 
 void timer_Tick() {
-	if (!timer) {
-		timer = 1;
-		return;
+
+	//printf(" t: %d ", timer);
+
+	if (timerSkip) {
+	 	timerSkip = FALSE;
+	 	return;
 	}
 
 	sleep_update();

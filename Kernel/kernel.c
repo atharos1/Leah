@@ -89,17 +89,19 @@ int pruebaTask() {
 }
 
 void initThread() {
-	createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
-	createProcess("Arcoiris", &pruebaTask, 4, 4);
+	//createProcess("Arcoiris", &pruebaTask, 4, 4);
 
+	//createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 	thread_t * me = scheduler_dequeue_current();
-	_force_scheduler();
+	//_force_scheduler();
 
 	while(1) {
-		//printf("En init");
-		_halt();
+		if(processCount() == 1)
+			createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
+			
+		_force_scheduler();
+		//_halt();
 	}
-
 }
 
 int main()

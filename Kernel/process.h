@@ -9,10 +9,15 @@
 #include "stdlib.h"
 #include "fileSystem.h"
 
-//Estados de threads
+//Estados de THREADS
 #define READY 0
 #define SLEEPING 1
-#define ZOMBIE 1
+#define DEAD 20
+
+//Estados de PROCESOS
+/*#define READY 0
+#define SLEEPING 1
+#define ZOMBIE 1*/
 
 typedef struct memblock_t {
     void * base;
@@ -44,7 +49,7 @@ typedef struct process_t {
 } process_t;
 
 int createProcess(char * name, void * code, int stack_size, int heap_size);
-thread_t * createThread(process_t * process, void * code, int stack_size, int isMain);
+thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain);
 process_t * getProcessByPID(int pid);
 void purgeProcessList();
 void listProcess();
@@ -57,5 +62,6 @@ int waitpid(int pid);
 void threadJoin(int tid, void **retVal);
 void killProcess(int pid, int retValue);
 int killThread(int pid, int tid);
+void eraseTCB(thread_t * thread);
 
 #endif

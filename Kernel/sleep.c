@@ -42,10 +42,15 @@ void sleep_update() {
             else
                 prev->next = n->next;
 
-            n->thread->status = READY;
+            //printf("%d", n->thread->status);
 
-            scheduler_enqueue(n->thread);
-
+            if(n->thread->status == DEAD) {
+                eraseTCB(n->thread);
+            } else {
+                n->thread->status = READY;
+                scheduler_enqueue(n->thread);
+            }
+            
             free(n);
 
         }

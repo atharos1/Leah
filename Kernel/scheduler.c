@@ -72,7 +72,7 @@ void scheduler_dequeue_process(int pid) {
         FORCE = TRUE;
 }
 
-void scheduler_dequeue_thread(thread_t * t) {
+int scheduler_dequeue_thread(thread_t * t) {
     if (threadCount == 0)
       return;
 
@@ -83,11 +83,19 @@ void scheduler_dequeue_thread(thread_t * t) {
         Queues[currQueue]->threadCount -= status;
         threadCount -= status;
     }
+
+    return status;
 }
 
 void scheduler_enqueue(thread_t * thread) {
     if (thread == NULL)
       return;
+
+    /*if(thread->status == DEAD) {
+        eraseTCB(thread);
+        printf("\nVolo");
+        return;
+    }*/
 
     SCHEDULER_QUEUE * q = Queues[0];
 
@@ -95,8 +103,8 @@ void scheduler_enqueue(thread_t * thread) {
     q->threadCount++;
     threadCount++;
 
-    if(threadCount == 1)
-        _force_scheduler();
+    // if(threadCount == 1)
+    //      _force_scheduler();
 
 }
 
@@ -104,14 +112,16 @@ void * scheduler_nextTask(void * oldRSP) {
 
     FORCE = FALSE;
 
+
     if(runningTasks == TRUE) {
         currentThread.thread->stack.current = oldRSP;
     }
 
     if( threadCount == 0 ) {
         //return oldRSP;
+
         currentThread.thread = getProcessByPID(0)->threadList[0];
-        runningTasks = FALSE;
+        //runningTasks = FALSE;
         return currentThread.thread->stack.current; //Se ejecuta init
     }
 
