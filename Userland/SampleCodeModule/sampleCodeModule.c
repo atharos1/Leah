@@ -5,6 +5,7 @@
 #include "programs/snake.h"
 #include "programs/digitalClock.h"
 #include "programs/prodCons.h"
+#include "programs/upDown.h"
 #include "asm/asmLibC.h"
 #include "sem.h"
 #include "mutex.h"
@@ -426,6 +427,10 @@ void cmd_prodcons(char * args) {
 	prodcons();
 }
 
+void cmd_upDown (char * args) {
+	upDown();
+}
+
 /*void cmd_writeTo(char * args) {
 	char c;
 	char buff[100];
@@ -516,6 +521,7 @@ int main() {
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
+	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
 	command_register("exit", cmd_exit, "Cierra la Shell");
 
 	while(programStatus != 1) {
