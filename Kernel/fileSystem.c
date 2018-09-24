@@ -14,11 +14,13 @@ static void * createBuffer();
 static void * createDirectory();
 static void * createRegularFile();
 static void * createSemaphore();
+static void * createMutex();
 
 static void removeDirectory(file_t * file);
 static void removeBuffer(file_t * file);
 static void removeRegularFile(file_t * file);
 static void removeSemaphore(file_t * file);
+static void removeMutex(file_t * file);
 
 static file_t * newFile(char name[], int type);
 
@@ -38,7 +40,11 @@ typedef struct regular_file {
 
 typedef struct semaphore {
   sem_t semaphore;
-} semaphore_t;
+} sem_file_t;
+
+typedef struct mutex {
+  mutex_t mutex;
+} mutex_file_t;
 
 file_t * root;
 opened_file_t * firstOpenedFile;
@@ -153,6 +159,8 @@ static file_t * newFile(char name[], int type) {
     newFile->implementation = createBuffer();
   else if (type == SEMAPHORE)
     newFile->implementation = createSemaphore();
+  else if (type == MUTEX)
+    newFile->implementation = createMutex();
 
   return newFile;
 }
@@ -191,7 +199,7 @@ static void * createRegularFile() {
 }
 
 static void * createSemaphore() {
-  semaphore_t * file = malloc(sizeof(semaphore_t));
+  sem_file_t * file = malloc(sizeof(sem_file_t));
 
   if (file == NULL)
     return NULL;
@@ -200,6 +208,18 @@ static void * createSemaphore() {
 
   return (void*)file;
 }
+
+static void * createMutex() {
+  mutex_file_t * file = malloc(sizeof(mutex_file_t));
+
+  if (file == NULL)
+    return NULL;
+
+  file->mutex = mutex_create();
+
+  return (void*)file;
+}
+
 
 static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
   if (currFile == NULL)
@@ -214,6 +234,8 @@ static file_t * removeFileR(file_t * currFile, file_t * targetFile) {
       removeBuffer(currFile);
     else if (currFile->type == SEMAPHORE)
       removeSemaphore(currFile);
+    else if (currFile->type == MUTEX)
+      removeMutex(currFile);
 
     free(currFile);
     return currFile->next;
@@ -259,9 +281,15 @@ static void removeRegularFile(file_t * file) {
 }
 
 static void removeSemaphore(file_t * file) {
-  semaphore_t * semaphore = (semaphore_t*)(file->implementation);
+  sem_file_t * semaphore = (sem_file_t*)(file->implementation);
   sem_delete(semaphore->semaphore);
   free(semaphore);
+}
+
+static void removeMutex(file_t * file) {
+  mutex_file_t * mutex = (mutex_file_t*)(file->implementation);
+  mutex_delete(mutex->mutex);
+  free(mutex);
 }
 
 
@@ -337,15 +365,19 @@ fd_t * openFileFromPath(char * path, int mode) {
   return openFile(getFile(path), mode);
 }
 
-int openFileToFD(char * path, int mode) {
+int openFileToFD(file_t * file, int mode) {
   if (getFreeFD(getCurrentPID()) == -1)
     return -1;
 
-  fd_t * fd = openFileFromPath(path, mode);
+  fd_t * fd = openFile(file, mode);
   if (fd == NULL)
     return -1;
 
   return registerFD(getCurrentPID(), fd);
+}
+
+int openFileFromPathToFD(char * path, int mode) {
+  return openFileToFD(getFile(path), mode);
 }
 
 void closeFile(fd_t * fd) {
@@ -549,36 +581,107 @@ static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t byt
   return bytesToRead;
 }
 
-void semCreate(char * path, int value) {
-  if (getFile(path) == NULL) {
-    file_t * file = makeFile(path, SEMAPHORE);
+void semCreate(char * name, int value) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  if (getFile(tmp) == NULL) {
+    file_t * file = makeFile(tmp, SEMAPHORE);
     if (file != NULL)
-      sem_set_value(((semaphore_t*)(file->implementation))->semaphore, value);
+      sem_set_value(((sem_file_t*)(file->implementation))->semaphore, value);
   }
+}
+
+void semDelete(char * name) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  file_t * file = getFile(tmp);
+  if (file != NULL && file->type == SEMAPHORE)
+    removeFile(file);
+}
+
+int semOpen(char * name) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  file_t * file = getFile(tmp);
+  if (file != NULL && file->type == SEMAPHORE)
+    return openFileToFD(file, O_RDWR);
+  return -1;
+}
+
+void semClose(int fdIndex) {
+  fd_t * sem = getFD(getCurrentPID(), fdIndex);
+  if (sem != NULL && sem->openedFile->file->type == SEMAPHORE)
+    closeFile(sem);
 }
 
 void semSet(int fdIndex, int value) {
   fd_t * fd = getFD(getCurrentPID(), fdIndex);
 
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_set_value(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore, value);
-  }
+  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE)
+    sem_set_value(((sem_file_t*)(fd->openedFile->file->implementation))->semaphore, value);
 }
 
 void semWait(int fdIndex) {
   fd_t * fd = getFD(getCurrentPID(), fdIndex);
 
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_wait(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore);
-  }
+  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE)
+    sem_wait(((sem_file_t*)(fd->openedFile->file->implementation))->semaphore);
 }
 
 void semSignal(int fdIndex) {
   fd_t * fd = getFD(getCurrentPID(), fdIndex);
 
-  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE) {
-    sem_signal(((semaphore_t*)(fd->openedFile->file->implementation))->semaphore);
-  }
+  if (fd != NULL && fd->openedFile->file->type == SEMAPHORE)
+    sem_signal(((sem_file_t*)(fd->openedFile->file->implementation))->semaphore);
+}
+
+void mutexCreate(char * name) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  makeFile(tmp, MUTEX);
+}
+
+void mutexDelete(char * name) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  file_t * file = getFile(tmp);
+  if (file != NULL && file->type == MUTEX)
+    removeFile(file);
+}
+
+int mutexOpen(char * name) {
+  char tmp[MAX_NAME_LENGTH];
+  strcpy(tmp, "/dev/shm/");
+  strcat(tmp, name);
+  file_t * file = getFile(tmp);
+  if (file != NULL && file->type == MUTEX)
+    return openFileToFD(file, O_RDWR);
+  return -1;
+}
+
+void mutexClose(int fdIndex) {
+  fd_t * mutex = getFD(getCurrentPID(), fdIndex);
+  if (mutex != NULL && mutex->openedFile->file->type == MUTEX)
+    closeFile(mutex);
+}
+
+void mutexLock(int fdIndex) {
+  fd_t * fd = getFD(getCurrentPID(), fdIndex);
+
+  if (fd != NULL && fd->openedFile->file->type == MUTEX)
+    mutex_lock(((mutex_file_t*)(fd->openedFile->file->implementation))->mutex);
+}
+
+void mutexUnlock(int fdIndex) {
+  fd_t * fd = getFD(getCurrentPID(), fdIndex);
+
+  if (fd != NULL && fd->openedFile->file->type == MUTEX)
+    mutex_unlock(((mutex_file_t*)(fd->openedFile->file->implementation))->mutex);
 }
 
 

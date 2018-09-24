@@ -100,22 +100,49 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			removeFileFromPath((char*)rsi);
 			break;
 		case 21: //sys_open
-			return openFileToFD((char*)rsi, rdx);
+			return openFileFromPathToFD((char*)rsi, rdx);
 			break;
 		case 22: //sys_close
 			closeFileFromFD(rsi);
 			break;
-		case 23: //sys_close
+		case 23:
 			semCreate((char*)rsi, rdx);
 			break;
 		case 24:
-			semSet(rsi, rdx);
+			semDelete((char*)rsi);
 			break;
 		case 25:
-			semWait(rsi);
+			return semOpen((char*)rsi);
 			break;
 		case 26:
+			semClose(rsi);
+			break;
+		case 27:
+			semSet(rsi, rdx);
+			break;
+		case 28:
+			semWait(rsi);
+			break;
+		case 29:
 			semSignal(rsi);
+			break;
+		case 30:
+			mutexCreate((char*)rsi);
+			break;
+		case 31:
+			mutexDelete((char*)rsi);
+			break;
+		case 32:
+			return mutexOpen((char*)rsi);
+			break;
+		case 33:
+			mutexClose(rsi);
+			break;
+		case 34:
+			mutexLock(rsi);
+			break;
+		case 35:
+			mutexUnlock(rsi);
 			break;
 		case 40: //sleep
 			//printf("%d\n", rsi);

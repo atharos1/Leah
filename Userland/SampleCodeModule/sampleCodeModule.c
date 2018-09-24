@@ -6,6 +6,7 @@
 #include "programs/digitalClock.h"
 #include "asm/asmLibC.h"
 #include "sem.h"
+#include "mutex.h"
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
@@ -424,6 +425,15 @@ void cmd_ps(char * args) {
 	sys_listProcess();
 }
 
+void cmd_sem(char * args) {
+	mutex_create("mutex");
+	int mutex = mutex_open("mutex");
+	mutex_lock(mutex);
+		mutex_lock(mutex);
+	mutex_close(mutex);
+	mutex_delete("mutex");
+}
+
 /*void cmd_writeTo(char * args) {
 	char c;
 	char buff[100];
@@ -495,6 +505,7 @@ int main() {
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
+	command_register("sem", cmd_sem, "Lista los procesos con su información asociada");
 
 	while(programStatus != 1) {
 		commandListener();

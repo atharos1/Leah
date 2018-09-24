@@ -3,20 +3,6 @@
 #include "fileSystem.h"
 #include "asm/libasm.h"
 
-void strcat(char *original, char *add)
-{
-   while(*original)
-      original++;
-
-   while(*add)
-   {
-      *original = *add;
-      add++;
-      original++;
-   }
-   *original = '\0';
-}
-
 mutex_t mutex_create() {
 
 	mutex_t m = getMemory(sizeof(mutex_struct));

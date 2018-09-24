@@ -4,5 +4,6 @@
 void strcpy(char * dest, char * origin);
 int strlen(char * str);
 int strcmp(char string1[], char string2[] );
+void strcat(char *original, char *add);
 
 #endif
