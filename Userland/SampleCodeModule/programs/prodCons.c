@@ -53,14 +53,14 @@ void prodcons() {
 }
 
 void printMenu() {
-  printf("El restaurante Leah tiene un maximo de 20 bandejas\n");
-	printf("Hay 10 chefs y 10 camareros que inicialmente estan descansando\n", MAX_PRODCONS, MAX_PRODCONS);
+  printf("\nEl restaurante Leah tiene un maximo de 20 bandejas\n");
+	printf("Hay 10 chefs y 10 camareros que inicialmente estan descansando\n\n", MAX_PRODCONS, MAX_PRODCONS);
 	printf("Inserte:\n");
-  printf("%c para llamar a un chef\n", INC_CHEF);
-	printf("%c para poner a descansar a un chef\n", DEC_CHEF);
-	printf("%c para llamar a un camarero\n", INC_WAITER);
-	printf("%c para poner a descansar a un camarero\n", DEC_WAITER);
-	printf("%c para terminar la simulacion\n\n\n", QUIT);
+  printf("    %c para llamar a un chef\n", INC_CHEF);
+	printf("    %c para poner a descansar a un chef\n", DEC_CHEF);
+	printf("    %c para llamar a un camarero\n", INC_WAITER);
+	printf("    %c para poner a descansar a un camarero\n", DEC_WAITER);
+	printf("    %c para terminar la simulacion\n\n\n", QUIT);
 }
 
 void initTrays(char * trays) {
@@ -72,9 +72,8 @@ void initTrays(char * trays) {
 
 void printTrays(char * trays) {
 	printf("Trays = ");
-	printf("[ ");
 	printf(trays);
-	printf(" ]\n\n\n");
+	printf("\n\n\n");
 }
 
 void callChef() {
@@ -88,7 +87,7 @@ void callChef() {
 	mutex_unlock(mutex);
 }
 
-void * chef() {
+void * chef(void * args) {
 	printf("Soy un chef que se pone a trabajar!\n");
 	while(1) {
 		sem_wait(full);
@@ -129,7 +128,7 @@ void callWaiter() {
 	mutex_unlock(mutex);
 }
 
-void * waiter() {
+void * waiter(void * args) {
 	printf("Soy un camarero que se pone a trabajar!\n");
 	while(1) {
 		sem_wait(empty);
