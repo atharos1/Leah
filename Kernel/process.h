@@ -62,7 +62,7 @@ int aliveProcessCount();
 int waitpid(int pid);
 void threadJoin(int tid, void **retVal);
 void killProcess(int pid, int retValue);
-void killThread(int pid, int tid);
+void killThread(int pid, int tid, int no_force);
 void eraseTCB(thread_t * thread);
 
 #endif

@@ -38,9 +38,9 @@ void threadWrapper(void * code(), void * args) {
     void * (*thread_code)() = code;
     void * retValue = thread_code();
 
-    killThread(getCurrentPID(), getCurrentThread()->tid);
+    killThread(getCurrentPID(), getCurrentThread()->tid, FALSE);
 
-    _force_scheduler();
+    //_force_scheduler();
 }
 
 void processWrapper(int code()) {
@@ -53,10 +53,9 @@ void processWrapper(int code()) {
     _force_scheduler();
 }
 
-void killThread(int pid, int tid) {
+void killThread(int pid, int tid, int no_force) {
 
     thread_t * t = getProcessByPID(pid)->threadList[tid];
-    //printf("\npid: %d, tid: %d", pid, tid);
     int isCurrThread = (t == getCurrentThread());
     int thread_in_scheduler = scheduler_dequeue_thread(t);
 
@@ -79,7 +78,7 @@ void killThread(int pid, int tid) {
 
     }
 
-    if (isCurrThread)
+    if (isCurrThread && !no_force)
         _force_scheduler();
 }
 
@@ -89,7 +88,7 @@ void killProcess(int pid, int retValue) {
 
     for(int i = 0; i < MAX_THREAD_COUNT; i++)
         if(processList[pid]->threadList[i] != NULL)
-            killThread(pid, i);
+            killThread(pid, i, TRUE);
 
     processList[pid]->retValue = retValue;
 
@@ -222,7 +221,7 @@ int getFreeFD(int pid) {
 void purgeThreadList(process_t * process) {
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
         if(process->threadList[i] != NULL) {
-            killThread(process->pid, i);
+            killThread(process->pid, i, FALSE);
             process->threadList[i] = NULL;
         }
     }
