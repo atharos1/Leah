@@ -2,6 +2,7 @@
 
 #include <drivers/timer.h>
 #include <sleep.h>
+#include <scheduler.h>
 
 int timerSkip = FALSE;
 
@@ -20,6 +21,7 @@ void timer_Restart() {
 
 void noTimer() {
 	timerSkip = TRUE;
+	FORCE = TRUE;
 }
 
 void timer_Tick() {

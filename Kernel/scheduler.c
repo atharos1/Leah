@@ -19,7 +19,6 @@ struct currentThread {
 
 
 int threadCount = 0;
-int FORCE = FALSE;
 
 void scheduler_init() {
 
@@ -145,7 +144,7 @@ void * scheduler_nextTask(void * oldRSP) {
 
 
 void * schedule(void * oldRSP) {
-
+    //FORCE = TRUE;
     if( FORCE == TRUE || Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) )
         return scheduler_nextTask(oldRSP);
     else

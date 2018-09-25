@@ -10,6 +10,9 @@
 
 //typedef thread_t * (*nextThreadFunction)(SCHEDULER_QUEUE *, void *);
 
+static int FORCE = FALSE;
+
+
 typedef struct SCHEDULER_QUEUE {
     NODE * queue;
     thread_t * (*nextThreadFunction)(struct SCHEDULER_QUEUE *);
