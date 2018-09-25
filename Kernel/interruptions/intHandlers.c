@@ -159,9 +159,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			threadJoin(rsi, rdx);
 			break;
 		case 52: //thread cancel
-			//killThread(getCurrentPID(), rsi);
-			if( killThread(getCurrentPID(), rsi) )
-			 	_force_scheduler(); //Nismaneo
+			killThread(getCurrentPID(), rsi);
 			break;
 		case 100: //timerAppend, return 0 if successful, -1 if error
 			//printf("\nParametros: RAX %d rsi %d rdx %d RDX %d\n", rdi, rsi, rdx, rcx);

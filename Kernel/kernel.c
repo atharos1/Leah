@@ -90,6 +90,7 @@ int pruebaTask() {
 	return 0;
 }
 
+
 void initThread() {
 	//createProcess("Arcoiris", &pruebaTask, 4, 4);
 
@@ -100,7 +101,7 @@ void initThread() {
 	while(1) {
 		if(aliveProcessCount() == 1)
 			createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
-			
+
 		_force_scheduler();
 		//_halt();
 	}

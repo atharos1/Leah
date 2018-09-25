@@ -24,8 +24,6 @@ void noTimer() {
 
 void timer_Tick() {
 
-	//printf(" t: %d ", timer);
-
 	if (timerSkip) {
 	 	timerSkip = FALSE;
 	 	return;

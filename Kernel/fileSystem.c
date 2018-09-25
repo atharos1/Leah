@@ -5,6 +5,7 @@
 #include <asm/libasm.h>
 #include <sem.h>
 #include <mutex.h>
+#include <malloc.h>
 #include "stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE

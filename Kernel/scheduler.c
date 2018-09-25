@@ -74,7 +74,7 @@ void scheduler_dequeue_process(int pid) {
 
 int scheduler_dequeue_thread(thread_t * t) {
     if (threadCount == 0)
-      return;
+      return 0;
 
     int status = 0;
 
@@ -161,6 +161,10 @@ thread_t * getCurrentThread() {
 
 int getCurrentPID() {
     return currentThread.thread->process;
+}
+
+void notRunningTasks() {
+  runningTasks = FALSE;
 }
 
 

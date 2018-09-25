@@ -144,6 +144,4 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 	setBackgroundColor(bColor);
 
 	killProcess(getCurrentPID(), -1);
-	_force_scheduler();
-
 }

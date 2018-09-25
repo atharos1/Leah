@@ -26,5 +26,6 @@ int getCurrentPID();
 thread_t * scheduler_dequeue_current();
 int scheduler_dequeue_thread(thread_t * t);
 void scheduler_dequeue_process(int pid);
+void notRunningTasks();
 
 #endif

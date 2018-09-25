@@ -41,7 +41,6 @@ void threadWrapper(void * code(), void * args) {
     killThread(getCurrentPID(), getCurrentThread()->tid);
 
     _force_scheduler();
-
 }
 
 void processWrapper(int code()) {
@@ -51,9 +50,10 @@ void processWrapper(int code()) {
 
     killProcess(getCurrentPID(), retValue);
 
+    _force_scheduler();
 }
 
-int killThread(int pid, int tid) {
+void killThread(int pid, int tid) {
 
     thread_t * t = getProcessByPID(pid)->threadList[tid];
     //printf("\npid: %d, tid: %d", pid, tid);
@@ -63,7 +63,7 @@ int killThread(int pid, int tid) {
     if(!thread_in_scheduler) {
         t->status = DEAD;
     }
-        
+
     //TODO: REMOVE FROM IPC
 
     if(t->is_someone_joining == FALSE) { //Solo borro si nadie me espera
@@ -79,12 +79,13 @@ int killThread(int pid, int tid) {
 
     }
 
-    return isCurrThread;
+    if (isCurrThread)
+        _force_scheduler();
 }
 
 void killProcess(int pid, int retValue) {
 
-    int deletedCurrentThread = (getCurrentPID() == pid);
+    int isCurrProcess = (getCurrentPID() == pid);
 
     for(int i = 0; i < MAX_THREAD_COUNT; i++)
         if(processList[pid]->threadList[i] != NULL)
@@ -96,9 +97,9 @@ void killProcess(int pid, int retValue) {
 
     sem_bin_signal( processList[pid]->awaitSem ); //Despertamos a potencial waitpid
 
-    if(deletedCurrentThread)
-        _force_scheduler();
 
+    if(isCurrProcess)
+        _force_scheduler();
 }
 
 int createProcess(char * name, void * code, int stack_size, int heap_size) {

@@ -15,16 +15,18 @@ void upDown() {
     ups[i] = pthread_create(&up, (void*) 0);
     downs[i] = pthread_create(&down, (void*) 0);
   }
-  printf("LISTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-  sys_sleep(10000);
+
+  sys_sleep(2000);
+  printf("\nLISTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+
   printf("global = %d", global);
 
 }
 
 void * up(void * args) {
-	for (int i = 0; i < 2; i ++) {
+	for (int i = 0; i < 1000; i ++) {
 		mutex_lock(m);
-    printf("soy up\n");
+
     global ++ ;
 
 		mutex_unlock(m);
@@ -33,9 +35,8 @@ void * up(void * args) {
 }
 
 void * down(void * args) {
-	for (int i = 0; i < 2; i ++) {
+	for (int i = 0; i < 1000; i ++) {
 		mutex_lock(m);
-    printf("soy down\n");
 
     global -- ;
 
