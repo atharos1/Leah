@@ -419,23 +419,17 @@ void cmd_removeFile(char * args) {
 	sys_removeFile(args);
 }
 
-void cmd_ps(char * args) {
-	sys_listProcess();
-}
-
-void cmd_prodcons(char * args) {
-	prodcons();
-}
-
-void cmd_upDown (char * args) {
-	upDown();
-}
-
-/*void cmd_writeTo(char * args) {
+void cmd_writeTo(char * args) {
 	char c;
 	char buff[100];
 	int cursor = 0;
 	int lastChar = 0;
+
+	int fd = sys_open(args, O_WRONLY);
+	if (fd == -1) {
+		printf("Error al abrir el archivo\n");
+		return;
+	}
 
 	printf("Introduzca el texto que desea guardar:\n");
 
@@ -450,49 +444,61 @@ void cmd_upDown (char * args) {
 						buff[i] = buff[i + 1];
 
 					buff[lastChar] = '\0';
-					lastChar--;
 					cursor--;
 					putchar(c);
 			  }
 			} else {
-				if (c >= ' ' && c < 0x80) {
-					buff[cursor] = c;
-					cursor++;
-					lastChar++;
+				if (cursor < 100) {
+					if (c >= ' ' && c < 0x80) {
+						buff[cursor] = c;
+						cursor++;
+					}
+					putchar(c);
 				}
-				putchar(c);
 			}
 		}
 	}
 
-	buff[lastChar] = 0;
+	buff[cursor] = 0;
 
-	sys_writeTo(args, buff);
-}*/
+	sys_write(fd, buff, cursor);
+
+	sys_close(fd);
+}
+
+void cmd_cat (char * args) {
+	char str[16];
+	int fd = sys_open(args, O_RDONLY);
+	if (fd == -1) {
+		printf("Error al abrir el archivo\n");
+		return;
+	}
+
+	int aux;
+	while ((aux = sys_read(fd, str, 15)) > 0) {
+		str[aux] = 0;
+		printf("%s", str);
+	}
+
+	sys_close(fd);
+}
+
+void cmd_ps(char * args) {
+	sys_listProcess();
+}
+
+void cmd_prodcons(char * args) {
+	prodcons();
+}
+
+void cmd_upDown (char * args) {
+	upDown();
+}
+
 
 void program_digitalClock() {
 	digitalClock();
 	cmd_resetScreen();
-}
-
-void * hola(void * args) {
-
-	while(1) {
-		printf("hola");
-		sys_sleep(1000);
-	}
-	
-	return 0;
-}
-
-void * chau(void * args) {
-
-	while(1) {
-		printf("chau");
-		sys_sleep(1000);
-	}
-	
-	return 0;
 }
 
 int main() {
@@ -518,6 +524,8 @@ int main() {
 	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado");
 	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
+	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
+	command_register("cat", cmd_cat, "Imprime el archivo especificado");
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");

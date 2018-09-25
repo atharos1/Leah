@@ -76,11 +76,11 @@ void sys_removeFile(char * path) {
     _systemCall(20, path, 0, 0, 0);
 }
 
-int sys_openFile(char * path, int mode) {
+int sys_open(char * path, int mode) {
     return _systemCall(21, path, mode, 0, 0);
 }
 
-void sys_closeFile(int fd) {
+void sys_close(int fd) {
     _systemCall(22, fd, 0, 0, 0);
 }
 

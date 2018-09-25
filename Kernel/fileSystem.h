@@ -54,6 +54,8 @@ void closeFileFromFD(int fdIndex);
 
 uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes);
 uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes);
+uint32_t writeToFD(int fdIndex, char * buff, uint32_t bytes);
+uint32_t readFromFD(int fdIndex, char * buff, uint32_t bytes);
 
 void semCreate(char * path, int value);
 void semDelete(char * name);
@@ -71,7 +73,5 @@ void mutexLock(int fdIndex);
 void mutexUnlock(int fdIndex);
 
 void listDir(char * path);
-void cat(char * path);
-void writeTo(char * path, char * str);
 
 #endif

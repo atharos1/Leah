@@ -145,7 +145,6 @@ void * scheduler_nextTask(void * oldRSP) {
 
 
 void * schedule(void * oldRSP) {
-    //FORCE = TRUE;
     if( FORCE == TRUE || Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) )
         return scheduler_nextTask(oldRSP);
     else

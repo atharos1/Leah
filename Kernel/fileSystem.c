@@ -450,10 +450,10 @@ static void closeBuffer(opened_buffer_t * openedBuffer) {
 }
 
 uint32_t writeFile(fd_t * fd, char * buff, uint32_t bytes) {
-  if (fd->mode != O_WRONLY && fd->mode != O_RDWR)
+  if (bytes == 0 || fd == NULL)
     return 0;
 
-  if (bytes == 0 || fd == NULL)
+  if (fd->mode != O_WRONLY && fd->mode != O_RDWR)
     return 0;
 
   if (fd->openedFile->file->type == REGULAR_FILE)
@@ -514,10 +514,10 @@ static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t by
 
 
 uint32_t readFile(fd_t * fd, char * buff, uint32_t bytes) {
-  if (fd->mode != O_RDONLY && fd->mode != O_RDWR)
+  if (bytes == 0 || fd == NULL)
     return 0;
 
-  if (bytes == 0 || fd == NULL)
+  if (fd->mode != O_RDONLY && fd->mode != O_RDWR)
     return 0;
 
   if (fd->openedFile->file->type == REGULAR_FILE) {
@@ -577,6 +577,14 @@ static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t byt
 
   mutex_unlock(openedBuffer->mutex);
   return bytesToRead;
+}
+
+uint32_t writeToFD(int fdIndex, char * buff, uint32_t bytes) {
+  return writeFile(getFD(getCurrentPID(), fdIndex), buff, bytes);
+}
+
+uint32_t readFromFD(int fdIndex, char * buff, uint32_t bytes) {
+  return readFile(getFD(getCurrentPID(), fdIndex), buff, bytes);
 }
 
 void semCreate(char * name, int value) {
@@ -707,24 +715,4 @@ void listDir(char * path) {
       printf(" (sempahore)");
     current = current->next;
   }
-}
-
-void cat(char * path) {
-  char str[16];
-  fd_t * fd = openFileFromPath(path, O_RDONLY);
-  int aux;
-
-
-  while ((aux = readFile(fd, str, 15)) > 0) {
-    str[aux] = 0;
-    printf("%s", str);
-  }
-
-  closeFile(fd);
-}
-
-void writeTo(char * path, char * str) {
-  fd_t * fd = openFileFromPath(path, O_WRONLY);
-  writeFile(fd, str, strlen(str));
-  closeFile(fd);
 }

@@ -212,7 +212,7 @@ int getFreeTID(process_t * process) {
 }
 
 int getFreeFD(int pid) {
-    for(int i = 0; i < MAX_FD_COUNT; i++)
+    for(int i = 3; i < MAX_FD_COUNT; i++)
         if(processList[pid]->fd_table[i] == NULL)
             return i;
     return -1;
@@ -266,7 +266,7 @@ int registerFD(int pid, fd_t * file) {
 }
 
 fd_t * unregisterFD(int pid, int fdIndex) {
-  if (fdIndex < 0 || fdIndex >= MAX_FD_COUNT)
+  if (fdIndex < 3 || fdIndex >= MAX_FD_COUNT)
     return NULL;
   fd_t * ret = processList[pid]->fd_table[fdIndex];
   processList[pid]->fd_table[fdIndex] = NULL;
@@ -274,7 +274,7 @@ fd_t * unregisterFD(int pid, int fdIndex) {
 }
 
 fd_t * getFD(int pid, int fdIndex) {
-  if (fdIndex < 0 || fdIndex >= MAX_FD_COUNT)
+  if (fdIndex < 3 || fdIndex >= MAX_FD_COUNT)
     return NULL;
   return processList[pid]->fd_table[fdIndex];
 }

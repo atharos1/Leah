@@ -59,7 +59,7 @@ void * initializeKernelBinary()
 	uint64_t mem_amount_bytes = (*mem_amount) * (1 << 20); //En bytes
 	uint32_t * userlandSize = (uint32_t *)600000;
 	init_memoryManager((void *)((char *)sampleDataModuleAddress + *userlandSize), mem_amount_bytes);
-	init_malloc(5*1024*1024);
+	init_malloc(10*1024*1024);
 	init_fileSystem();
 	init_kb();
 

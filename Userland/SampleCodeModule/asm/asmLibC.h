@@ -5,7 +5,6 @@ typedef void (*function)();
 
 typedef int pthread_t;
 
-
 int sys_read(int fileDescriptor, void * buff, int length);
 int sys_write(int fileDescriptor, void * buff, int length);
 void sys_clearScreen();
@@ -24,8 +23,8 @@ void sys_memoryManagerTest(int bytes);
 void sys_listDir(char * path);
 void sys_makeFile(char * path, int type);
 void sys_removeFile(char * path);
-int sys_openFile(char * path, int mode);
-void sys_closeFile(int fd);
+int sys_open(char * path, int mode);
+void sys_close(int fd);
 void sys_semCreate(char * name, int value);
 void sys_semDelete(char * name);
 int sys_semOpen(char * name);

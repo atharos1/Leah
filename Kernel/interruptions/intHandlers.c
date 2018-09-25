@@ -27,22 +27,27 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 					buff[i] = r;
 
 				return i;
+			} else {
+				return readFromFD(rsi, (char*)rdx, rcx);
 			}
+
 			break;
 		case 4: //Write
-			if( rsi == 2) { //STD_ERR
-				setFontColor(0x000000);
-				setBackgroundColor(0xDC143C);
+			if (rsi == 1 || rsi == 2) {
+				if( rsi == 2) { //STD_ERR
+					setFontColor(0x000000);
+					setBackgroundColor(0xDC143C);
+				}
+				char * str = (char*)rdx;
+				int i;
+				for(i = 0; i < rcx; i++)
+					printChar(str[i]);
+				return i;
+			} else {
+				return writeToFD(rsi, (char*)rdx, rcx);
 			}
 
-			char * str = (char*)rdx;
-			int i;
-			for(i = 0; i < rcx; i++)
-				printChar(str[i]);
-
-			return i;
 			break;
-
 		case 5: //ClearScreen
 			clearScreen();
 			return 0;
@@ -145,14 +150,12 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			mutexUnlock(rsi);
 			break;
 		case 40: //sleep
-			//printf("%d\n", rsi);
 			sleepCurrentThread(rsi);
 			break;
 		case 41: //ps
 			listProcess();
 			break;
 		case 50: //new thread
-			//printf("new thread");
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;
 		case 51: //thread join
