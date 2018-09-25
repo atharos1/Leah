@@ -11,6 +11,7 @@ SCHEDULER_QUEUE * Queues[MAX_QUEUE_COUNT];
 int queueCount = 0;
 
 int runningTasks;
+int FORCE = FALSE;
 
 struct currentThread {
     thread_t * thread;

@@ -16,8 +16,15 @@ void upDown() {
     downs[i] = pthread_create(&down, (void*) 0);
   }
 
-  sys_sleep(2000);
-  printf("\nLISTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+  //sys_sleep(2000);
+  void * retvalue;
+
+  for (int i = 0; i < 5; i ++) {
+    pthread_join(ups[i], &retvalue);
+    pthread_join(downs[i], &retvalue);
+  }
+
+  printf("\nLISTOOO\n");
 
   printf("global = %d", global);
 
