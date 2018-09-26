@@ -1,6 +1,10 @@
 #include "../StandardLibrary/stdio.h"
+#include "../StandardLibrary/string.h"
 #include <stdint.h>
 #include "../asm/asmLibC.h"
+#include "../StandardLibrary/timer.h"
+
+#define NULL ((void *) 0)
 
 #define X 0
 #define Y 1
@@ -56,41 +60,47 @@ void drawComidita() {
     drawSquare(comidita[X]*SQUARE_SIZE, comidita[Y]*SQUARE_SIZE, SQUARE_SIZE, 0x00FF00);
 }
 
-void move() {
+void * move(void * args) {
     int c;
-    int k = 0;
-    while((c = getchar()) != EOF) {
+    //int k = 0;
+    /*while((c = getchar()) != 27) {
       k = c;
       if (c == 27) {
           status = -1;
           return;
       }
+    }*/
+
+    while((c = getchar()) != 27) {
+        switch (c) {
+            case 'w':
+                if (dir != ABAJO)
+                dir = ARRIBA;
+                break;
+            case 's':
+                if (dir != ARRIBA)
+                dir = ABAJO;
+                break;
+            case 'd':
+                if (dir != IZQUIERDA)
+                dir = DERECHA;
+                break;
+            case 'a':
+                if (dir != DERECHA)
+                dir = IZQUIERDA;
+                break;
+        }
     }
 
-    switch (k) {
-        case 'w':
-            if (dir != ABAJO)
-              dir = ARRIBA;
-            break;
-        case 's':
-            if (dir != ARRIBA)
-              dir = ABAJO;
-            break;
-        case 'd':
-            if (dir != IZQUIERDA)
-              dir = DERECHA;
-            break;
-        case 'a':
-            if (dir != DERECHA)
-              dir = IZQUIERDA;
-            break;
-    }
+    status = -1;
+    
 }
 
 void refresh() {
-    move();
-    //Borro la cola
 
+    //move();
+    
+    //Borro la cola
     if( snake[0][X] == comidita[X] && snake[0][Y] == comidita[Y] ) {
         snakeLength+= grow_rate;
 
@@ -112,6 +122,7 @@ void refresh() {
         snake[i][X] = snake[i - 1][X];
         snake[i][Y] = snake[i - 1][Y];
     }
+
 
     //printf("(%d, %d)", snake[0][X], snake[0][Y]);
 
@@ -203,6 +214,22 @@ void displayInstructions() {
 
 }
 
+int snake_main(char ** args) {
+
+    int ticks = 2;
+    int growrate = 4;
+
+    if(args[0] != NULL) {
+        ticks = args[0];
+
+        if(args[1] != NULL)
+            growrate = args[1];
+    }
+        
+    game_start(ticks, growrate);
+
+}
+
 int game_start(int ticks, int growrate) {
     grow_rate = growrate;
     setBackgroundColor(0x000000);
@@ -240,13 +267,18 @@ int game_start(int ticks, int growrate) {
 
     drawComidita();
 
-    sys_timerAppend(refresh, ticks);
+    //sys_timerAppend(refresh, ticks);
+
+    pthread_t moveListener = pthread_create(move, NULL);
+    timer_t refreshTimer = newTimer(refresh, 1, TRUE);
 
     while(status == 0) {
         //status = checkStatus();
     }
 
-    sys_timerRemove(refresh);
+    //sys_timerRemove(refresh);
+    cancelTimer(refreshTimer);
+    pthread_cancel(moveListener);
 
     if(status == -1) //Salio
         return -1;

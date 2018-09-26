@@ -11,6 +11,8 @@
 #include "mutex.h"
 #include "StandardLibrary/pthread.h"
 #include "StandardLibrary/stdlib.h"
+#include "StandardLibrary/timer.h"
+
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
@@ -84,33 +86,60 @@ int command_unregister(char * name) {
 	return 0;
 }
 
+int str_is_whitespace_only(char * str) {
+	for(int i = 0; str[i] != 0; i++)
+		if(str[i] != ' ')
+			return FALSE;
+
+	return TRUE;
+}
+
+#define MAX_ARGS 50
+
 int parseCommand(char * cmd, int l) {
 
 	if( *cmd == '\0' )
 		return 1;
 
 	char * args;
-	int i;
-	for(i = 0; i < l; i++) {
-		if( cmd[i] == ' ' ) {
-			args = &cmd[i] + sizeof(char);
-			cmd[i] = 0;
-			break;
+	int i = 0;
+
+	char * argv[MAX_ARGS];
+
+	//parse command
+	while(cmd[i] != ' ' && cmd[i] != 0)
+		i++;
+	
+	cmd[i] = '\0';
+	i++;
+	args = cmd + i;
+
+
+	//parse args
+	int currArg = 0;
+	int argBegin = 0;
+	for(int j = 0; j <= l - i; j++) {
+		if(args[j] == ' ' || args[j] == 0) {
+			args[j] = 0;
+			if(!str_is_whitespace_only(&args[argBegin])) {
+				argv[currArg] = &args[argBegin];
+				currArg++;
+			}
+			argBegin = j + 1;
 		}
 	}
+	argv[currArg] = NULL;
 
 	function f = getCommandFunction(cmd);
 	if( f == 0 ) {
 		printf("Comando '%s' desconocido.\n\n", cmd);
 		return -1;
 	}
+	f(argv);
 
-	if(i < l)
-		f(args);
-	else
-		f("");
+	printf("\n");
 
-	puts("\n\n");
+	//int pid = execv(cmd, f, args, TRUE, NULL);
 
 	return 0;
 }
@@ -151,49 +180,49 @@ void commandListener() {
 		if( c != EOF ) {
 
 			if (c == 8) { //backspace
-						if(cursor > 0) {
+				if(cursor > 0) {
 
-							for(int i = cursor; i < lastChar; i++)
-								cmd[i] = cmd[i + 1];
+					for(int i = cursor; i < lastChar; i++)
+						cmd[i] = cmd[i + 1];
 
-							cmd[lastChar] = '\0';
-							lastChar--;
-							cursor--;
-							putchar(c);
-						}
+					cmd[lastChar] = '\0';
+					lastChar--;
+					cursor--;
+					putchar(c);
+				}
 			} else if ( c == 1 || c == 2) { //up or down arrow
-						if (c == 1) {
-								if (histAccessIndex > 0) {
-									histAccessIndex--;
-								} else if (histSize > 0) {
-									histAccessIndex = histSize - 1;
-								}
-						} else {
-								if (histAccessIndex < (histSize - 1)) {
-									histAccessIndex++;
-								} else {
-									histAccessIndex = 0;
-								}
-						}
-						clearLine(cursor);
-						clearCmd(cmd);
-						cursor = 0;
-						lastChar = 0;
-						while (hist[histAccessIndex][cursor] != 0) {
-							cursor++;
-							lastChar++;
-						}
-						strcpy(cmd,hist[histAccessIndex]);
-						printf("%s",cmd);
+				if (c == 1) {
+					if (histAccessIndex > 0) {
+						histAccessIndex--;
+					} else if (histSize > 0) {
+						histAccessIndex = histSize - 1;
+					}
+				} else {
+					if (histAccessIndex < (histSize - 1)) {
+						histAccessIndex++;
+					} else {
+						histAccessIndex = 0;
+					}
+				}
+				clearLine(cursor);
+				clearCmd(cmd);
+				cursor = 0;
+				lastChar = 0;
+				while (hist[histAccessIndex][cursor] != 0) {
+					cursor++;
+					lastChar++;
+				}
+				strcpy(cmd,hist[histAccessIndex]);
+				printf("%s",cmd);
 			} else {
-						if (cursor < MAX_COMMAND_LENGTH) {
-								if (c >= ' ' && c < 0x80) {
-										cmd[cursor] = c;
-										cursor++;
-										lastChar++;
-								}
-								putchar(c);
-						}
+				if (cursor < MAX_COMMAND_LENGTH) {
+					if (c >= ' ' && c < 0x80) {
+						cmd[cursor] = c;
+						cursor++;
+						lastChar++;
+					}
+					putchar(c);
+				}
 			}
 		}
 	}
@@ -249,6 +278,7 @@ void cmd_exit() {
 
 void cmd_printWelcome() {
 	printf("Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' para mas informacion.");
+	puts("\n");
 }
 
 void cmd_resetScreen() {
@@ -257,6 +287,7 @@ void cmd_resetScreen() {
 	setFontSize(currFontSize);
 	clearScreen();
 	cmd_printWelcome();
+	//puts("\n");
 }
 
 void cmd_setFontSize(char * args) {
@@ -306,49 +337,46 @@ void cmd_memoryManagerTest() {
 	while(c = getchar(), c != 27 && blocksAllocated < 16) { //Esc
 
 		if( c != '\n' ) {
+			switch(c) {
+				case 8: //backspace
 
-				switch(c) {
-						case 8: //backspace
-
-								if(cursor > 0) {
-									cursor--;
-									putchar(c);
-									if (cursor == notNum)
-										notNum = 0;
-								}
-								break;
-
-						default:
-
-								if (c != -1) {
-									if (isNumeric(c)) {
-										bytes = c - '0' + bytes * 10;
-
-									} else {
-										if (notNum == 0)
-											notNum = cursor;
-									}
-									cursor ++;
-									putchar(c);
-								}
-								break;
-				}
-
-		} else {
-				if (bytes != 0) {
-					if (notNum == 0) {
-						sys_memoryManagerTest(bytes);
-						blocksAllocated ++;
-						bytes = 0;
-						if (blocksAllocated < 16)
-								printf("Inserte numero de bytes para reservar: ");
-					} else {
-						printf("\nSolo se aceptan numeros!\n\n");
-						printf("Inserte numero de bytes para reservar: ");
+					if(cursor > 0) {
+						cursor--;
+						putchar(c);
+						if (cursor == notNum)
+							notNum = 0;
 					}
-					notNum = 0;
-					cursor = 0;
+					break;
+
+				default:
+
+					if (c != -1) {
+						if (isNumeric(c)) {
+							bytes = c - '0' + bytes * 10;
+						} else {
+							if (notNum == 0)
+								notNum = cursor;
+						}
+						cursor ++;
+						putchar(c);
+					}
+					break;
+			}
+		} else {
+			if (bytes != 0) {
+				if (notNum == 0) {
+					sys_memoryManagerTest(bytes);
+					blocksAllocated ++;
+					bytes = 0;
+					if (blocksAllocated < 16)
+						printf("Inserte numero de bytes para reservar: ");
+				} else {
+					printf("\nSolo se aceptan numeros!\n\n");
+					printf("Inserte numero de bytes para reservar: ");
 				}
+				notNum = 0;
+				cursor = 0;
+			}
 		}
 	}
 	if (blocksAllocated < 16)
@@ -357,7 +385,23 @@ void cmd_memoryManagerTest() {
 	printf("\n\n\n      Todos los bloques alocados fueron liberados\n");
 }
 
-void program_Snake(char * args) {
+void program_Snake(char * args[]) {
+
+	int pid = execv("Snake", snake_main, args, TRUE, NULL);
+
+	int puntos = sys_waitPID(pid);
+
+	cmd_resetScreen();
+	puts("\n");
+
+	if(puntos == -1) {
+		printf("MY LITTLE BOA CONSTRICTOR: Has salido del juego.");
+	} else {
+		printf("MY LITTLE BOA CONSTRICTOR: ¡Has perdido! Tu puntuacion fue de %d puntos.", puntos);
+	}
+
+	//cmd_resetScreen();
+	/*return;
 
 	int num, grow_rate;
 
@@ -382,7 +426,7 @@ void program_Snake(char * args) {
 		printf("MY LITTLE BOA CONSTRICTOR: Has salido del juego.");
 	} else {
 		printf("MY LITTLE BOA CONSTRICTOR: ¡Has perdido! Tu puntuacion fue de %d puntos.", puntos);
-	}
+	}*/
 
 }
 
@@ -449,7 +493,7 @@ void cmd_writeTo(char * args) {
 }
 
 void program_digitalClock() {
-	int pid = execv("Digital Clock", &digitalClock, TRUE, NULL);
+	int pid = execv("Digital Clock", &digitalClock, NULL, TRUE, NULL);
 
 	sys_waitPID(pid);
 
@@ -496,14 +540,17 @@ void cmd_upDown (char * args) {
 	upDown();
 }
 
+void prueba() {
+	printf("hola");
+}
+
 int main() {
 
 	cmd_printWelcome();
 	currBackColor = getBackgroundColor();
 	currFontColor = getFontColor();
 	currFontSize = getFontSize();
-
-	puts("\n\n");
+	puts("\n");
 
 	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
 	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");

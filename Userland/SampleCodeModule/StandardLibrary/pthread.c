@@ -12,6 +12,6 @@ void pthread_cancel(pthread_t thread) {
     sys_cancelThread(thread);
 }
 
-int execv(char * name, int (*start_routine) (), int foreground, char * fdReplace) {
-    return sys_newProcess(name, start_routine);
+int execv(char * name, int (*start_routine) (), char ** args, int foreground, char * fdReplace) {
+    return sys_newProcess(name, start_routine, args);
 }

@@ -152,8 +152,8 @@ void sys_listProcess(ps_struct buffer[], int * bufferCount) {
     _systemCall(41, buffer, bufferCount, 0, 0);
 }
 
-int sys_newProcess(char * name, int (*start_routine) (char ** args)) {
-    return _systemCall(42, name, start_routine, 0);
+int sys_newProcess(char * name, int (*start_routine) (char ** args), char ** args) {
+    return _systemCall(42, name, start_routine, args);
 }
 
 int sys_waitPID(int pid) {

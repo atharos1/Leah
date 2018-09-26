@@ -48,7 +48,7 @@ typedef struct process_t {
     sem_t finishedSem;
 } process_t;
 
-int createProcess(char * name, void * code, int stack_size, int heap_size);
+int createProcess(char * name, void * code, char ** args, int stack_size, int heap_size);
 thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain);
 process_t * getProcessByPID(int pid);
 void purgeProcessList(int close);

@@ -28,7 +28,7 @@ void _irq01Handler();
 void _int80handler();
 
 /* Scheduler */
-void * _initialize_stack_frame(void * wrapper, void * rip, void * rsp);
+void * _initialize_stack_frame(void * wrapper, void * rip, void * rsp, void * args);
 void _force_scheduler();
 
 void _sem_increment();

@@ -15,16 +15,14 @@ int process_count = 0;
 int alive_process_count = 0;
 
 // ** WRAPPERS DE CÓDIGO ** // 
-void processWrapper(int code()) {
-    int (*main_thread_code)() = code;
-    int retValue = main_thread_code();
+void processWrapper(int main_thread_code(char**args), char ** args) {
+    int retValue = main_thread_code(args);
 
     killProcess(getCurrentPID(), retValue);
 }
 
-void threadWrapper(void * code(), void * args) {
-    void * (*thread_code)() = code;
-    void * retValue = thread_code();
+void threadWrapper(void * thread_code(void *), void * args) {
+    void * retValue = thread_code(args);
 
     killThread(getCurrentPID(), getCurrentThread()->tid, FALSE);
 }
@@ -57,7 +55,7 @@ void erasePCB(process_t * process) {
     freeMemory(process);
 }
 
-int createProcess(char * name, void * code, int stack_size, int heap_size) {
+int createProcess(char * name, void * code, char ** args, int stack_size, int heap_size) {
 
     int pid = getFreePID();
     if(pid == -1) //No entran mas
@@ -100,7 +98,7 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     process_count++;
     alive_process_count++;
     
-    createThread(process, code, NULL, stack_size, TRUE);    
+    createThread(process, code, args, stack_size, TRUE);    
 
     //printf("Creando %s\n", process->name);
 
@@ -220,9 +218,9 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
     thread->stack.base += stack_size * PAGE_SIZE;
 
     if(isMain == TRUE)
-        thread->stack.current = _initialize_stack_frame(&processWrapper, code, thread->stack.base);
+        thread->stack.current = _initialize_stack_frame(&processWrapper, code, thread->stack.base, args);
     else
-        thread->stack.current = _initialize_stack_frame(&threadWrapper, code, thread->stack.base);
+        thread->stack.current = _initialize_stack_frame(&threadWrapper, code, thread->stack.base, args);
 
     thread->process = process->pid;
     thread->retValue = NULL;
