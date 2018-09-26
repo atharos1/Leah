@@ -435,11 +435,11 @@ void cmd_listDir(char * args) {
 }
 
 void cmd_makeDirectory(char * args) {
-	sys_makeFile(args, 0);
+	sys_makeDir(args, 0);
 }
 
 void cmd_touch(char * args) {
-	sys_makeFile(args, 1);
+	sys_makeRegFile(args, 1);
 }
 
 void cmd_removeFile(char * args) {

@@ -46,6 +46,11 @@ void prodcons() {
 	}
 
 	terminateAll();
+
+  mutex_close(mutex);
+  sem_close(full);
+  sem_close(empty);
+
   mutex_delete("prodConsMutex");
   sem_delete("fullSem");
   sem_delete("emptySem");
