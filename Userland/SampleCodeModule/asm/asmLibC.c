@@ -68,19 +68,19 @@ void sys_listDir(char * path) {
     _systemCall(18, path, 0, 0, 0);
 }
 
-// void sys_makeDir(char * path, int type) {
-//     _systemCall(19, path, DIRECTORY, 0, 0);
-// }
-
 void sys_makeFile(char * path, int type) {
     _systemCall(19, path, type, 0, 0);
 }
 
-// void sys_makeRegFile(char * path, int type) {
-//     _systemCall(19, path, REGULAR_FILE, 0, 0);
-// }
+void sys_makeDir(char * path) {
+   _systemCall(19, path, DIRECTORY, 0, 0);
+}
 
-void sys_mkFifo(char * path, int type) {
+void sys_makeRegFile(char * path) {
+   _systemCall(19, path, REGULAR_FILE, 0, 0);
+}
+
+void sys_mkFifo(char * path) {
     _systemCall(19, path, BUFFER, 0, 0);
 }
 

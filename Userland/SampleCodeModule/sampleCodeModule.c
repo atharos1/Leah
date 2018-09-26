@@ -6,6 +6,7 @@
 #include "programs/digitalClock.h"
 #include "programs/prodCons.h"
 #include "programs/upDown.h"
+#include "programs/toUppercase.h"
 #include "asm/asmLibC.h"
 #include "sem.h"
 #include "mutex.h"
@@ -422,7 +423,6 @@ void cmd_writeTo(char ** args) {
 	char c;
 	char buff[100];
 	int cursor = 0;
-	int lastChar = 0;
 
 	int fd = sys_open(args[0], O_WRONLY);
 	if (fd == -1) {
@@ -439,10 +439,7 @@ void cmd_writeTo(char ** args) {
 			if (c == 8) { //backspace
 				if(cursor > 0) {
 
-					for(int i = cursor; i < lastChar; i++)
-						buff[i] = buff[i + 1];
-
-					buff[lastChar] = '\0';
+					buff[cursor] = '\0';
 					cursor--;
 					putchar(c);
 			  }
@@ -470,6 +467,15 @@ void program_digitalClock() {
 	sys_waitPID(pid);
 
 	cmd_resetScreen();
+}
+
+void program_toUppercase() {
+	int pid = execv("To Uppercase", toUppercase, NULL, TRUE, NULL);
+
+	sys_waitPID(pid);
+
+	//cmd_resetScreen();
+	puts("\n");
 }
 
 void cmd_cat(char ** args) {
@@ -555,6 +561,7 @@ int main() {
 	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
+	command_register("toUppercase", program_toUppercase, "Test para pipes");
 	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado");
 	command_register("cd", cmd_cd, "Cambia el directorio actual");
 	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
