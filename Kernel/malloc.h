@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-void init_malloc(uint32_t bytes);
+/*void init_malloc(uint32_t bytes);
 void *malloc(uint32_t size);
-void free(void *pointer);
+void free(void *pointer);*/
 
 #endif

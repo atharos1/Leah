@@ -64,6 +64,8 @@ void threadJoin(int tid, void **retVal);
 void killProcess(int pid, int retValue);
 void killThread(int pid, int tid, int called_from_kill_process);
 void eraseTCB(thread_t * thread);
+void * getHeapBase(int pid);
+int getHeapSize(int pid);
 
 typedef struct
 {

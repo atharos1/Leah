@@ -84,6 +84,8 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
         process->heap.base = NULL;
     }
     process->heap.size = heap_size * PAGE_SIZE;
+    uint32_t * heapInitData = process->heap.base;
+    *heapInitData = 0;
 
     process->pid = pid;
     processList[process->pid] = process;
@@ -100,7 +102,17 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     
     createThread(process, code, NULL, stack_size, TRUE);    
 
+    //printf("Creando %s\n", process->name);
+
     return process->pid;
+}
+
+int getHeapSize(int pid) {
+    return processList[pid]->heap.size;
+}
+
+void * getHeapBase(int pid) {
+    return processList[pid]->heap.base;
 }
 
 int getFreePID() {
@@ -172,15 +184,6 @@ void killThread(int pid, int tid, int called_from_kill_process) {
         t->status = DEAD;
     }
 
-    if(t->tid == 0 && !called_from_kill_process) { //Es el principal
-        processList[pid]->threadList[tid] = NULL;
-        if(thread_in_scheduler)
-            eraseTCB( processList[pid]->threadList[tid] );
-
-        killProcess(pid, -1);
-        return;
-    }
-
     if(t->is_someone_joining == FALSE || called_from_kill_process) { //Solo borro si nadie me espera
         processList[pid]->threadList[tid] = NULL;
 
@@ -190,6 +193,9 @@ void killThread(int pid, int tid, int called_from_kill_process) {
     } else
         sem_signal( t->finishedSem ); //Despertamos al thread que hizo join
 
+
+    if(tid == 0 && !called_from_kill_process)
+        killProcess(pid, -1);
 
     if (isCurrThread && !called_from_kill_process)
         _force_scheduler();

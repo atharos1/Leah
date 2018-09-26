@@ -102,6 +102,8 @@ void initThread() {
 		if(aliveProcessCount() == 1)
 			createProcess("Terminalator", sampleCodeModuleAddress, 4, 4);
 
+		//printf("en init");
+
 		_force_scheduler();
 		//_halt();
 	}

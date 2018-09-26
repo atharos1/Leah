@@ -10,6 +10,7 @@
 #include "sem.h"
 #include "mutex.h"
 #include "StandardLibrary/pthread.h"
+#include "StandardLibrary/stdlib.h"
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
@@ -224,10 +225,6 @@ void invalidArgument(char * args) {
 	printf("Argumento '%s' invalido", args);
 }
 
-void cmd_echo(char * args) {
-	puts(args);
-}
-
 void cmd_time(char * args) {
 	printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", sys_rtc(7), sys_rtc(8), sys_rtc(9), sys_rtc(4), sys_rtc(2), sys_rtc(0));
 }
@@ -294,25 +291,6 @@ void cmd_setBackColor(char * args) {
 	currBackColor = color;
 	cmd_resetScreen();
 
-}
-
-void cmd_Div100(char * args) {
-
-	int num;
-	int leidos = sscanf(args, "%d", &num);
-
-	if( leidos <= 0 ) {
-		invalidArgument(args);
-		return;
-	}
-
-	int r = 100 / num;
-
-	printf("100 / %d = %d", num, r);
-}
-
-void cmd_throwInvalidOpCode() {
-	_throwInvalidOpCode();
 }
 
 void cmd_memoryManagerTest() {
@@ -527,14 +505,11 @@ int main() {
 
 	puts("\n\n");
 
-	command_register("echo", cmd_echo, "Imprime una cadena de caracteres en pantalla. Argumentos: [cadena]");
 	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
 	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
 	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
 	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
 	command_register("digital-clock", program_digitalClock, "Muestra un reloj digital en pantalla");
-	command_register("div100", cmd_Div100, "Divide 100 por el valor especificado (Prueba ex0). Argumentos: [*divisor]");
-	command_register("invopcode", cmd_throwInvalidOpCode, "Salta a la posicion de memoria 27h, provocando una excepcion InvalidOpCode");
 	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");

@@ -69,6 +69,8 @@ void sys_listProcess(ps_struct buffer[], int * bufferCount);
 
 int sys_newProcess(char * name, int (*start_routine) (char ** args));
 int sys_waitPID(int pid);
+int sys_getHeapSize();
+void * sys_getHeapBase();
 
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
 void sys_joinThread(pthread_t thread, void ** retVal);

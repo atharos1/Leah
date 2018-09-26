@@ -160,6 +160,14 @@ int sys_waitPID(int pid) {
     return _systemCall(43, pid, 0, 0);
 }
 
+int sys_getHeapSize() {
+    return _systemCall(44, 0, 0, 0);
+}
+
+void * sys_getHeapBase() {
+    return _systemCall(45, 0, 0, 0);
+}
+
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg) {
     return _systemCall(50, start_routine, arg, 0);
 }

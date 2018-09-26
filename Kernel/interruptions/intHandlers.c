@@ -167,6 +167,12 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 43: //waitpid
 			return waitpid(rsi);
 			break;
+		case 44: //getHeapSize
+			return getHeapSize(getCurrentPID());
+			break;
+		case 45: //getHeapBase
+			return getHeapBase(getCurrentPID());
+			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;

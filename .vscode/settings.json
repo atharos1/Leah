@@ -10,6 +10,9 @@
         "sem.h": "c",
         "asmlibc.h": "c",
         "asmlibc.h\u0000libc.h": "c",
-        "process.h": "c"
+        "process.h": "c",
+        "pthread.h": "c",
+        "timer.h": "c",
+        "malloc.h": "c"
     }
 }
