@@ -173,6 +173,9 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 45: //getHeapBase
 			return getHeapBase(getCurrentPID());
 			break;
+		case 46: //killProcess
+			killProcess((int)rsi, -1);
+			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;

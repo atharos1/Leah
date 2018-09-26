@@ -180,6 +180,10 @@ void * sys_getHeapBase() {
     return _systemCall(45, 0, 0, 0);
 }
 
+void sys_killProcess(int pid) {
+    _systemCall(46, pid, 0, 0);
+}
+
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg) {
     return _systemCall(50, start_routine, arg, 0);
 }

@@ -75,6 +75,7 @@ int sys_newProcess(char * name, int (*start_routine) (char ** args), char ** arg
 int sys_waitPID(int pid);
 int sys_getHeapSize();
 void * sys_getHeapBase();
+void sys_killProcess(int pid);
 
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
 void sys_joinThread(pthread_t thread, void ** retVal);

@@ -261,10 +261,10 @@ void cmd_time(char * args) {
 void cmd_help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
-		printf("%s\n", commandList[i].name);
+		printf("%s ", commandList[i].name);
 		setFontColor(currFontColor);
 			//if(commandList[i].desc != '\0') {
-				printf("  %s", commandList[i].desc);
+				printf(" %s", commandList[i].desc);
 				if( i < commandsNum - 1)
 					putchar('\n');
 			//}
@@ -408,6 +408,10 @@ void cmd_makeDirectory(char ** args) {
 
 void cmd_touch(char ** args) {
 	sys_makeFile(args[0], REGULAR_FILE);
+}
+
+void cmd_killProcess(char ** args) {
+	sys_killProcess(atoi(args[0]));
 }
 
 void cmd_removeFile(char ** args) {
@@ -562,6 +566,7 @@ int main() {
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
 	command_register("arcoiris", program_arcoiris, "Cambia cada un segundo el color de fuente");
+	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado");
 	command_register("exit", cmd_exit, "Cierra la Shell");
 
 	while(programStatus != 1) {
