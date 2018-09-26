@@ -556,7 +556,7 @@ int main() {
 	currFontSize = getFontSize();
 	puts("\n");
 
-	command_register("time", cmd_time, "Muentra la fecha y hora del reloj del sistema");
+	command_register("time", cmd_time, "Muestra la fecha y hora del reloj del sistema");
 	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
 	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
 	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
@@ -571,7 +571,7 @@ int main() {
 	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
 	command_register("cat", cmd_cat, "Imprime el archivo especificado");
-	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
+	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
 	command_register("exit", cmd_exit, "Cierra la Shell");
