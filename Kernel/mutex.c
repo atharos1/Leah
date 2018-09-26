@@ -50,8 +50,8 @@ void mutex_unlock(mutex_t mutex) {
       eraseTCB(t);
     else {
       //mutex->owner = t;
-      mutex->ownerPID = getCurrentPID();
-      mutex->ownerTID = getCurrentThread()->tid;
+      mutex->ownerPID = t->process;
+      mutex->ownerTID = t->tid;
       scheduler_enqueue(t);
       return;
     }
