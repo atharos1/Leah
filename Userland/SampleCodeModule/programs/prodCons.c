@@ -8,7 +8,7 @@ char trays[TRAYS_QTY + 1];
 int full;
 int empty;
 int mutex;
-int index = 0;
+int indexChef = 0, indexWaiter = 0;
 pthread_t waiters[MAX_PRODCONS] = {0};
 pthread_t chefs[MAX_PRODCONS] = {0};
 int waitersQty = 0, chefsQty = 0;
@@ -46,11 +46,6 @@ void prodcons() {
 	}
 
 	terminateAll();
-
-  mutex_close(mutex);
-  sem_close(full);
-  sem_close(empty);
-
   mutex_delete("prodConsMutex");
   sem_delete("fullSem");
   sem_delete("emptySem");
@@ -99,12 +94,13 @@ void * chef(void * args) {
 	while(1) {
 		sem_wait(full);
 		mutex_lock(mutex);
-    trays[index] = '0';
-    if (index != TRAYS_QTY - 1)
-      index ++;
+    trays[indexChef++] = '0';
+    sem_signal(empty);
+
+    if (indexWaiter != TRAYS_QTY - 1)
+      indexWaiter++;
 		printTrays(trays);
 
-		sem_signal(empty);
 		mutex_unlock(mutex);
 	}
 	return 0;
@@ -140,12 +136,13 @@ void * waiter(void * args) {
 	while(1) {
 		sem_wait(empty);
 		mutex_lock(mutex);
-		trays[index] = EMPTY_SPACE;
-    if (index != 0)
-      index --;
+		trays[indexWaiter--] = EMPTY_SPACE;
+    sem_signal(full);
+    
+    if (indexChef != 0)
+      indexChef--;
 		printTrays(trays);
 
-		sem_signal(full);
 		mutex_unlock(mutex);
 	}
 }
@@ -172,7 +169,8 @@ void terminateAll() {
   for (int i = 0; i < waitersQty; i++) {
       pthread_cancel(waiters[i]);
   }
-  index = 0;
+  indexChef = 0;
+  indexWaiter = 0;
   waitersQty = 0;
   chefsQty = 0;
   mutex_unlock(mutex);
