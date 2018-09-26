@@ -224,7 +224,7 @@ void cmd_time(char * args) {
 
 void cmd_prueba() {
 	printf("HOLA %5d \7", 1234);
-	for (int i = 0; i < 100; i++) sys_sleep(60);
+	for (int i = 0; i < 10; i++) sys_sleep(60);
 }
 
 void cmd_help() {

@@ -4,6 +4,7 @@
 #include <asm/libasm.h>
 #include <drivers/kb_layout.h>
 #include <fileSystem.h>
+#include <scheduler.h>
 
 #define BUFF_SIZE 0xFF
 

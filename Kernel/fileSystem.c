@@ -3,12 +3,12 @@
 #include <drivers/console.h>
 #include <malloc.h>
 #include <scheduler.h>
+#include <asm/libasm.h>
+#include <sem.h>
+#include <mutex.h>
 #include "stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
-
-#define WRITE 0
-#define READ 1
 
 static void * createBuffer();
 static void * createDirectory();
@@ -238,20 +238,15 @@ static void removeRegularFile(file_t * file) {
 
 //////////// I/O OPERATIONS ////////////
 
-typedef struct pending_operator {
-  thread_t * thread;
-  int operation;
-  uint32_t bytes;
-  char * buff;
-  int * ret;
-} pending_operator_t;
-
 typedef struct opened_buffer {
   uint32_t writeCursor;
   uint32_t readCursor;
   int hasEOF;
-  pending_operator_t * first;
-  pending_operator_t * last;
+  mutex_t mutex;
+  sem_t writerSem;
+  sem_t readerSem;
+  int allowWriters;
+  int allowReaders;
 } opened_buffer_t;
 
 static opened_buffer_t * openBuffer();
@@ -260,8 +255,6 @@ static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32
 
 static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes);
-static void updateOperators(opened_file_t * openedFile);
-
 
 static fd_t * openFile(file_t * file, int mode) {
 
@@ -327,7 +320,6 @@ void closeFile(fd_t * fd) {
     openedFile->writers--;
     if (openedFile->writers == 0 && openedFile->file->type == BUFFER) {
       ((opened_buffer_t*)(openedFile->implementation))->hasEOF = 1;
-      updateOperators(openedFile);
     }
   }
 
@@ -363,8 +355,11 @@ static opened_buffer_t * openBuffer() {
   openedBuffer->writeCursor = 0;
   openedBuffer->readCursor = 0;
   openedBuffer->hasEOF = 0;
-  openedBuffer->first = NULL;
-  openedBuffer->last = NULL;
+  openedBuffer->mutex = mutex_create();
+  openedBuffer->readerSem = sem_create("rs", 0);
+  openedBuffer->writerSem = sem_create("ws", 1);
+  openedBuffer->allowReaders = 0;
+  openedBuffer->allowWriters = 1;
   return openedBuffer;
 }
 
@@ -403,25 +398,33 @@ static uint32_t writeRegularFile(opened_file_t * openedFile, char * buff, uint32
 
 static uint32_t writeBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes) {
   opened_buffer_t * openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+  sem_wait(openedBuffer->writerSem);
+  mutex_lock(openedBuffer->mutex);
+
   buffer_t * buffer = (buffer_t*)(openedFile->file->implementation);
   int availableBytes = openedBuffer->readCursor - openedBuffer->writeCursor;
   availableBytes = (availableBytes > 0) ? availableBytes : BUFFER_SIZE + availableBytes;
-  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+  int bytesToWrite = (availableBytes > bytes) ? bytes : availableBytes;
 
-  for (int i = 0; i < availableBytes; i++) {
+  if (bytesToWrite < availableBytes)
+    sem_signal(openedBuffer->writerSem);
+  else
+    openedBuffer->allowWriters = 0;
+
+  for (int i = 0; i < bytesToWrite; i++) {
     buffer->content[openedBuffer->writeCursor] = buff[i];
     openedBuffer->writeCursor++;
     if (openedBuffer->writeCursor == BUFFER_SIZE)
       openedBuffer->writeCursor = 0;
   }
 
-  /*if (availableBytes == 0) {
-    int ret;
-    addOperator(openedBuffer, openedscheduler_dequeue_current(), READ, bytes, buff, &ret);
-    return *ret;
-  }*/
-
-  return availableBytes;
+  if (openedBuffer->allowReaders == 0) {
+    openedBuffer->allowReaders = 1;
+    sem_signal(openedBuffer->readerSem);
+  }
+  
+  mutex_unlock(openedBuffer->mutex);
+  return bytesToWrite;
 }
 
 
@@ -462,62 +465,33 @@ static uint32_t readRegularFile(opened_file_t * openedFile, char * buff, uint32_
 
 static uint32_t readBuffer(opened_file_t * openedFile, char * buff, uint32_t bytes) {
   opened_buffer_t * openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+  sem_wait(openedBuffer->readerSem);
+  mutex_lock(openedBuffer->mutex);
+
   buffer_t * buffer = (buffer_t*)(openedFile->file->implementation);
   int availableBytes = openedBuffer->writeCursor - openedBuffer->readCursor;
   availableBytes = (availableBytes >= 0) ? availableBytes : BUFFER_SIZE + availableBytes;
-  availableBytes = (availableBytes > bytes) ? bytes : availableBytes;
+  int bytesToRead = (availableBytes > bytes) ? bytes : availableBytes;
 
-  for (int i = 0; i < availableBytes; i++) {
+  if (bytesToRead < availableBytes || openedBuffer->hasEOF)
+    sem_signal(openedBuffer->readerSem);
+  else
+    openedBuffer->allowReaders = 0;
+
+  for (int i = 0; i < bytesToRead; i++) {
     buff[i] = buffer->content[openedBuffer->readCursor];
     openedBuffer->readCursor++;
     if (openedBuffer->readCursor == BUFFER_SIZE)
       openedBuffer->readCursor = 0;
   }
 
-  /*if (availableBytes == 0 && !(openedBuffer->hasEOF)) {
-    int ret;
-    addOperator(openedBuffer, openedscheduler_dequeue_current(), READ, bytes, buff, &ret);
-    return *ret;
-  }*/
+  if (openedBuffer->allowWriters == 0) {
+    openedBuffer->allowWriters = 1;
+    sem_signal(openedBuffer->writerSem);
+  }
 
-  return availableBytes;
-}
-
-static void updateOperators(opened_file_t * openedFile) {
-  /*if (openedFile->file->type != BUFFER)
-    return;
-
-  opened_buffer_t * openedBuffer = (openedBuffer*)(openedFile->implementation);
-  pending_operator_t * current = openedBuffer->first;
-  pending_operator_t * previous = NULL;
-
-  int ret;
-
-  while(current != NULL) {
-    if (current->operation == READ)
-      ret = readBuffer(openedFile, current->buff, current->bytes);
-    if (current->operation == WRITE)
-      ret = writeBuffer(openedFile, current->buff, current->bytes);
-
-    if (ret == 0) {
-      if (openedBuffer->hasEOF)
-        *(current->ret) = -1;
-      else
-        break;
-    }
-
-    if (current == openedBuffer->first)
-      openedBuffer->first = openedBuffer->first->next;
-
-
-    scheduler_enqueue(current->thread);
-
-    current = current->next;
-  }*/
-}
-
-static void addOperator(opened_buffer_t * openedBuffer, thread_t * thread, int operation, uint32_t bytes, char * buff, int * ret) {
-
+  mutex_unlock(openedBuffer->mutex);
+  return bytesToRead;
 }
 
 

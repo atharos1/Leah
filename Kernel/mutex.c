@@ -1,6 +1,7 @@
 #include "mutex.h"
 #include "scheduler.h"
 #include "fileSystem.h"
+#include "asm/libasm.h"
 
 void strcat(char *original, char *add)
 {
@@ -24,7 +25,8 @@ mutex_t mutex_create() {
     makeFile(path, SYMBOLIC_LINK);*/
 
 	mutex_t m = getMemory(sizeof(mutex_struct));
-	*(m->value) = 0;
+	m->value = 0;
+  m->owner = NULL;
 	m->lockedQueue = NULL;
 	return m;
 }
@@ -44,19 +46,29 @@ mutex_t mutex_create() {
 }*/
 
 void mutex_lock(mutex_t mutex) {
-    if(_mutex_acquire(mutex->value)) {
+    if (getCurrentThread() == NULL)
+      return;
+    if(!_mutex_acquire(&(mutex->value))) {
         mutex->owner = getCurrentThread();
     } else {
-        mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, scheduler_dequeue_current());
+        thread_t * thread = getCurrentThread();
+        mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, thread);
+        scheduler_dequeue_current();
 		    _force_scheduler();
     }
 }
 
 void mutex_unlock(mutex_t mutex) {
-    if( mutex->owner == getCurrentThread() ) {
-        *(mutex->value) = 0;
-        thread_t * t = getFirst(mutex->lockedQueue);
-		mutex->lockedQueue = deleteHead(mutex->lockedQueue);
-		scheduler_enqueue(t);
+  if (getCurrentThread() == NULL)
+    return;
+  if( mutex->owner == getCurrentThread() ) {
+    thread_t * t = getFirst(mutex->lockedQueue);
+    mutex->owner = t;
+    if (t == NULL) {
+      mutex->value = 0;
+    } else {
+      mutex->lockedQueue = deleteHead(mutex->lockedQueue);
+      scheduler_enqueue(t);
     }
+  }
 }
