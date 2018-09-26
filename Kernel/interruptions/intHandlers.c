@@ -159,7 +159,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			sleepCurrentThread(rsi);
 			break;
 		case 41: //ps
-			listProcess();
+			listProcess(rsi, rdx);
 			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;

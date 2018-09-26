@@ -148,8 +148,8 @@ void sys_sleep(int millis) {
     _systemCall(40, millis, 0, 0, 0);
 }
 
-void sys_listProcess() {
-    _systemCall(41, 0, 0, 0, 0);
+void sys_listProcess(ps_info * buffer, int * bufferCount) {
+    _systemCall(41, buffer, bufferCount, 0, 0);
 }
 
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg) {

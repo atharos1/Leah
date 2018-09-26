@@ -246,13 +246,18 @@ struct processData {
     int threadCount;
 };
 */
-void listProcess() {
-    printf("PID    |    NAME\n");
+void listProcess(ps_info * buffer, int * bufferCount) {
+    int n = 0;
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
         if(processList[i] != NULL) {
-            printf("%d        %s        %X        %X\n", processList[i]->pid, processList[i]->name, processList[i]->threadList[0]->stack.current, processList[i]->threadList[0]->stack.base);
+            buffer[i] = init_malloc(sizeof(ps_struct));
+            buffer[i]->pid = processList[i]->pid;
+            buffer[i]->name = processList[i]->name;
+            buffer[i]->threadCount = processList[i]->threadCount;
+            n++;
         }
     }
+    *bufferCount = n;
 }
 
 process_t * getProcessByPID(int pid) {

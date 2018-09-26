@@ -65,4 +65,12 @@ void killProcess(int pid, int retValue);
 void killThread(int pid, int tid, int no_force);
 void eraseTCB(thread_t * thread);
 
+typedef struct
+{
+    int pid;
+    char * name;
+    int threadCount;
+} ps_struct;
+typedef ps_struct * ps_info;
+
 #endif

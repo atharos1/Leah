@@ -14,6 +14,14 @@
 typedef void (*function)();
 typedef int pthread_t;
 
+typedef struct
+{
+	int pid;
+	char * name;
+	int threadCount;
+} ps_struct;
+typedef ps_struct * ps_info;
+
 int sys_read(int fileDescriptor, void * buff, int length);
 int sys_write(int fileDescriptor, void * buff, int length);
 void sys_clearScreen();
@@ -53,7 +61,7 @@ void sys_beep(int nFrequence, unsigned char duration);
 int sys_rtc(int fetch);
 void _throwInvalidOpCode();
 void sys_sleep();
-void sys_listProcess();
+void sys_listProcess(ps_info * buffer, int * bufferCount);
 
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
 void sys_joinThread(pthread_t thread, void ** retVal);

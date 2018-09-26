@@ -419,7 +419,30 @@ void cmd_removeFile(char * args) {
 	sys_removeFile(args);
 }
 
+<<<<<<< Updated upstream
 void cmd_writeTo(char * args) {
+=======
+void cmd_ps(char * args) {
+	ps_info * buffer;
+	int * bufferCount;
+	sys_listProcess(buffer, bufferCount);
+	
+	printf("PID    THREADS    NAME\n");
+	for(int i = 0; i < *bufferCount; i++) {
+		printf("%d      %d          %s\n", buffer[i]->pid, buffer[i]->threadCount, buffer[i]->name);
+	}
+}
+
+void cmd_prodcons(char * args) {
+	prodcons();
+}
+
+void cmd_upDown (char * args) {
+	upDown();
+}
+
+/*void cmd_writeTo(char * args) {
+>>>>>>> Stashed changes
 	char c;
 	char buff[100];
 	int cursor = 0;
