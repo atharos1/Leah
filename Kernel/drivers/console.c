@@ -117,6 +117,7 @@ void incLine(int cant) {
 }
 
 void printChar(char c) {
+	int cantSpaces = 0;
 	switch(c) {
 		case ENTER:
 			resetCursor();
@@ -130,6 +131,12 @@ void printChar(char c) {
 		case BELL:
 			beep(1000, 3);
  			break;
+		case TAB:
+			cantSpaces = curScreenCol % TAB_WIDTH;
+			if(cantSpaces == 0) cantSpaces = TAB_WIDTH;
+			for(int i = 0; i < cantSpaces; i++)
+				printChar(' ');
+			break;
 		default:
 			if (c < ' ' || c >= 0x80)
 				break;
@@ -145,7 +152,6 @@ void clearScreen() {
 }
 
 void printf(char * format, ...) {
-
 	va_list pa; //Lista de parámetros
     va_start(pa, format);
 

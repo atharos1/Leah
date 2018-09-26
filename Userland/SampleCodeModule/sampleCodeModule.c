@@ -275,6 +275,7 @@ void cmd_help() {
 void cmd_exit() {
 	printf("Finalizando shell...");
 	programStatus = 1;
+	sys_exit(0);
 }
 
 void cmd_printWelcome() {
