@@ -14,6 +14,11 @@
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
 
+#define FALSE 0
+#define TRUE 1
+#define NULL ((void *) 0)
+
+
 unsigned int currFontColor = 0xFFFFFF;
 unsigned int currBackColor = 0x000000;
 unsigned int currFontSize = 1;
@@ -462,8 +467,15 @@ void cmd_writeTo(char * args) {
 	buff[cursor] = 0;
 
 	sys_write(fd, buff, cursor);
-
 	sys_close(fd);
+}
+
+void program_digitalClock() {
+	int pid = execv("Digital Clock", &digitalClock, TRUE, NULL);
+
+	sys_waitPID(pid);
+
+	cmd_resetScreen();
 }
 
 void cmd_cat(char * args) {

@@ -8,6 +8,7 @@
 #include "memoryManager.h"
 #include "stdlib.h"
 #include "fileSystem.h"
+#include "sem.h"
 
 //Estados de THREADS
 #define READY 0
@@ -39,19 +40,18 @@ typedef struct process_t {
     int pid;
     char * name;
     memblock_t heap;
-    int threadCount;
+    //int threadCount;
     thread_t * threadList[MAX_THREAD_COUNT];
     fd_t * fd_table[MAX_FD_COUNT];
     file_t * cwd;
     int retValue;
-    void * finishedSem;
-    void * awaitSem;
+    sem_t finishedSem;
 } process_t;
 
 int createProcess(char * name, void * code, int stack_size, int heap_size);
 thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain);
 process_t * getProcessByPID(int pid);
-void purgeProcessList();
+void purgeProcessList(int close);
 void listProcess();
 int getFreeFD(int pid);
 int registerFD(int pid, fd_t * file);
@@ -62,7 +62,7 @@ int aliveProcessCount();
 int waitpid(int pid);
 void threadJoin(int tid, void **retVal);
 void killProcess(int pid, int retValue);
-void killThread(int pid, int tid, int no_force);
+void killThread(int pid, int tid, int called_from_kill_process);
 void eraseTCB(thread_t * thread);
 
 typedef struct

@@ -27,14 +27,20 @@ int roundRobin_checkEvict(SCHEDULER_QUEUE * q) {
     return FALSE;
 }
 
+void roundRobin_restartEvict(SCHEDULER_QUEUE * q) {
+    data_RoundRubin * data = q->queueData;
+    data->currQuantum = data->quantum - 1; //Garantizo que checkEvict retorne true en la próxima ejecución
+}
+
 SCHEDULER_QUEUE * roundRobin_newQueue(int quantum) {
     SCHEDULER_QUEUE * q = malloc( sizeof(SCHEDULER_QUEUE) );
     data_RoundRubin * data = malloc( sizeof(data_RoundRubin) );
 
     q->queue = NULL;
-    q->threadCount = 0;
-    q->nextThreadFunction = roundRobin_nextThread;
-    q->checkEvictFunction = roundRobin_checkEvict;
+    //q->threadCount = 0;
+    q->nextThreadFunction   = roundRobin_nextThread;
+    q->checkEvictFunction   = roundRobin_checkEvict;
+    q->restartEvictFunction = roundRobin_restartEvict;
 
     data->quantum = quantum;
     data->currQuantum = 0;

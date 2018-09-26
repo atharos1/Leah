@@ -2,17 +2,46 @@
 #include "scheduler.h"
 #include "asm/libasm.h"
 #include "drivers/console.h"
-#include "sem_bin.h"
 
 int getFreePID();
 int getFreeTID(process_t * process);
-void purgeThreadList(process_t * process);
-void purgeFdList(process_t * process);
+void purgeThreadList(process_t * process, int close, int called_from_kill_process);
+void purgeFdList(process_t * process, int close);
+void erasePCB(process_t * process);
+int getFreeFD(int pid);
 
 process_t * processList[MAX_PROCESS_COUNT];
 int process_count = 0;
 int alive_process_count = 0;
-int last_pid = 0;
+
+// ** WRAPPERS DE CÓDIGO ** // 
+void processWrapper(int code()) {
+    int (*main_thread_code)() = code;
+    int retValue = main_thread_code();
+
+    killProcess(getCurrentPID(), retValue);
+}
+
+void threadWrapper(void * code(), void * args) {
+    void * (*thread_code)() = code;
+    void * retValue = thread_code();
+
+    killThread(getCurrentPID(), getCurrentThread()->tid, FALSE);
+}
+// ** WRAPPERS DE CÓDIGO ** // 
+
+
+
+// ** MANEJO DE PROCESOS ** // 
+void purgeProcessList(int close) {
+    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
+        if(processList[i] != NULL) {
+            if(close == TRUE)
+                killProcess(i, -1);
+            processList[i] = NULL;
+        }
+    }
+}
 
 int processCount() {
     return process_count;
@@ -28,32 +57,125 @@ void erasePCB(process_t * process) {
     freeMemory(process);
 }
 
-void eraseTCB(thread_t * thread) {
-    freeMemory(thread->stack.base);
-    freeMemory(thread);
+int createProcess(char * name, void * code, int stack_size, int heap_size) {
+
+    int pid = getFreePID();
+    if(pid == -1) //No entran mas
+        return -1;
+
+    process_t * process = getMemory( sizeof(process_t) );
+    if(process == NULL)
+        return -1;
+
+    process->name = getMemory( strlen(name) );
+    if(process->name == NULL) {
+        erasePCB( process );
+        return -1;
+    }
+    strcpy(process->name, name);
+
+    if(heap_size != 0) {
+        process->heap.base = getMemory( heap_size * PAGE_SIZE );
+        if(process->heap.base == NULL) {
+            erasePCB( process );
+            return -1;
+        }
+    } else {
+        process->heap.base = NULL;
+    }
+    process->heap.size = heap_size * PAGE_SIZE;
+
+    process->pid = pid;
+    processList[process->pid] = process;
+
+    purgeFdList(process, FALSE);
+    purgeThreadList(process, FALSE, FALSE);
+
+    process->cwd = getRoot();
+
+    process->finishedSem = sem_create(0);
+
+    process_count++;
+    alive_process_count++;
+    
+    createThread(process, code, NULL, stack_size, TRUE);    
+
+    return process->pid;
 }
 
-void threadWrapper(void * code(), void * args) {
+int getFreePID() {
+    for(int i = 0; i < MAX_PROCESS_COUNT; i++)
+        if(processList[i] == NULL)
+            return i;
 
-    void * (*thread_code)() = code;
-    void * retValue = thread_code();
-
-    killThread(getCurrentPID(), getCurrentThread()->tid, FALSE);
-
-    //_force_scheduler();
+    return -1;
 }
 
-void processWrapper(int code()) {
+void killProcess(int pid, int retValue) {
 
-    int (*main_thread_code)() = code;
-    int retValue = main_thread_code();
+    int isCurrProcess = (getCurrentPID() == pid);
 
-    killProcess(getCurrentPID(), retValue);
+    purgeThreadList(processList[pid], TRUE, TRUE);
+    purgeFdList(processList[pid], TRUE);
 
-    _force_scheduler();
+    processList[pid]->retValue = retValue;
+
+    alive_process_count--;
+
+    sem_signal( processList[pid]->finishedSem ); //Despertamos a potencial waitpid
+
+    if(isCurrProcess)
+        _force_scheduler();
 }
 
-void killThread(int pid, int tid, int no_force) {
+process_t * getProcessByPID(int pid) {
+    return processList[pid];
+}
+
+void listProcess() {
+    printf("PID    |    NAME\n");
+    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
+        if(processList[i] != NULL) {
+            printf("%d        %s        %X        %X\n", processList[i]->pid, processList[i]->name, processList[i]->threadList[0]->stack.current, processList[i]->threadList[0]->stack.base);
+        }
+    }
+}
+
+int waitpid(int pid) {
+    //TODO: VERIFICAR QUE SEA PADRE
+    sem_wait( processList[pid]->finishedSem );
+
+    int retValue = processList[pid]->retValue;
+
+    process_count--;
+    erasePCB(processList[pid]); //Borramos zombie
+    processList[pid] = NULL;
+
+    return retValue;
+}
+// ** MANEJO DE PROCESOS ** // 
+
+
+// ** MANEJO DE THREADS ** // 
+int getFreeTID(process_t * process) {
+    for(int i = 0; i < MAX_THREAD_COUNT; i++)
+        if(process->threadList[i] == NULL)
+            return i;
+
+    return -1;
+}
+
+void purgeThreadList(process_t * process, int close, int called_from_kill_process) {
+    for(int i = 0; i < MAX_THREAD_COUNT; i++) {
+        if(process->threadList[i] != NULL) {
+            if(close == TRUE)
+                killThread(process->pid, i, called_from_kill_process);
+            process->threadList[i] = NULL;
+        }
+    }
+}
+
+void killThread(int pid, int tid, int called_from_kill_process) {
 
     thread_t * t = getProcessByPID(pid)->threadList[tid];
     int isCurrThread = (t == getCurrentThread());
@@ -63,96 +185,33 @@ void killThread(int pid, int tid, int no_force) {
         t->status = DEAD;
     }
 
-    //TODO: REMOVE FROM IPC
-
-    if(t->is_someone_joining == FALSE) { //Solo borro si nadie me espera
-        if(thread_in_scheduler) { //Ya voló
-            eraseTCB( processList[pid]->threadList[tid] );
-                //if(getProcessByPID(t->process)->threadCount == )
-            }
-
+    if(t->tid == 0 && !called_from_kill_process) { //Es el principal
         processList[pid]->threadList[tid] = NULL;
-        processList[pid]->threadCount--;
-    } else {
-        sem_bin_signal( t->finishedSem ); //Despertamos al thread que hizo join
+        if(thread_in_scheduler)
+            eraseTCB( processList[pid]->threadList[tid] );
 
+        killProcess(pid, -1);
+        return;
     }
 
-    if (isCurrThread && !no_force)
+    if(t->is_someone_joining == FALSE || called_from_kill_process) { //Solo borro si nadie me espera
+        processList[pid]->threadList[tid] = NULL;
+
+        if(thread_in_scheduler) //Ya voló
+            eraseTCB( processList[pid]->threadList[tid] );
+
+    } else
+        sem_signal( t->finishedSem ); //Despertamos al thread que hizo join
+
+
+    if (isCurrThread && !called_from_kill_process)
         _force_scheduler();
-}
-
-void killProcess(int pid, int retValue) {
-
-    int isCurrProcess = (getCurrentPID() == pid);
-
-    for(int i = 0; i < MAX_THREAD_COUNT; i++)
-        if(processList[pid]->threadList[i] != NULL)
-            killThread(pid, i, TRUE);
-
-    processList[pid]->retValue = retValue;
-
-    alive_process_count--;
-
-    sem_bin_signal( processList[pid]->awaitSem ); //Despertamos a potencial waitpid
-
-
-    if(isCurrProcess)
-        _force_scheduler();
-}
-
-int createProcess(char * name, void * code, int stack_size, int heap_size) {
-
-    if( process_count >= MAX_PROCESS_COUNT ) //No entran más
-        return 0;
-
-    process_t * process = getMemory( sizeof(process_t) );
-    if(process == NULL)
-        return 0;
-
-    process->name = getMemory( strlen(name) );
-    if(process->name == NULL) {
-        erasePCB( process );
-        return 0;
-    }
-    strcpy(process->name, name);
-
-    if(heap_size != 0) {
-        process->heap.base = getMemory( heap_size * PAGE_SIZE );
-        if(process->heap.base == NULL) {
-            erasePCB( process );
-            return 0;
-        }
-    } else {
-        process->heap.base = NULL;
-    }
-    process->heap.size = heap_size * PAGE_SIZE;
-
-    //process->finishedSem = sem_bin_create(0);
-
-    process->awaitSem = sem_bin_create(0);
-
-    process->pid = getFreePID();
-    processList[process->pid] = process;
-
-    purgeFdList(process);
-
-    purgeThreadList(process);
-    process->threadCount = 0;
-
-    process->cwd = getRoot();
-
-    process_count++;
-    alive_process_count++;
-
-    createThread(process, code, NULL, stack_size, TRUE);
-
-    return process->pid;
 }
 
 thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain) {
 
-    if(process->threadCount == MAX_THREAD_COUNT)
+    int tid = getFreeTID(process);
+    if(tid == -1) //No entran mas
         return NULL;
 
     thread_t * thread = getMemory( sizeof(process_t) );
@@ -161,7 +220,7 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
 
     thread->stack.base = getMemory( stack_size * PAGE_SIZE );
     if(thread->stack.base == NULL) {
-        freeMemory( thread );
+        eraseTCB(thread);
         return NULL;
     }
     thread->stack.size = stack_size * PAGE_SIZE;
@@ -174,78 +233,59 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
 
     thread->process = process->pid;
     thread->retValue = NULL;
-    thread->finishedSem = sem_bin_create(0);
+    thread->finishedSem = sem_create(0);
     thread->is_someone_joining = FALSE;
 
     thread->status = READY;
 
-    thread->tid = getFreeTID(process);
+    thread->tid = tid;
     process->threadList[thread->tid] = thread;
-    process->threadCount++;
+    //process->threadCount++;
 
     scheduler_enqueue(thread);
 
     return thread;
 }
 
-int getFreePID() {
-    for(int i = 0; i < MAX_PROCESS_COUNT; i++)
-        if(processList[i] == NULL)
-            return i;
-
-    return -1;
+void eraseTCB(thread_t * thread) {
+    freeMemory(thread->stack.base);
+    freeMemory(thread);
 }
 
-void purgeProcessList() {
-    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
-        if(processList[i] != NULL) {
-            killProcess(i, -1);
-            processList[i] = NULL;
-        }
-    }
+void threadJoin(int tid, void **retVal) {
+    if(tid < 0 || tid >= MAX_THREAD_COUNT)
+        return;
+
+    thread_t * awaitThread = processList[getCurrentPID()]->threadList[tid];
+    if(awaitThread == NULL)
+        return;
+
+    awaitThread->is_someone_joining = TRUE;
+
+    sem_wait( awaitThread->finishedSem );
+
+    if(retVal != NULL)
+        *retVal = awaitThread->retValue;
+
+    processList[getCurrentPID()]->threadList[tid] = NULL;
+    if(awaitThread->status != DEAD)
+        eraseTCB( awaitThread ); //Borramos zombie
 }
+// ** MANEJO DE THREADS ** // 
 
-int getFreeTID(process_t * process) {
-    for(int i = 0; i < MAX_THREAD_COUNT; i++)
-        if(process->threadList[i] == NULL)
-            return i;
 
-    return -1;
-}
 
-int getFreeFD(int pid) {
-    for(int i = 3; i < MAX_FD_COUNT; i++)
-        if(processList[pid]->fd_table[i] == NULL)
-            return i;
-    return -1;
-}
-
-void purgeThreadList(process_t * process) {
-    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
-        if(process->threadList[i] != NULL) {
-            killThread(process->pid, i, FALSE);
-            process->threadList[i] = NULL;
-        }
-    }
-}
-
-void purgeFdList(process_t * process) {
+// ** MANEJO DE FD ** // 
+void purgeFdList(process_t * process, int close) {
     for(int i = 0; i < MAX_FD_COUNT; i++) {
         if(process->fd_table[i] != NULL) {
-            //cerrar archivo?
+            if(close == TRUE)
+                closeFile(process->fd_table[i]);
             process->fd_table[i] = NULL;
         }
     }
 }
 
-/*char processData[200][30];
-
-struct processData {
-    int pid;
-    char name[25];
-    int threadCount;
-};
-*/
 void listProcess(ps_info * buffer, int * bufferCount) {
     int n = 0;
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
@@ -253,7 +293,6 @@ void listProcess(ps_info * buffer, int * bufferCount) {
             buffer[i] = malloc(sizeof(ps_struct));
             buffer[i]->pid = processList[i]->pid;
             strcpy(buffer[i]->name, processList[i]->name);
-            buffer[i]->threadCount = processList[i]->threadCount;
             buffer[i]->heapBase = (int *) processList[i]->heap.base; /* Bien? */
             buffer[i]->heapSize = processList[i]->heap.size;
             n++;
@@ -307,15 +346,11 @@ void threadJoin(int tid, void **retVal) {
         eraseTCB( awaitThread ); //Borramos zombie
 }
 
-int waitpid(int pid) {
-    //TODO: VERIFICAR QUE SEA PADRE
-    sem_bin_wait( processList[pid]->awaitSem );
+int getFreeFD(int pid) {
+    for(int i = 3; i < MAX_FD_COUNT; i++)
+        if(processList[pid]->fd_table[i] == NULL)
+            return i;
 
-    int retValue = processList[pid]->retValue;
-
-    process_count--;
-    erasePCB(processList[pid]); //Borramos zombie
-    processList[pid] = NULL;
-
-    return retValue;
+    return -1;
 }
+// ** MANEJO DE FD ** // 

@@ -2,11 +2,12 @@
 #define IPC_MUTEX_H
 
 #include "circularList.h"
-#include "process.h"
 
 typedef struct {
 	int value;
-  	thread_t * owner;
+  	//thread_t * owner;
+	int ownerPID;
+	int ownerTID;
 	NODE * lockedQueue;
 } mutex_struct;
 

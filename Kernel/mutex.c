@@ -8,7 +8,8 @@ mutex_t mutex_create() {
 
 	mutex_t m = malloc(sizeof(mutex_struct));
 	m->value = 0;
-  m->owner = NULL;
+  //m->owner = NULL;
+  m->ownerPID = m->ownerTID = -1;
 	m->lockedQueue = NULL;
 	return m;
 }
@@ -20,8 +21,11 @@ void mutex_delete(mutex_t mutex) {
 void mutex_lock(mutex_t mutex) {
   if (getCurrentThread() == NULL)
     return;
+
   if(!_mutex_acquire(&(mutex->value))) {
-    mutex->owner = getCurrentThread();
+    mutex->ownerPID = getCurrentPID();
+    mutex->ownerTID = getCurrentThread()->tid;
+    //mutex->owner = getCurrentThread();
   } else {
     thread_t * thread = getCurrentThread();
     mutex->lockedQueue = insertAtEnd(mutex->lockedQueue, thread);
@@ -31,21 +35,28 @@ void mutex_lock(mutex_t mutex) {
 }
 
 void mutex_unlock(mutex_t mutex) {
-  if (getCurrentThread() == NULL || mutex->owner != getCurrentThread() )
-    return;
-    while( mutex->lockedQueue != NULL ) {
-      thread_t * t = getFirst(mutex->lockedQueue);
-      mutex->lockedQueue = deleteHead(mutex->lockedQueue);
+  /*if (getCurrentThread() == NULL || mutex->owner != getCurrentThread() )
+    return;*/
 
-      if( t->status == DEAD )
-        eraseTCB(t);
-      else {
-        mutex->owner = t;
-        scheduler_enqueue(t);
-        return;
-      }
+  if(getCurrentThread() == NULL || mutex->ownerPID != getCurrentPID() || mutex->ownerTID != getCurrentThread()->tid)
+    return;
+
+
+  while( mutex->lockedQueue != NULL ) {
+    thread_t * t = getFirst(mutex->lockedQueue);
+    mutex->lockedQueue = deleteHead(mutex->lockedQueue);
+
+    if( t->status == DEAD )
+      eraseTCB(t);
+    else {
+      //mutex->owner = t;
+      mutex->ownerPID = getCurrentPID();
+      mutex->ownerTID = getCurrentThread()->tid;
+      scheduler_enqueue(t);
+      return;
     }
-    mutex->value = 0;
+  }
+  mutex->value = 0;
 
   //printf("Libero mutex");
   

@@ -34,9 +34,19 @@ void drawMe() {
     return;
 }
 
-void digitalClock() {
+int digitalClock() {
 
     char c;
+
+    printf("Entrando al programa\n");
+
+    /*while(c = getchar(), c != 27) { //Esc
+        printf("HOLA");
+    }
+
+    printf("Saliendo del programa\n");
+
+    return 0;*/
 
     setBackgroundColor(0x000000);
     setFontColor(0xFFFFFF);
@@ -78,6 +88,6 @@ void digitalClock() {
 
     sys_timerRemove(drawMe);
 
-    return;
+    return 0;
 
 }

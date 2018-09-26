@@ -65,6 +65,9 @@ void _throwInvalidOpCode();
 void sys_sleep();
 void sys_listProcess(ps_info * buffer, int * bufferCount);
 
+int sys_newProcess(char * name, int (*start_routine) (char ** args));
+int sys_waitPID(int pid);
+
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
 void sys_joinThread(pthread_t thread, void ** retVal);
 void sys_cancelThread(pthread_t thread);

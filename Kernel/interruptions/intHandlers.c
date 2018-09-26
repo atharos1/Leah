@@ -161,6 +161,12 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 41: //ps
 			listProcess(rsi, rdx);
 			break;
+		case 42: //new process
+			return createProcess( (char*)rsi, (void*)rdx, 4, 4 );
+			break;
+		case 43: //waitpid
+			return waitpid(rsi);
+			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;

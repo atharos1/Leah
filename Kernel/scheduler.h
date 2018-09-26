@@ -17,7 +17,8 @@ typedef struct SCHEDULER_QUEUE {
     NODE * queue;
     thread_t * (*nextThreadFunction)(struct SCHEDULER_QUEUE *);
     int (*checkEvictFunction)(struct SCHEDULER_QUEUE *);
-    int threadCount;
+    int (*restartEvictFunction)(struct SCHEDULER_QUEUE *);
+    //int threadCount;
     void * queueData;
 } SCHEDULER_QUEUE;
 
@@ -29,6 +30,5 @@ int getCurrentPID();
 thread_t * scheduler_dequeue_current();
 int scheduler_dequeue_thread(thread_t * t);
 void scheduler_dequeue_process(int pid);
-void notRunningTasks();
 
 #endif
