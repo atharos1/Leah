@@ -176,6 +176,9 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 46: //killProcess
 			killProcess((int)rsi, -1);
 			break;
+		case 47: //exit
+			killProcess(getCurrentPID(), (int)rsi);
+			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;

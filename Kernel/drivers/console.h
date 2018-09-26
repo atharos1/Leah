@@ -1,6 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#define TAB_WIDTH 4
+
 //Librería screen
 void setCursor(unsigned short int x, unsigned short int y);
 void moveCursor(int cant);
