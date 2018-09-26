@@ -11,12 +11,15 @@ void upDown() {
   m = mutex_open("prodConsMutex");
   pthread_t ups[5], downs[5];
 
+  printf("\nVariable global inicializada en %d\n", global);
+
   for (int i = 0; i < 5; i ++) {
     ups[i] = pthread_create(&up, (void*) 0);
     downs[i] = pthread_create(&down, (void*) 0);
   }
 
-  //sys_sleep(2000);
+  printf("\nSe crearon 5 threads que aumentan la variable 1000 veces y 5 que disminuyen 1000 veces\n");
+
   void * retvalue;
 
   for (int i = 0; i < 5; i ++) {
@@ -24,9 +27,9 @@ void upDown() {
     pthread_join(downs[i], &retvalue);
   }
 
-  printf("\nLISTOOO\n");
+  printf("\nLos threads terminaron de ejecutarse\n");
 
-  printf("global = %d", global);
+  printf("\nLa variable global vale %d\n", global);
 
 }
 
