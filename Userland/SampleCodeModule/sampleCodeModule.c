@@ -518,11 +518,6 @@ void cmd_upDown (char * args) {
 	upDown();
 }
 
-void program_digitalClock() {
-	digitalClock();
-	cmd_resetScreen();
-}
-
 int main() {
 
 	cmd_printWelcome();

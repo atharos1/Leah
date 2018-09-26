@@ -128,19 +128,6 @@ void killProcess(int pid, int retValue) {
         _force_scheduler();
 }
 
-process_t * getProcessByPID(int pid) {
-    return processList[pid];
-}
-
-void listProcess() {
-    printf("PID    |    NAME\n");
-    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
-        if(processList[i] != NULL) {
-            printf("%d        %s        %X        %X\n", processList[i]->pid, processList[i]->name, processList[i]->threadList[0]->stack.current, processList[i]->threadList[0]->stack.base);
-        }
-    }
-}
-
 int waitpid(int pid) {
     //TODO: VERIFICAR QUE SEA PADRE
     sem_wait( processList[pid]->finishedSem );
@@ -325,25 +312,6 @@ fd_t * getFD(int pid, int fdIndex) {
   if (fdIndex < 3 || fdIndex >= MAX_FD_COUNT)
     return NULL;
   return processList[pid]->fd_table[fdIndex];
-}
-
-void threadJoin(int tid, void **retVal) {
-
-    thread_t * awaitThread = processList[getCurrentPID()]->threadList[tid];
-
-    if(awaitThread == NULL)
-        return;
-
-    awaitThread->is_someone_joining = TRUE;
-
-    sem_bin_wait( awaitThread->finishedSem );
-
-    *retVal = awaitThread->retValue;
-
-    processList[getCurrentPID()]->threadList[tid] = NULL;
-
-    if(awaitThread->status != DEAD)
-        eraseTCB( awaitThread ); //Borramos zombie
 }
 
 int getFreeFD(int pid) {
