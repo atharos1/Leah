@@ -109,7 +109,7 @@ int parseCommand(char * cmd, int l) {
 	//parse command
 	while(cmd[i] != ' ' && cmd[i] != 0)
 		i++;
-	
+
 	cmd[i] = '\0';
 	i++;
 	args = cmd + i;
@@ -528,7 +528,11 @@ void cmd_ps(char * args) {
 
 	printf("PID    THREADS    HEAP_BASE    HEAP_SIZE    NAME\n");
 	for(int i = 0; i < *bufferCount; i++) {
-		printf("%d      %d          %X      %d        %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
+		if (buffer[i].heapBase == 0 && buffer[i].heapSize == 0) {
+				printf("%d      %d          %X            %d            %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
+		} else {
+				printf("%d      %d          %X      %d        %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
+		}
 	}
 }
 
