@@ -10,6 +10,8 @@
 
 #define BUFFER_SIZE PAGE_SIZE
 
+static file_t * getCWD();
+
 static void * createBuffer();
 static void * createDirectory();
 static void * createRegularFile();
@@ -62,14 +64,14 @@ void init_fileSystem() {
 }
 
 
-static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAME_LENGTH], int getFile) {
+static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAME_LENGTH], int getFile, int pathLength) {
   int i;
 
-  for (i = 0; path[i] != '/' && path[i] != 0 && i < MAX_NAME_LENGTH + 2; i++) {
+  for (i = 0; path[i] != '/' && path[i] != 0 && i <= MAX_NAME_LENGTH; i++) {
     name[i] = path[i];
   }
 
-  if (i == MAX_NAME_LENGTH + 2)
+  if (i > MAX_NAME_LENGTH || pathLength + i > MAX_PATH_LENGTH)
     return NULL;
 
   name[i] = 0;
@@ -83,11 +85,22 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
 
   file_t * prevFile = NULL;
   file_t * currFile = ((directory_t*)(dir->implementation))->first;
-
   int cmp;
-  while (currFile != NULL && (cmp = strcmp(currFile->name, name)) < 0) {
-    prevFile = currFile;
-    currFile = currFile->next;
+
+  if (name[0] == '.' && name[1] == 0) {
+    cmp = 0;
+    currFile = dir;
+  } else if (name[0] == '.' && name[1] == '.' && name[2] == 0) {
+    cmp = 0;
+    if (dir == root)
+      currFile = root;
+    else
+      currFile = dir->directory;
+  } else {
+    while (currFile != NULL && (cmp = strcmp(currFile->name, name)) < 0) {
+      prevFile = currFile;
+      currFile = currFile->next;
+    }
   }
 
   if (path[i] == 0) {
@@ -117,7 +130,7 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
     if (currFile == NULL || currFile->type != DIRECTORY)
       return NULL;
 
-    return makeFileR(path + i + 1, currFile, type, name, getFile);
+    return makeFileR(path + i + 1, currFile, type, name, getFile, pathLength + i + 1);
   }
 
   return NULL;
@@ -126,7 +139,10 @@ static file_t * makeFileR(char path[], file_t * dir, int type, char name[MAX_NAM
 file_t * makeFile(char * path, int type) {
   char name[MAX_NAME_LENGTH];
   if (*path == '/')
-    return makeFileR(path + 1, root, type, name, 0);
+    return makeFileR(path + 1, root, type, name, 0, 0);
+  else
+    return makeFileR(path, getCWD(), type, name, 0, 0);
+
   return NULL;
 }
 
@@ -134,7 +150,10 @@ file_t * makeFile(char * path, int type) {
 file_t * getFile(char * path) {
   char name[MAX_NAME_LENGTH];
   if (*path == '/')
-    return makeFileR(path + 1, root, 0, name, 1);
+    return makeFileR(path + 1, root, 0, name, 1, 0);
+  else
+    return makeFileR(path, getCWD(), 0, name, 1, 0);
+
   return NULL;
 }
 
@@ -147,6 +166,7 @@ static file_t * newFile(char name[], int type) {
 
   strcpy(newFile->name, name);
   newFile->next = NULL;
+  newFile->directory = NULL;
   newFile->type = type;
 
   if (type == DIRECTORY)
@@ -290,6 +310,43 @@ static void removeMutex(file_t * file) {
   free(mutex);
 }
 
+file_t * getRoot() {
+  return root;
+}
+
+void getCWDPath(char * pathBuff) {
+  file_t * current = getCWD();
+  file_t * dirs[MAX_NAME_LENGTH / 2];
+  pathBuff[0] = 0;
+  int dirCount = 0;
+
+  while(current != root) {
+    dirs[dirCount] = current;
+    dirCount++;
+    current = current->directory;
+  }
+
+  strcat(pathBuff, "/");
+  while (dirCount > 0) {
+    dirCount--;
+    strcat(pathBuff, dirs[dirCount]->name);
+    if (dirCount > 0)
+      strcat(pathBuff, "/");
+  }
+}
+
+static file_t * getCWD() {
+  process_t * pcb = getProcessByPID(getCurrentPID());
+  return pcb->cwd;
+}
+
+void changeCWD(char * path) {
+  file_t * file = getFile(path);
+  if (file != NULL && file->type == DIRECTORY) {
+    process_t * pcb = getProcessByPID(getCurrentPID());
+    pcb->cwd = file;
+  }
+}
 
 //////////// I/O OPERATIONS ////////////
 
@@ -701,6 +758,10 @@ void listDir(char * path) {
 
   if (file->type != DIRECTORY)
     return;
+
+  char pathBuff[MAX_PATH_LENGTH];
+  getCWDPath(pathBuff);
+  printf("Directorio actual: %s\n", pathBuff);
 
   file_t * current = ((directory_t*)(file->implementation))->first;
   while(current != NULL) {

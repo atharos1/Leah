@@ -1,8 +1,17 @@
 #ifndef ASM_LIB_C
 #define ASM_LIB_C
 
-typedef void (*function)();
+#define O_WRONLY 0
+#define O_RDONLY 1
+#define O_RDWR 2
 
+#define DIRECTORY 0
+#define REGULAR_FILE 1
+#define BUFFER 2
+#define SEMAPHORE 3
+#define MUTEX 4
+
+typedef void (*function)();
 typedef int pthread_t;
 
 int sys_read(int fileDescriptor, void * buff, int length);

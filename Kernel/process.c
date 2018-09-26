@@ -140,6 +140,8 @@ int createProcess(char * name, void * code, int stack_size, int heap_size) {
     purgeThreadList(process);
     process->threadCount = 0;
 
+    process->cwd = getRoot();
+
     process_count++;
     alive_process_count++;
 

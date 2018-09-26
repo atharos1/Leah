@@ -149,6 +149,12 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 35:
 			mutexUnlock(rsi);
 			break;
+		case 36:
+			changeCWD((char*)rsi);
+			break;
+		case 37:
+			getCWDPath((char*)rsi);
+			break;
 		case 40: //sleep
 			sleepCurrentThread(rsi);
 			break;

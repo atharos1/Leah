@@ -136,6 +136,14 @@ void sys_mutexUnlock(int mutex) {
     _systemCall(35, mutex, 0, 0, 0);
 }
 
+void sys_chdir(char * path) {
+    _systemCall(36, path, 0, 0, 0);
+}
+
+void sys_getcwd(char * pathBuff) {
+    _systemCall(37, pathBuff, 0, 0, 0);
+}
+
 void sys_sleep(int millis) {
     _systemCall(40, millis, 0, 0, 0);
 }

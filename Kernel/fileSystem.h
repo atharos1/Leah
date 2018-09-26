@@ -10,6 +10,7 @@
 #define MUTEX 4
 
 #define MAX_NAME_LENGTH 64
+#define MAX_PATH_LENGTH 256
 
 #define O_WRONLY 0
 #define O_RDONLY 1
@@ -38,6 +39,10 @@ typedef struct file_descriptor {
 } fd_t;
 
 void init_fileSystem();
+
+file_t * getRoot();
+void changeCWD(char * path);
+void getCWDPath(char * pathBuff);
 
 file_t * makeFile(char * path, int type);
 file_t * getFile(char * path);

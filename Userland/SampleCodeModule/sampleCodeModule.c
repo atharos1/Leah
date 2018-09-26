@@ -466,7 +466,7 @@ void cmd_writeTo(char * args) {
 	sys_close(fd);
 }
 
-void cmd_cat (char * args) {
+void cmd_cat(char * args) {
 	char str[16];
 	int fd = sys_open(args, O_RDONLY);
 	if (fd == -1) {
@@ -481,6 +481,10 @@ void cmd_cat (char * args) {
 	}
 
 	sys_close(fd);
+}
+
+void cmd_cd(char * args) {
+	sys_chdir(args);
 }
 
 void cmd_ps(char * args) {
@@ -522,11 +526,12 @@ int main() {
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
 	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado");
+	command_register("cd", cmd_cd, "Cambia el directorio actual");
 	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
 	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
+	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
 	command_register("cat", cmd_cat, "Imprime el archivo especificado");
-	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
 	command_register("ps", cmd_ps, "Lista los procesos con su información asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
