@@ -17,7 +17,7 @@ typedef struct SCHEDULER_QUEUE {
     NODE * queue;
     thread_t * (*nextThreadFunction)(struct SCHEDULER_QUEUE *);
     int (*checkEvictFunction)(struct SCHEDULER_QUEUE *);
-    int (*restartEvictFunction)(struct SCHEDULER_QUEUE *);
+    void (*restartEvictFunction)(struct SCHEDULER_QUEUE *);
     //int threadCount;
     void * queueData;
 } SCHEDULER_QUEUE;

@@ -16,7 +16,6 @@ sem_bin_t sem_bin_create(int startValue) {
 
 void sem_bin_wait(sem_bin_t sem) {
 	if (sem == NULL) {
-		printf("Recibo NULL\n");
 		return;
 	}
 

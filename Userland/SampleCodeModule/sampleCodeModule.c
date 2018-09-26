@@ -296,7 +296,7 @@ void cmd_setFontSize(char ** args) {
 	int num = atoi(args[0]);
 
 	if( num <= 0 ) {
-		invalidArgument(num);
+		invalidArgument(args[num]);
 		return;
 	}
 
@@ -306,7 +306,7 @@ void cmd_setFontSize(char ** args) {
 }
 
 void cmd_setBackColor(char ** args) {
-	int r, g, b;
+	//int r, g, b;
 
 	/*int leidos = sscanf(args, "%d %d %d", &r, &g, &b);
 
@@ -386,7 +386,7 @@ void cmd_memoryManagerTest() {
 }
 
 void program_Snake(char * args[]) {
-	int pid = execv("Snake", snake_main, args, TRUE, NULL);
+	int pid = execv("Snake", (function_t)snake_main, args, TRUE, NULL);
 
 	int puntos = sys_waitPID(pid);
 
@@ -463,7 +463,7 @@ void cmd_writeTo(char ** args) {
 }
 
 void program_digitalClock() {
-	int pid = execv("Digital Clock", &digitalClock, NULL, TRUE, NULL);
+	int pid = execv("Digital Clock", (function_t)&digitalClock, NULL, TRUE, NULL);
 
 	sys_waitPID(pid);
 
@@ -471,7 +471,7 @@ void program_digitalClock() {
 }
 
 void program_toUppercase() {
-	int pid = execv("To Uppercase", toUppercase, NULL, TRUE, NULL);
+	int pid = execv("To Uppercase", (function_t)toUppercase, NULL, TRUE, NULL);
 
 	sys_waitPID(pid);
 
@@ -502,11 +502,11 @@ void cmd_cd(char ** args) {
 
 void cmd_ps(char ** args) {
 	ps_struct buffer[MAX_PROCESS_COUNT];
-	int * bufferCount;
-	sys_listProcess(buffer, bufferCount);
+	int bufferCount;
+	sys_listProcess(buffer, &bufferCount);
 
 	printf("PID    THREADS    HEAP_BASE    HEAP_SIZE    NAME\n");
-	for(int i = 0; i < *bufferCount; i++) {
+	for(int i = 0; i < bufferCount; i++) {
 		if (buffer[i].heapBase == 0 && buffer[i].heapSize == 0) {
 				printf("%d      %d          %X            %d            %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
 		} else {
@@ -543,7 +543,7 @@ int arcoiris_main() {
 }
 
 void program_arcoiris() {
-	int pid = execv("Arcoiris", &arcoiris_main, NULL, TRUE, NULL);
+	execv("Arcoiris", (function_t)&arcoiris_main, NULL, TRUE, NULL);
 }
 
 int main() {

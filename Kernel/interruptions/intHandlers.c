@@ -183,7 +183,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;
 			break;
 		case 51: //thread join
-			threadJoin(rsi, rdx);
+			threadJoin(rsi, (void**)rdx);
 			break;
 		case 52: //thread cancel
 			killThread(getCurrentPID(), rsi, FALSE);
