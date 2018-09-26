@@ -279,7 +279,7 @@ void listProcess(ps_struct buffer[], int * bufferCount) {
         if(processList[i] != NULL) {
             buffer[i].pid = processList[i]->pid;
             buffer[i].name = processList[i]->name;
-            buffer[i].threadCount = processList[i]->threadCount;
+            buffer[i].threadCount = 0;
             buffer[i].heapBase = (int *) processList[i]->heap.base; /* Bien? */
             buffer[i].heapSize = processList[i]->heap.size;
             n++;
