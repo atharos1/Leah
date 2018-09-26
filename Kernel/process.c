@@ -190,7 +190,7 @@ void killThread(int pid, int tid, int called_from_kill_process) {
         processList[pid]->threadList[tid] = NULL;
 
         if(thread_in_scheduler) //Ya voló
-            eraseTCB( processList[pid]->threadList[tid] );
+            eraseTCB( t );
 
     } else
         sem_signal( t->finishedSem ); //Despertamos al thread que hizo join
