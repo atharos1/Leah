@@ -290,13 +290,11 @@ void cmd_resetScreen() {
 	//puts("\n");
 }
 
-void cmd_setFontSize(char * args) {
-	int num;
-
-	sscanf(args, "%d", &num);
+void cmd_setFontSize(char ** args) {
+	int num = atoi(args[0]);
 
 	if( num <= 0 ) {
-		invalidArgument(args);
+		invalidArgument(num);
 		return;
 	}
 
@@ -305,17 +303,17 @@ void cmd_setFontSize(char * args) {
 
 }
 
-void cmd_setBackColor(char * args) {
+void cmd_setBackColor(char ** args) {
 	int r, g, b;
 
-	int leidos = sscanf(args, "%d %d %d", &r, &g, &b);
+	/*int leidos = sscanf(args, "%d %d %d", &r, &g, &b);
 
 	if(leidos < 3) {
 		invalidArgument(args);
 		return;
-	}
+	}*/
 
-	int color = r * 256 * 256 + g * 256 + b;
+	int color = atoi(args[0]) * 256 * 256 + atoi(args[1]) * 256 + atoi(args[2]);
 	int cComplement = 0xFFFFFF - color;
 
 	currFontColor = cComplement;
@@ -386,7 +384,6 @@ void cmd_memoryManagerTest() {
 }
 
 void program_Snake(char * args[]) {
-
 	int pid = execv("Snake", snake_main, args, TRUE, NULL);
 
 	int puntos = sys_waitPID(pid);
@@ -399,60 +396,31 @@ void program_Snake(char * args[]) {
 	} else {
 		printf("MY LITTLE BOA CONSTRICTOR: ¡Has perdido! Tu puntuacion fue de %d puntos.", puntos);
 	}
-
-	//cmd_resetScreen();
-	/*return;
-
-	int num, grow_rate;
-
-	int leidos = sscanf(args, "%d %d", &num, &grow_rate);
-
-	if(leidos == 0) {
-		num = 2;
-		grow_rate = 3;
-	}
-
-	if(leidos == 1) {
-		grow_rate = 3;
-	}
-
-	int puntos = game_start(num, grow_rate);
-
-	cmd_resetScreen();
-
-	printf("\n\n");
-
-	if(puntos == -1) {
-		printf("MY LITTLE BOA CONSTRICTOR: Has salido del juego.");
-	} else {
-		printf("MY LITTLE BOA CONSTRICTOR: ¡Has perdido! Tu puntuacion fue de %d puntos.", puntos);
-	}*/
-
 }
 
-void cmd_listDir(char * args) {
-	sys_listDir(args);
+void cmd_listDir(char ** args) {
+	sys_listDir(args[0]);
 }
 
-void cmd_makeDirectory(char * args) {
-	sys_makeDir(args, 0);
+void cmd_makeDirectory(char ** args) {
+	sys_makeFile(args[0], DIRECTORY);
 }
 
-void cmd_touch(char * args) {
-	sys_makeRegFile(args, 1);
+void cmd_touch(char ** args) {
+	sys_makeFile(args[0], REGULAR_FILE);
 }
 
-void cmd_removeFile(char * args) {
-	sys_removeFile(args);
+void cmd_removeFile(char ** args) {
+	sys_removeFile(args[0]);
 }
 
-void cmd_writeTo(char * args) {
+void cmd_writeTo(char ** args) {
 	char c;
 	char buff[100];
 	int cursor = 0;
 	int lastChar = 0;
 
-	int fd = sys_open(args, O_WRONLY);
+	int fd = sys_open(args[0], O_WRONLY);
 	if (fd == -1) {
 		printf("Error al abrir el archivo\n");
 		return;
@@ -500,9 +468,9 @@ void program_digitalClock() {
 	cmd_resetScreen();
 }
 
-void cmd_cat(char * args) {
+void cmd_cat(char ** args) {
 	char str[16];
-	int fd = sys_open(args, O_RDONLY);
+	int fd = sys_open(args[0], O_RDONLY);
 	if (fd == -1) {
 		printf("Error al abrir el archivo\n");
 		return;
@@ -517,11 +485,11 @@ void cmd_cat(char * args) {
 	sys_close(fd);
 }
 
-void cmd_cd(char * args) {
-	sys_chdir(args);
+void cmd_cd(char ** args) {
+	sys_chdir(args[0]);
 }
 
-void cmd_ps(char * args) {
+void cmd_ps(char ** args) {
 	ps_struct buffer[MAX_PROCESS_COUNT];
 	int * bufferCount;
 	sys_listProcess(buffer, bufferCount);
@@ -536,7 +504,7 @@ void cmd_ps(char * args) {
 	}
 }
 
-void cmd_prodcons(char * args) {
+void cmd_prodcons(char ** args) {
 	prodcons();
 }
 
@@ -544,8 +512,27 @@ void cmd_upDown (char * args) {
 	upDown();
 }
 
-void prueba() {
-	printf("hola");
+int arcoiris_main() {
+	int j = 0;
+	int colors[7] = {
+		0x4444DD,
+		0x11aabb,
+		0xaacc22,
+		0xd0c310,
+		0xff9933,
+		0xff4422,
+		0x72a4c9
+	};
+	while(1) {
+		j++;
+		setFontColor( colors[j%7] );
+		sys_sleep(1000);
+	}
+	return 0;
+}
+
+void program_arcoiris() {
+	int pid = execv("Arcoiris", &arcoiris_main, NULL, TRUE, NULL);
 }
 
 int main() {
@@ -574,6 +561,7 @@ int main() {
 	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada");
 	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
+	command_register("arcoiris", program_arcoiris, "Cambia cada un segundo el color de fuente");
 	command_register("exit", cmd_exit, "Cierra la Shell");
 
 	while(programStatus != 1) {

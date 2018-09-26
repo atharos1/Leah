@@ -175,6 +175,10 @@ void purgeThreadList(process_t * process, int close, int called_from_kill_proces
 void killThread(int pid, int tid, int called_from_kill_process) {
 
     thread_t * t = getProcessByPID(pid)->threadList[tid];
+
+    if(t == NULL || t->status == DEAD)
+        return;
+
     int isCurrThread = (t == getCurrentThread());
     int thread_in_scheduler = scheduler_dequeue_thread(t);
 
@@ -239,6 +243,7 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
 }
 
 void eraseTCB(thread_t * thread) {
+    printf("BORRANDO");
     freeMemory(thread->stack.base);
     freeMemory(thread);
 }
