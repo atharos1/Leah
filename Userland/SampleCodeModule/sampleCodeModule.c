@@ -262,10 +262,10 @@ void cmd_time(char * args) {
 void cmd_help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
-		printf("%s ", commandList[i].name);
+		printf("%s\t", commandList[i].name);
 		setFontColor(currFontColor);
 			//if(commandList[i].desc != '\0') {
-				printf(" %s", commandList[i].desc);
+				printf("%s", commandList[i].desc);
 				if( i < commandsNum - 1)
 					putchar('\n');
 			//}
@@ -414,6 +414,7 @@ void cmd_touch(char ** args) {
 
 void cmd_killProcess(char ** args) {
 	sys_killProcess(atoi(args[0]));
+	sys_waitPID(atoi(args[0]));
 }
 
 void cmd_removeFile(char ** args) {
@@ -500,18 +501,58 @@ void cmd_cd(char ** args) {
 	sys_chdir(args[0]);
 }
 
+#define TAB_LENGTH 4
+
+void alignString(char * str, char * buffer, int length) {
+	int dif;
+	int i, j = 0;
+	for(i = 0; i < length && str[i] != 0; i++) {
+		buffer[i] = str[i];
+	}
+
+	if(i < length) {
+		dif = (length - i);
+		for(j = 0; j < dif; j++)
+			buffer[i + j] = ' ';
+	}
+
+	buffer[i + j + 1] = '\0';
+}
+
 void cmd_ps(char ** args) {
 	ps_struct buffer[MAX_PROCESS_COUNT];
 	int bufferCount;
 	sys_listProcess(buffer, &bufferCount);
 
-	printf("PID    THREADS    HEAP_BASE    HEAP_SIZE    NAME\n");
+	char column[5][30];
+
+	int column_width = 20;
+
+	alignString("PID", column[0], column_width);
+	alignString("NAME", column[1], column_width);
+	alignString("STATUS", column[2], column_width);
+	alignString("THREAD COUNT", column[3], column_width);
+	alignString("HEAP SIZE", column[4], column_width);
+
+	printf("%s%s%s%s%s\n", column[0], column[1], column[2], column[3], column[4]);
+
+	//printf("PID\t\t\t\tTHREADS\t\t\t\tSTATUS\t\t\t\tHEAP_SIZE\t\t\t\tNAME\n");
 	for(int i = 0; i < bufferCount; i++) {
-		if (buffer[i].heapBase == 0 && buffer[i].heapSize == 0) {
-				printf("%d      %d          %X            %d            %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
-		} else {
-				printf("%d      %d          %X      %d        %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
-		}
+
+		itoa(buffer[i].pid, column[0], 10);
+		alignString(column[0], column[0], column_width);
+
+		alignString(buffer[i].name, column[1], column_width);
+		alignString((buffer[i].status == 0 ? "Alive" : "Zombie"), column[2], column_width);
+
+		itoa(buffer[i].threadCount, column[3], 10);
+		alignString(column[3], column[3], column_width);
+
+		itoa(buffer[i].heapSize, column[4], 10);
+		alignString(column[4], column[4], column_width);
+
+		printf("%s%s%s%s%s\n", column[0], column[1], column[2], column[3], column[4]);
+		
 	}
 }
 

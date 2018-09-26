@@ -58,7 +58,7 @@ int setCursor(unsigned int x, unsigned int y) {
 }
 
 
-static char * itoa(uint64_t value, char * buffer, uint32_t base) {
+char * itoa(uint64_t value, char * buffer, uint32_t base) {
 	char *p = buffer;
 	char *p1, *p2;
 	uint32_t digits = 0;

@@ -16,9 +16,8 @@
 #define DEAD 20
 
 //Estados de PROCESOS
-/*#define READY 0
-#define SLEEPING 1
-#define ZOMBIE 1*/
+#define ALIVE 0
+#define ZOMBIE 1
 
 typedef struct memblock_t {
     void * base;
@@ -46,13 +45,24 @@ typedef struct process_t {
     file_t * cwd;
     int retValue;
     sem_t finishedSem;
+    int status;
 } process_t;
+
+typedef struct
+{
+    int pid;
+    char * name;
+    int threadCount;
+    int heapSize;
+    int status;
+} ps_struct;
+typedef ps_struct * ps_info;
 
 int createProcess(char * name, void * code, char ** args, int stack_size, int heap_size);
 thread_t * createThread(process_t * process, void * code, void * args, int stack_size, int isMain);
 process_t * getProcessByPID(int pid);
 void purgeProcessList(int close);
-void listProcess();
+void listProcess(ps_struct buffer[], int * bufferCount);
 int getFreeFD(int pid);
 int registerFD(int pid, fd_t * file);
 fd_t * unregisterFD(int pid, int fdIndex);
@@ -66,15 +76,5 @@ void killThread(int pid, int tid, int called_from_kill_process);
 void eraseTCB(thread_t * thread);
 void * getHeapBase(int pid);
 int getHeapSize(int pid);
-
-typedef struct
-{
-    int pid;
-    char * name;
-    int threadCount;
-    void * heapBase;
-    int heapSize;
-} ps_struct;
-typedef ps_struct * ps_info;
 
 #endif

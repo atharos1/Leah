@@ -93,6 +93,8 @@ int createProcess(char * name, void * code, char ** args, int stack_size, int he
 
     process->cwd = getRoot();
 
+    process->status = ALIVE;
+
     process->finishedSem = sem_create(0);
 
     process_count++;
@@ -131,6 +133,7 @@ void killProcess(int pid, int retValue) {
     processList[pid]->retValue = retValue;
 
     alive_process_count--;
+    processList[pid]->status = ZOMBIE;
 
     sem_signal( processList[pid]->finishedSem ); //Despertamos a potencial waitpid
 
@@ -149,6 +152,15 @@ int waitpid(int pid) {
     processList[pid] = NULL;
 
     return retValue;
+}
+
+int threadCount(int pid) {
+    int cant = 0;
+    for(int i = 0; i < MAX_THREAD_COUNT; i++)
+        if(processList[pid]->threadList[i] != NULL)
+            cant++;
+
+    return cant;
 }
 // ** MANEJO DE PROCESOS ** //
 
@@ -283,17 +295,19 @@ void purgeFdList(process_t * process, int close) {
 
 void listProcess(ps_struct buffer[], int * bufferCount) {
     int n = 0;
-    for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
+
+    for(int i = 0; i < MAX_PROCESS_COUNT && n <= process_count; i++) {
         if(processList[i] != NULL) {
-            buffer[i].pid = processList[i]->pid;
+            buffer[i].pid = i;
             buffer[i].name = processList[i]->name;
-            buffer[i].threadCount = 0;
-            buffer[i].heapBase = (int *) processList[i]->heap.base; /* Bien? */
+            buffer[i].threadCount = threadCount(i);
             buffer[i].heapSize = processList[i]->heap.size;
+            buffer[i].status = processList[i]->status;
             n++;
         }
     }
     *bufferCount = n;
+
 }
 
 process_t * getProcessByPID(int pid) {

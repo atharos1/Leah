@@ -13,6 +13,7 @@
         "process.h": "c",
         "pthread.h": "c",
         "timer.h": "c",
-        "malloc.h": "c"
+        "malloc.h": "c",
+        "stdio.h": "c"
     }
 }

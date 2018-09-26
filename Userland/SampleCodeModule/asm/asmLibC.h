@@ -21,8 +21,8 @@ typedef struct
 	int pid;
 	char * name;
 	int threadCount;
-    void * heapBase;
     int heapSize;
+	int status;
 } ps_struct;
 typedef ps_struct * ps_info;
 
