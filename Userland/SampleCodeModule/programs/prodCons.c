@@ -8,7 +8,7 @@ char trays[TRAYS_QTY + 1];
 int full;
 int empty;
 int mutex;
-int indexChef = 0, indexWaiter = 0;
+int index = 0;
 pthread_t waiters[MAX_PRODCONS] = {0};
 pthread_t chefs[MAX_PRODCONS] = {0};
 int waitersQty = 0, chefsQty = 0;
@@ -99,9 +99,9 @@ void * chef(void * args) {
 	while(1) {
 		sem_wait(full);
 		mutex_lock(mutex);
-    trays[indexChef++] = '0';
-    if (indexWaiter != TRAYS_QTY - 1)
-      indexWaiter++;
+    trays[index] = '0';
+    if (index != TRAYS_QTY - 1)
+      index ++;
 		printTrays(trays);
 
 		sem_signal(empty);
@@ -140,9 +140,9 @@ void * waiter(void * args) {
 	while(1) {
 		sem_wait(empty);
 		mutex_lock(mutex);
-		trays[indexWaiter--] = EMPTY_SPACE;
-    if (indexChef != 0)
-      indexChef--;
+		trays[index] = EMPTY_SPACE;
+    if (index != 0)
+      index --;
 		printTrays(trays);
 
 		sem_signal(full);
@@ -172,8 +172,7 @@ void terminateAll() {
   for (int i = 0; i < waitersQty; i++) {
       pthread_cancel(waiters[i]);
   }
-  indexChef = 0;
-  indexWaiter = 0;
+  index = 0;
   waitersQty = 0;
   chefsQty = 0;
   mutex_unlock(mutex);
