@@ -27,6 +27,22 @@ int strlen(char * str) {
     return i;
 }
 
+void alignString(char * str, char * buffer, int length) {
+	int dif;
+	int i, j = 0;
+	for(i = 0; (i < length || length == 0) && str[i] != 0; i++) {
+		buffer[i] = str[i];
+	}
+
+	if(i < length) {
+		dif = (length - i);
+		for(j = 0; j < dif; j++)
+			buffer[i + j] = ' ';
+	}
+
+	buffer[i + j + 1] = '\0';
+}
+
 // A utility function to check whether x is numeric
 int isNumeric(char x)
 {

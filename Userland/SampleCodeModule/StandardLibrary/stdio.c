@@ -334,8 +334,10 @@ int printf(char * fmt, ...) {
 				curChar += 0;
 				tmp = va_arg(pa, char*);
 
-				strcpy(&string[curChar], tmp);
-				curChar += strlen(tmp);
+				alignString(tmp, buffer, zeroes);
+
+				strcpy(&string[curChar], buffer);
+				curChar += strlen(buffer);
 
 				break;
 		}
