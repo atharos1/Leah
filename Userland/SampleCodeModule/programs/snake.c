@@ -29,6 +29,8 @@ int status = 0;
 unsigned short lfsr = 0xACE1u;
 unsigned bit;
 
+int game_start(int ticks, int growrate);
+
 unsigned rand() {
     bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
     return lfsr =  (lfsr >> 1) | (bit << 15);
@@ -93,13 +95,14 @@ void * move(void * args) {
     }
 
     status = -1;
-    
+    return 0;
+
 }
 
 void refresh() {
 
     //move();
-    
+
     //Borro la cola
     if( snake[0][X] == comidita[X] && snake[0][Y] == comidita[Y] ) {
         snakeLength+= grow_rate;
@@ -220,13 +223,14 @@ int snake_main(char ** args) {
     int growrate = 4;
 
     if(args[0] != NULL) {
-        ticks = args[0];
+        ticks = atoi(args[0]);
 
         if(args[1] != NULL)
-            growrate = args[1];
+            growrate = atoi(args[1]);
     }
-        
+
     game_start(ticks, growrate);
+    return 0;
 
 }
 

@@ -14,7 +14,7 @@ process_t * processList[MAX_PROCESS_COUNT];
 int process_count = 0;
 int alive_process_count = 0;
 
-// ** WRAPPERS DE CÓDIGO ** // 
+// ** WRAPPERS DE CÓDIGO ** //
 void processWrapper(int main_thread_code(char**args), char ** args) {
     int retValue = main_thread_code(args);
 
@@ -22,15 +22,15 @@ void processWrapper(int main_thread_code(char**args), char ** args) {
 }
 
 void threadWrapper(void * thread_code(void *), void * args) {
-    void * retValue = thread_code(args);
+    thread_code(args);
 
     killThread(getCurrentPID(), getCurrentThread()->tid, FALSE);
 }
-// ** WRAPPERS DE CÓDIGO ** // 
+// ** WRAPPERS DE CÓDIGO ** //
 
 
 
-// ** MANEJO DE PROCESOS ** // 
+// ** MANEJO DE PROCESOS ** //
 void purgeProcessList(int close) {
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
         if(processList[i] != NULL) {
@@ -97,8 +97,8 @@ int createProcess(char * name, void * code, char ** args, int stack_size, int he
 
     process_count++;
     alive_process_count++;
-    
-    createThread(process, code, args, stack_size, TRUE);    
+
+    createThread(process, code, args, stack_size, TRUE);
 
     //printf("Creando %s\n", process->name);
 
@@ -150,10 +150,10 @@ int waitpid(int pid) {
 
     return retValue;
 }
-// ** MANEJO DE PROCESOS ** // 
+// ** MANEJO DE PROCESOS ** //
 
 
-// ** MANEJO DE THREADS ** // 
+// ** MANEJO DE THREADS ** //
 int getFreeTID(process_t * process) {
     for(int i = 0; i < MAX_THREAD_COUNT; i++)
         if(process->threadList[i] == NULL)
@@ -262,11 +262,11 @@ void threadJoin(int tid, void **retVal) {
     if(awaitThread->status != DEAD)
         eraseTCB( awaitThread ); //Borramos zombie
 }
-// ** MANEJO DE THREADS ** // 
+// ** MANEJO DE THREADS ** //
 
 
 
-// ** MANEJO DE FD ** // 
+// ** MANEJO DE FD ** //
 void purgeFdList(process_t * process, int close) {
     for(int i = 0; i < MAX_FD_COUNT; i++) {
         if(process->fd_table[i] != NULL) {
@@ -325,4 +325,4 @@ int getFreeFD(int pid) {
 
     return -1;
 }
-// ** MANEJO DE FD ** // 
+// ** MANEJO DE FD ** //

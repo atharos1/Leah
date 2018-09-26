@@ -5,7 +5,7 @@
 #include <asm/libasm.h>
 #include <sem.h>
 #include <mutex.h>
-#include <malloc.h>
+#include "malloc.h"
 #include "stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
@@ -159,7 +159,7 @@ file_t * getFile(char * path) {
 
 
 static file_t * newFile(char name[], int type) {
-  file_t * newFile = malloc(sizeof(file_t));
+  file_t * newFile = (file_t *) malloc(sizeof(file_t));
 
   if (newFile == NULL)
     return NULL;

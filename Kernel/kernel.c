@@ -92,7 +92,7 @@ int pruebaTask() {
 
 
 void initThread() {
-	thread_t * me = scheduler_dequeue_current();
+	scheduler_dequeue_current();
 
 	while(1) {
 		if(aliveProcessCount() == 1)

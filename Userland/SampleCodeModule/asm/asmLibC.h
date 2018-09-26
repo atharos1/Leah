@@ -59,6 +59,7 @@ int sys_mutexOpen(char * name);
 void sys_mutexClose(int mutex);
 void sys_mutexLock(int mutex);
 void sys_mutexUnlock(int mutex);
+void sys_chdir(char * path);
 void sys_timerAppend(function f, unsigned long int ticks);
 void sys_timerRemove(function f);
 void sys_beep(int nFrequence, unsigned char duration);
