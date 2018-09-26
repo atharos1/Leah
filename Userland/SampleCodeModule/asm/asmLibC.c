@@ -148,7 +148,7 @@ void sys_sleep(int millis) {
     _systemCall(40, millis, 0, 0, 0);
 }
 
-void sys_listProcess(ps_info * buffer, int * bufferCount) {
+void sys_listProcess(ps_struct buffer[], int * bufferCount) {
     _systemCall(41, buffer, bufferCount, 0, 0);
 }
 

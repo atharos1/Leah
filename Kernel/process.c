@@ -273,15 +273,15 @@ void purgeFdList(process_t * process, int close) {
     }
 }
 
-void listProcess(ps_info * buffer, int * bufferCount) {
+void listProcess(ps_struct buffer[], int * bufferCount) {
     int n = 0;
     for(int i = 0; i < MAX_PROCESS_COUNT; i++) {
         if(processList[i] != NULL) {
-            buffer[i] = malloc(sizeof(ps_struct));
-            buffer[i]->pid = processList[i]->pid;
-            strcpy(buffer[i]->name, processList[i]->name);
-            buffer[i]->heapBase = (int *) processList[i]->heap.base; /* Bien? */
-            buffer[i]->heapSize = processList[i]->heap.size;
+            buffer[i].pid = processList[i]->pid;
+            buffer[i].name = processList[i]->name;
+            buffer[i].threadCount = processList[i]->threadCount;
+            buffer[i].heapBase = (int *) processList[i]->heap.base; /* Bien? */
+            buffer[i].heapSize = processList[i]->heap.size;
             n++;
         }
     }

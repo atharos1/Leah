@@ -11,6 +11,8 @@
 #define SEMAPHORE 3
 #define MUTEX 4
 
+#define MAX_PROCESS_COUNT 100
+
 typedef void (*function)();
 typedef int pthread_t;
 
@@ -63,7 +65,7 @@ void sys_beep(int nFrequence, unsigned char duration);
 int sys_rtc(int fetch);
 void _throwInvalidOpCode();
 void sys_sleep();
-void sys_listProcess(ps_info * buffer, int * bufferCount);
+void sys_listProcess(ps_struct buffer[], int * bufferCount);
 
 int sys_newProcess(char * name, int (*start_routine) (char ** args));
 int sys_waitPID(int pid);

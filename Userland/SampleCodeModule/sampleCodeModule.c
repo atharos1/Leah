@@ -500,13 +500,13 @@ void cmd_cd(char * args) {
 }
 
 void cmd_ps(char * args) {
-	ps_info * buffer;
+	ps_struct buffer[MAX_PROCESS_COUNT];
 	int * bufferCount;
 	sys_listProcess(buffer, bufferCount);
 
 	printf("PID    THREADS    HEAP_BASE    HEAP_SIZE    NAME\n");
 	for(int i = 0; i < *bufferCount; i++) {
-		printf("%d    %d   %X    %d   %s\n", buffer[i]->pid, buffer[i]->threadCount, buffer[i]->heapBase, buffer[i]->heapSize, buffer[i]->name);
+		printf("%d      %d          %X      %d        %s\n", buffer[i].pid, buffer[i].threadCount, buffer[i].heapBase, buffer[i].heapSize, buffer[i].name);
 	}
 }
 
