@@ -81,7 +81,7 @@ void callChef() {
 
   mutex_lock(mutex);
 	if(chefsQty >= MAX_PRODCONS) {
-		printf("No hay mas chefs descansando\n");
+		printf("No hay mas chefs descansando\n\n\n");
 		mutex_unlock(mutex);
 		return;
 	}
@@ -90,13 +90,13 @@ void callChef() {
 }
 
 void * chef(void * args) {
-	printf("Soy un chef que se pone a trabajar!\n");
+	printf("Soy un chef que se pone a trabajar!\n\n\n");
 	while(1) {
 		sem_wait(full);
 		mutex_lock(mutex);
-
     trays[indexChef++] = '0';
-    indexWaiter++;
+    if (indexWaiter != TRAYS_QTY - 1)
+      indexWaiter++;
 		printTrays(trays);
 
 		sem_signal(empty);
@@ -108,21 +108,21 @@ void * chef(void * args) {
 void restChef() {
 	mutex_lock(mutex);
 	if(chefsQty == 0) {
-		printf("No hay chefs trabajando\n");
+		printf("No hay chefs trabajando\n\n\n");
 		mutex_unlock(mutex);
 		return;
 	}
 	chefsQty--;
 	pthread_cancel(chefs[chefsQty]);
 
-	printf("Un chef se fue a descansar\n");
+	printf("Un chef se fue a descansar\n\n\n");
 	mutex_unlock(mutex);
 }
 
 void callWaiter() {
 	mutex_lock(mutex);
 	if(waitersQty >= MAX_PRODCONS) {
-		printf("No hay mas camareros descansando\n");
+		printf("No hay mas camareros descansando\n\n\n");
 		mutex_unlock(mutex);
 		return;
 	}
@@ -131,11 +131,10 @@ void callWaiter() {
 }
 
 void * waiter(void * args) {
-	printf("Soy un camarero que se pone a trabajar!\n");
+	printf("Soy un camarero que se pone a trabajar!\n\n\n");
 	while(1) {
 		sem_wait(empty);
 		mutex_lock(mutex);
-
 		trays[indexWaiter--] = EMPTY_SPACE;
     indexChef--;
 		printTrays(trays);
@@ -148,14 +147,14 @@ void * waiter(void * args) {
 void restWaiter() {
 	mutex_lock(mutex);
 	if(waitersQty == 0) {
-		printf("No hay camareros trabajando\n");
+		printf("No hay camareros trabajando\n\n\n");
 		mutex_unlock(mutex);
 		return;
 	}
   waitersQty--;
   pthread_cancel(waiters[waitersQty]);
 
-	printf("Un camarero se fue a descansar\n");
+	printf("Un camarero se fue a descansar\n\n\n");
 	mutex_unlock(mutex);
 }
 
