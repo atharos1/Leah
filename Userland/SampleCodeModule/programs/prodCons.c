@@ -136,7 +136,8 @@ void * waiter(void * args) {
 		sem_wait(empty);
 		mutex_lock(mutex);
 		trays[indexWaiter--] = EMPTY_SPACE;
-    indexChef--;
+    if (indexChef != 0)
+      indexChef--;
 		printTrays(trays);
 
 		sem_signal(full);
@@ -166,5 +167,9 @@ void terminateAll() {
   for (int i = 0; i < waitersQty; i++) {
       pthread_cancel(waiters[i]);
   }
+  indexChef = 0;
+  indexWaiter = 0;
+  waitersQty = 0;
+  chefsQty = 0;
   mutex_unlock(mutex);
 }
