@@ -10,16 +10,17 @@
 #define TRAYS_QTY 20
 #define EMPTY_SPACE '-'
 
-void prodcons();
+int prodcons();
 void printMenu();
-void initTrays(char * trays);
-void printTrays(char * trays);
+void printTrays();
 void callChef();
 void * chef();
 void restChef();
+void chefSuicide();
 void callWaiter();
 void * waiter();
 void restWaiter();
+void waiterSuicide();
 void terminateAll();
 
 #endif

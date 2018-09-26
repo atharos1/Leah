@@ -4,16 +4,16 @@
 #include <../StandardLibrary/pthread.h>
 #include <../StandardLibrary/stdio.h>
 
-char trays[TRAYS_QTY + 1];
 int full;
 int empty;
 int mutex;
-int indexChef = 0, indexWaiter = 0;
+int plates = 0;
 pthread_t waiters[MAX_PRODCONS] = {0};
 pthread_t chefs[MAX_PRODCONS] = {0};
 int waitersQty = 0, chefsQty = 0;
+int waitersToDie = 0, chefsToDie = 0;
 
-void prodcons() {
+int prodcons() {
   printMenu();
   mutex_create("prodConsMutex");
   mutex = mutex_open("prodConsMutex");
@@ -21,9 +21,13 @@ void prodcons() {
   full = sem_open("fullSem");
   sem_create("emptySem", 0);
   empty = sem_open("emptySem");
-	initTrays(trays);
+  plates = 0;
+  waitersQty = 0;
+  chefsQty = 0;
+  waitersToDie = 0;
+  chefsToDie = 0;
 
-	printTrays(trays);
+	printTrays();
 
 	int c;
 	while((c = getchar()) != QUIT) {
@@ -50,7 +54,7 @@ void prodcons() {
   sem_delete("fullSem");
   sem_delete("emptySem");
 	printf("La simulacion termino\n");
-	return;
+	return 0;
 }
 
 void printMenu() {
@@ -64,16 +68,14 @@ void printMenu() {
 	printf("    %c para terminar la simulacion\n\n\n", QUIT);
 }
 
-void initTrays(char * trays) {
-	for (int i = 0; i < TRAYS_QTY; i++) {
-		trays[i] = EMPTY_SPACE;
-	}
-	trays[TRAYS_QTY] = 0;
-}
-
-void printTrays(char * trays) {
+void printTrays() {
 	printf("Platos = ");
-	printf(trays);
+	for (int i = 0; i < plates; i ++) {
+    printf("0");
+  }
+  for (int i = plates; i < TRAYS_QTY; i ++) {
+    printf("_");
+  }
 	printf("\n\n\n");
 }
 
@@ -94,12 +96,14 @@ void * chef(void * args) {
 	while(1) {
 		sem_wait(full);
 		mutex_lock(mutex);
-    trays[indexChef++] = '0';
+    if (chefsToDie > 0) {
+      sem_signal(full);
+      chefSuicide();
+    }
+    plates ++;
     sem_signal(empty);
 
-    if (indexWaiter != TRAYS_QTY - 1)
-      indexWaiter++;
-		printTrays(trays);
+		printTrays();
 
 		mutex_unlock(mutex);
 	}
@@ -108,16 +112,22 @@ void * chef(void * args) {
 
 void restChef() {
 	mutex_lock(mutex);
-	if(chefsQty == 0) {
+  if(chefsQty == 0) {
 		printf("No hay chefs trabajando\n\n\n");
 		mutex_unlock(mutex);
 		return;
 	}
-	chefsQty--;
-	pthread_cancel(chefs[chefsQty]);
+  chefsToDie ++;
+  mutex_unlock(mutex);
+}
 
+void chefSuicide() {
+  chefsQty--;
+  chefsToDie--;
+  pthread_t chefToDie = chefs[chefsQty];
+  mutex_unlock(mutex);
+  pthread_cancel(chefToDie);
 	printf("Un chef se fue a descansar\n\n\n");
-	mutex_unlock(mutex);
 }
 
 void callWaiter() {
@@ -136,12 +146,14 @@ void * waiter(void * args) {
 	while(1) {
 		sem_wait(empty);
 		mutex_lock(mutex);
-		trays[indexWaiter--] = EMPTY_SPACE;
+    if (waitersToDie > 0) {
+      sem_signal(empty);
+      waiterSuicide();
+    }
+		plates --;
     sem_signal(full);
-    
-    if (indexChef != 0)
-      indexChef--;
-		printTrays(trays);
+
+		printTrays();
 
 		mutex_unlock(mutex);
 	}
@@ -154,11 +166,17 @@ void restWaiter() {
 		mutex_unlock(mutex);
 		return;
 	}
-  waitersQty--;
-  pthread_cancel(waiters[waitersQty]);
+  waitersToDie ++;
+  mutex_unlock(mutex);
+}
 
+void waiterSuicide() {
+  waitersQty--;
+  waitersToDie--;
+  pthread_t waiterToDie = waiters[waitersQty];
+  mutex_unlock(mutex);
+  pthread_cancel(waiterToDie);
 	printf("Un camarero se fue a descansar\n\n\n");
-	mutex_unlock(mutex);
 }
 
 void terminateAll() {
@@ -169,9 +187,5 @@ void terminateAll() {
   for (int i = 0; i < waitersQty; i++) {
       pthread_cancel(waiters[i]);
   }
-  indexChef = 0;
-  indexWaiter = 0;
-  waitersQty = 0;
-  chefsQty = 0;
   mutex_unlock(mutex);
 }
