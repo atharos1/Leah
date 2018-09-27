@@ -126,8 +126,8 @@ void chefSuicide() {
   chefsToDie--;
   pthread_t chefToDie = chefs[chefsQty];
   mutex_unlock(mutex);
+  printf("Un chef se fue a descansar\n\n\n");
   pthread_cancel(chefToDie);
-	printf("Un chef se fue a descansar\n\n\n");
 }
 
 void callWaiter() {
@@ -175,8 +175,8 @@ void waiterSuicide() {
   waitersToDie--;
   pthread_t waiterToDie = waiters[waitersQty];
   mutex_unlock(mutex);
+  printf("Un camarero se fue a descansar\n\n\n");
   pthread_cancel(waiterToDie);
-	printf("Un camarero se fue a descansar\n\n\n");
 }
 
 void terminateAll() {
