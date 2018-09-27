@@ -262,7 +262,7 @@ void cmd_time(char * args) {
 void cmd_help() {
 	for(int i = 0; i < commandsNum; i++) {
 		setFontColor(0xFF6347);
-		printf("%s\t", commandList[i].name);
+		printf("%20s", commandList[i].name);
 		setFontColor(currFontColor);
 			//if(commandList[i].desc != '\0') {
 				printf("%s", commandList[i].desc);
@@ -512,12 +512,12 @@ void cmd_ps(char ** args) {
 
 	for(int i = 0; i < bufferCount; i++)
 		printf("%20s%20s%20s%20s%20s\n",
-			itoa(buffer[i].pid, tmp, 10), 
-			buffer[i].name, 
+			itoa(buffer[i].pid, tmp, 10),
+			buffer[i].name,
 			(buffer[i].status == 0 ? "Alive" : "Zombie"),
 			itoa(buffer[i].threadCount, tmp, 10),
 			itoa(buffer[i].heapSize, tmp, 10));
-		
+
 }
 
 void cmd_prodcons(char ** args) {
