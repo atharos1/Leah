@@ -4,7 +4,7 @@
 #ifndef FONT_BITMAPS_H
 #define FONT_BITMAPS_H
 
-#include "font.h"
+#include "include/font.h"
 
 static unsigned char __font_bitmap__[] = {
 //  32 $20 'space'
