@@ -180,12 +180,13 @@ int parseCommand(char * cmd, int l) {
 	}
 	argv[currArg] = NULL;
 
+	function f = getCommandFunction(cmd);
+	if( f == 0 ) {
+		printf("Comando '%s' desconocido.\n\n", cmd);
+		return -1;
+	}
+
 	if (getIsProgram(cmd) == FALSE) {
-		function f = getCommandFunction(cmd);
-		if( f == 0 ) {
-			printf("Comando '%s' desconocido.\n\n", cmd);
-			return -1;
-		}
 		f(argv);
 	} else {
 		execProgram(cmd,argv, currArg);
@@ -214,6 +215,45 @@ void clearLine(unsigned int lineLong) {
 	for (int i = 0; i < lineLong; i++) {
 		printf("\b");
 	}
+}
+
+int testForeground(char ** args) {
+
+	char c;
+	char buff[100];
+	int cursor = 0;
+
+	printf("Introduzca el texto que desea imprimir:\n");
+
+	while(c = getchar(), c != '\n') {
+
+		if( c != EOF ) {
+
+			if (c == 8) { //backspace
+				if(cursor > 0) {
+
+					buff[cursor] = '\0';
+					cursor--;
+					putchar(c);
+			  }
+			} else {
+				if (cursor < 100) {
+					if (c >= ' ' && c < 0x80) {
+						buff[cursor] = c;
+						cursor++;
+					}
+					putchar(c);
+				}
+			}
+		}
+	}
+
+	buff[cursor] = 0;
+
+	printf("\nEl texto es: %s", buff);
+
+	return 0;
+
 }
 
 void commandListener() {
@@ -378,7 +418,7 @@ void cmd_setBackColor(char ** args) {
 
 }
 
-void cmd_memoryManagerTest() {
+int cmd_memoryManagerTest(void ** args) {
 
 	char c = 8;
 	int bytes = 0;
@@ -437,6 +477,8 @@ void cmd_memoryManagerTest() {
 		putchar('-');
 	sys_memoryManagerTest(-1);
 	printf("\n\n\n      Todos los bloques alocados fueron liberados\n");
+
+	return 0;
 }
 
 void program_Snake(char * args[]) {
@@ -629,19 +671,20 @@ int main() {
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]", TRUE, FALSE);
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE, FALSE);
 	command_register("toUppercase", toUppercase, "Test para pipes", TRUE, FALSE);
-	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado", TRUE, FALSE);
+	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado", FALSE, FALSE);
 	command_register("cd", cmd_cd, "Cambia el directorio actual", FALSE, FALSE);
-	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada", TRUE, FALSE);
-	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada", TRUE, FALSE);
-	command_register("rm", cmd_removeFile, "Elimina el archivo especificado", TRUE, FALSE);
-	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado", TRUE, FALSE);
-	command_register("cat", cmd_cat, "Imprime el archivo especificado", TRUE, FALSE);
+	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada", FALSE, FALSE);
+	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada", FALSE, FALSE);
+	command_register("rm", cmd_removeFile, "Elimina el archivo especificado", FALSE, FALSE);
+	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado", FALSE, FALSE);
+	command_register("cat", cmd_cat, "Imprime el archivo especificado", FALSE, FALSE);
 	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada", TRUE, FALSE);
 	command_register("prodcons", prodcons, "Simula el problema de productor consumidor", TRUE, FALSE);
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE, FALSE);
 	command_register("arcoiris", arcoiris_main, "Cambia cada un segundo el color de fuente", TRUE, FALSE);
 	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado", FALSE, FALSE);
 	command_register("foreground", cmd_giveForeground, "Cede el primer plano al procedo de PID especificado", FALSE, FALSE);
+	command_register("testforeground", testForeground, "Prueba de foreground. Pide un texto y lo imprime", TRUE, FALSE);
 	command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
 	while(programStatus != 1) {

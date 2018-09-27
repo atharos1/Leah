@@ -155,7 +155,8 @@ int getForegroundPID() {
 }
 
 void giveForeground(int pid) {
-	if(!isValidProcess(pid) || pid == foregroundPID)
+	//if(!isValidProcess(pid) || pid == foregroundPID)
+	if(pid == foregroundPID)
 		return;
 
 	foregroundPID = pid;
@@ -164,7 +165,11 @@ void giveForeground(int pid) {
 	while(curr != NULL) {
 		if(curr->thread->process == pid) {
 			scheduler_enqueue(curr->thread);
-			prev->next = curr->next;
+			if(prev == NULL) { //primero
+				bgQueue = curr->next;
+			} else {
+				prev->next = curr->next;
+			}
 			aux = curr;
 			curr = curr->next;
 			freeMemory(aux);
@@ -184,7 +189,10 @@ char getChar() {
 
 			bgNode n = getMemory(sizeof(struct bgnode));
 			n->thread = current;
-			bgQueue->next = n;
+			if(bgQueue == NULL)
+				bgQueue = n;
+			else
+				bgQueue->next = n;
 
 			_force_scheduler();
 		}

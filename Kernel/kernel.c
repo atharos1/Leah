@@ -95,8 +95,10 @@ void initThread() {
 	scheduler_dequeue_current();
 
 	while(1) {
-		if(aliveProcessCount() == 1)
+		if(aliveProcessCount() == 1) {
 			createProcess("Terminalator", sampleCodeModuleAddress, (char*[]){NULL},  4, 4);
+			giveForeground(1);
+		}
 
 		_force_scheduler();
 	}
