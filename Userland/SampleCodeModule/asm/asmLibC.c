@@ -188,6 +188,10 @@ void sys_exit(int retVal) {
     _systemCall(47, retVal, 0, 0);
 }
 
+void sys_setForeground(int pid) {
+    _systemCall(48, pid, 0, 0);
+}
+
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg) {
     return _systemCall(50, start_routine, arg, 0);
 }

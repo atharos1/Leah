@@ -16,13 +16,14 @@
 typedef void (*function)();
 typedef int pthread_t;
 
-typedef struct
-{
+typedef struct {
 	int pid;
 	char * name;
+	char * parentName;
 	int threadCount;
     int heapSize;
 	int status;
+	int foreground;
 } ps_struct;
 typedef ps_struct * ps_info;
 
@@ -77,6 +78,7 @@ int sys_getHeapSize();
 void * sys_getHeapBase();
 void sys_killProcess(int pid);
 void sys_exit(int retVal);
+void sys_setForeground(int pid);
 
 pthread_t sys_newThread(void *(*start_routine) (void *), void *arg);
 void sys_joinThread(pthread_t thread, void ** retVal);

@@ -38,6 +38,7 @@ typedef struct command {
 	char desc[300];
 	function f;
 	int isProgram;
+	int isFullscreen;
 } command;
 
 struct command commandList[MAX_COMMANDS];
@@ -46,6 +47,14 @@ function getCommandFunction(char * commandName) {
 	for(int i = 0; i < commandsNum; i++)
 		if( strcmp(commandList[i].name, commandName) == 0 )
 			return commandList[i].f;
+
+	return 0;
+}
+
+int getIsFullscreen(char * commandName) {
+	for(int i = 0; i < commandsNum; i++)
+		if( strcmp(commandList[i].name, commandName) == 0 )
+			return commandList[i].isFullscreen;
 
 	return 0;
 }
@@ -66,7 +75,7 @@ long getCommandID(char * commandName) {
 	return -1;
 }
 
-int command_register(char * name, function f, char * desc, int isProgram) {
+int command_register(char * name, function f, char * desc, int isProgram, int isFullscreen) {
 	if(commandsNum >= MAX_COMMANDS - 1 || getCommandFunction(name) )
 		return -1;
 
@@ -74,6 +83,7 @@ int command_register(char * name, function f, char * desc, int isProgram) {
 	strcpy(commandList[commandsNum].desc, desc);
 	commandList[commandsNum].f = f;
 	commandList[commandsNum].isProgram = isProgram;
+	commandList[commandsNum].isFullscreen = isFullscreen;
 
 	commandsNum++;
 
@@ -81,10 +91,31 @@ int command_register(char * name, function f, char * desc, int isProgram) {
 }
 
 
-void execProgram(char * cmd, char ** args) {
+void execProgram(char * cmd, char ** args, int argn) {
+
+	int giveAwayForeground = 1;
+	int isFullscreen = getIsFullscreen(cmd);
+
+	if(argn > 0 && strcmp(args[argn - 1], "&") == 0) {
+		giveAwayForeground = 0;
+	}
+
+	if(!giveAwayForeground && isFullscreen) {
+		printf("No puede ejecutar en segundo plano un programa de pantalla completa.");
+		return;
+	}
+
 	function f = getCommandFunction(cmd);
-	int pid = execv(cmd, (function_t)&f, args, TRUE, NULL);
-	sys_waitPID(pid);
+	int pid = execv(cmd, f, args, TRUE, NULL);
+	
+	if(giveAwayForeground) {
+		sys_setForeground(pid);
+		sys_waitPID(pid);
+
+		if(isFullscreen)
+			cmd_resetScreen();
+	}
+
 }
 
 
@@ -157,7 +188,7 @@ int parseCommand(char * cmd, int l) {
 		}
 		f(argv);
 	} else {
-		execProgram(cmd,argv);
+		execProgram(cmd,argv, currArg);
 	}
 
 
@@ -531,13 +562,15 @@ void cmd_ps(char ** args) {
 
 	char tmp[20];
 
-	printf("%20s%20s%20s%20s%20s\n", "PID", "NAME", "STATUS", "THREAD COUNT", "HEAP SIZE");
+	printf("\n%8s%20s%20s%15s%15s%15s%20s\n", "PID", "NAME", "PARENT", "STATUS", "FOREGROUND", "THREAD COUNT", "HEAP SIZE");
 
 	for(int i = 0; i < bufferCount; i++)
-		printf("%20s%20s%20s%20s%20s\n",
+		printf("%8s%20s%20s%15s%15s%15s%20s\n",
 			itoa(buffer[i].pid, tmp, 10),
 			buffer[i].name,
+			buffer[i].parentName,
 			(buffer[i].status == 0 ? "Alive" : "Zombie"),
+			(buffer[i].foreground == 0 ? "False" : "True"),
 			itoa(buffer[i].threadCount, tmp, 10),
 			itoa(buffer[i].heapSize, tmp, 10));
 
@@ -549,6 +582,11 @@ void cmd_prodcons(char ** args) {
 
 void cmd_upDown (char * args) {
 	upDown();
+}
+
+void cmd_giveForeground(char ** args) {
+	int pid = atoi(args[0]);
+	sys_setForeground(pid);
 }
 
 int arcoiris_main() {
@@ -582,28 +620,29 @@ int main() {
 	currFontSize = getFontSize();
 	puts("\n");
 
-	command_register("time", cmd_time, "Muestra la fecha y hora del reloj del sistema", TRUE);
-	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles", FALSE);
-	command_register("clear", cmd_resetScreen, "Limpia la pantalla", FALSE);
-	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola", TRUE);
-	command_register("digital-clock", (function)digitalClock, "Muestra un reloj digital en pantalla", TRUE);
-	command_register("snake", (function)snake_main, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]", TRUE);
-	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]", TRUE);
-	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE);
-	command_register("toUppercase", (function)toUppercase, "Test para pipes", TRUE);
-	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado", TRUE);
-	command_register("cd", cmd_cd, "Cambia el directorio actual", FALSE);
-	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada", TRUE);
-	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada", TRUE);
-	command_register("rm", cmd_removeFile, "Elimina el archivo especificado", TRUE);
-	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado", TRUE);
-	command_register("cat", cmd_cat, "Imprime el archivo especificado", TRUE);
-	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada", TRUE);
-	command_register("prodcons", (function)prodcons, "Simula el problema de productor consumidor", TRUE);
-	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE);
-	command_register("arcoiris", (function)arcoiris_main, "Cambia cada un segundo el color de fuente", TRUE);
-	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado", FALSE);
-	command_register("exit", cmd_exit, "Cierra la Shell", FALSE);
+	command_register("time", cmd_time, "Muestra la fecha y hora del reloj del sistema", TRUE, FALSE);
+	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles", FALSE, FALSE);
+	command_register("clear", cmd_resetScreen, "Limpia la pantalla", FALSE, FALSE);
+	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola", TRUE, FALSE);
+	command_register("digital-clock", digitalClock, "Muestra un reloj digital en pantalla", TRUE, TRUE);
+	command_register("snake", snake_main, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]", TRUE, TRUE);
+	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]", TRUE, FALSE);
+	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE, FALSE);
+	command_register("toUppercase", toUppercase, "Test para pipes", TRUE, FALSE);
+	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado", TRUE, FALSE);
+	command_register("cd", cmd_cd, "Cambia el directorio actual", FALSE, FALSE);
+	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada", TRUE, FALSE);
+	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada", TRUE, FALSE);
+	command_register("rm", cmd_removeFile, "Elimina el archivo especificado", TRUE, FALSE);
+	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado", TRUE, FALSE);
+	command_register("cat", cmd_cat, "Imprime el archivo especificado", TRUE, FALSE);
+	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada", TRUE, FALSE);
+	command_register("prodcons", prodcons, "Simula el problema de productor consumidor", TRUE, FALSE);
+	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE, FALSE);
+	command_register("arcoiris", arcoiris_main, "Cambia cada un segundo el color de fuente", TRUE, FALSE);
+	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado", FALSE, FALSE);
+	command_register("foreground", cmd_giveForeground, "Cede el primer plano al procedo de PID especificado", FALSE, FALSE);
+	command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
 	while(programStatus != 1) {
 		commandListener();

@@ -1,5 +1,6 @@
 #include "include/scheduler.h"
 #include "drivers/include/console.h"
+#include "drivers/include/kb_driver.h"
 #include "asm/libasm.h"
 #include "include/lib.h"
 #include "include/roundRobin.h"
@@ -110,6 +111,10 @@ void * scheduler_nextTask(void * oldRSP) {
         if( nextThread != NULL ) {
             currentThread.thread = nextThread;
             currentThread.queue = currQueue;
+
+            if(aliveProcessCount() == 2) //INIT no cuenta
+                giveForeground(nextThread->process);
+
             return nextThread->stack.current;
         }
     }

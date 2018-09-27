@@ -10,6 +10,8 @@
 #include "../include/sleep.h"
 #include "../include/scheduler.h"
 
+#include "../drivers/include/kb_driver.h"
+
 int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 	switch(rdi) {
 		case 1: //Exit
@@ -178,6 +180,9 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			break;
 		case 47: //exit
 			killProcess(getCurrentPID(), (int)rsi);
+			break;
+		case 48: //giveForeground
+			giveForeground((int)rsi);
 			break;
 		case 50: //new thread
 			return createThread(getProcessByPID(getCurrentPID()), (void*)rsi, (void*)rdx, 4, FALSE)->tid;

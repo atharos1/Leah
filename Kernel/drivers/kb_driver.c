@@ -4,6 +4,7 @@
 #include "asm/libasm.h"
 #include "include/kb_layout.h"
 #include "../include/fileSystem.h"
+#include "../include/scheduler.h"
 
 #define BUFF_SIZE 0xFF
 
@@ -140,8 +141,54 @@ static void insert(char c){
 	return ans;
 }*/
 
+struct bgnode {
+	thread_t * thread;
+	struct bgnode * next;
+};
+
+typedef struct bgnode * bgNode;
+bgNode bgQueue = NULL;
+int foregroundPID = 0;
+
+int getForegroundPID() {
+	return foregroundPID;
+}
+
+void giveForeground(int pid) {
+	if(!isValidProcess(pid) || pid == foregroundPID)
+		return;
+
+	foregroundPID = pid;
+	bgNode curr = bgQueue;
+	bgNode prev = NULL, aux;
+	while(curr != NULL) {
+		if(curr->thread->process == pid) {
+			scheduler_enqueue(curr->thread);
+			prev->next = curr->next;
+			aux = curr;
+			curr = curr->next;
+			freeMemory(aux);
+		} else {
+			prev = curr;
+			curr = curr->next;
+		}
+	}
+}
+
 char getChar() {
+
 	if (stdin != NULL) {
+		
+		if(getCurrentPID() != foregroundPID) { //No es el current
+			thread_t * current = scheduler_dequeue_current();
+
+			bgNode n = getMemory(sizeof(struct bgnode));
+			n->thread = current;
+			bgQueue->next = n;
+
+			_force_scheduler();
+		}
+		
 		char c;
 		if (readFile(stdin, &c, 1) == 0) return -1;
 		return c;

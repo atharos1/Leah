@@ -2,6 +2,7 @@
 #include "include/scheduler.h"
 #include "asm/libasm.h"
 #include "drivers/include/console.h"
+#include "drivers/include/kb_driver.h"
 
 int getFreePID();
 int getFreeTID(process_t * process);
@@ -18,6 +19,7 @@ int alive_process_count = 0;
 void processWrapper(int main_thread_code(char**args), char ** args) {
     int retValue = main_thread_code(args);
 
+    giveForeground(processList[getCurrentPID()]->parent);
     killProcess(getCurrentPID(), retValue);
 }
 
@@ -95,6 +97,8 @@ int createProcess(char * name, void * code, char ** args, int stack_size, int he
 
     process->status = ALIVE;
 
+    process->parent = getCurrentPID();
+
     process->finishedSem = sem_create(0);
 
     process_count++;
@@ -161,6 +165,10 @@ int threadCount(int pid) {
             cant++;
 
     return cant;
+}
+
+int isValidProcess(int pid) {
+    return !(pid >= MAX_PROCESS_COUNT || pid < 0 || processList[pid] == NULL);
 }
 // ** MANEJO DE PROCESOS ** //
 
@@ -299,9 +307,11 @@ void listProcess(ps_struct buffer[], int * bufferCount) {
         if(processList[i] != NULL) {
             buffer[i].pid = i;
             buffer[i].name = processList[i]->name;
+            buffer[i].parentName = processList[processList[i]->parent]->name;
             buffer[i].threadCount = threadCount(i);
             buffer[i].heapSize = processList[i]->heap.size;
             buffer[i].status = processList[i]->status;
+            buffer[i].foreground = (getForegroundPID() == i);
             n++;
         }
     }
