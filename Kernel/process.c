@@ -255,7 +255,6 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
 }
 
 void eraseTCB(thread_t * thread) {
-    freeMemory(thread->stack.base);
     freeMemory(thread);
 }
 
