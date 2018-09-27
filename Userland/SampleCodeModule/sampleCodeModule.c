@@ -37,6 +37,7 @@ typedef struct command {
 	char name[30];
 	char desc[300];
 	function f;
+	int isProgram;
 } command;
 
 struct command commandList[MAX_COMMANDS];
@@ -49,6 +50,14 @@ function getCommandFunction(char * commandName) {
 	return 0;
 }
 
+int getIsProgram(char * commandName) {
+	for (int i = 0; i < commandsNum; i++) {
+		if (strcmp(commandList[i].name, commandName) == 0)
+			return commandList[i].isProgram;
+	}
+	return -1;
+}
+
 long getCommandID(char * commandName) {
 	for(int i = 0; i < commandsNum; i++)
 		if( strcmp(commandList[i].name, commandName) == 0 )
@@ -57,18 +66,26 @@ long getCommandID(char * commandName) {
 	return -1;
 }
 
-int command_register(char * name, function f, char * desc) {
+int command_register(char * name, function f, char * desc, int isProgram) {
 	if(commandsNum >= MAX_COMMANDS - 1 || getCommandFunction(name) )
 		return -1;
 
 	strcpy(commandList[commandsNum].name, name);
 	strcpy(commandList[commandsNum].desc, desc);
 	commandList[commandsNum].f = f;
+	commandList[commandsNum].isProgram = isProgram;
 
 	commandsNum++;
 
 	return 0;
 }
+
+
+void execProgram(char * cmd, char ** args) {
+	function f = getCommandFunction(cmd);
+	execv(cmd, f, args, TRUE, NULL);
+}
+
 
 int command_unregister(char * name) {
 
@@ -131,12 +148,17 @@ int parseCommand(char * cmd, int l) {
 	}
 	argv[currArg] = NULL;
 
-	function f = getCommandFunction(cmd);
-	if( f == 0 ) {
-		printf("Comando '%s' desconocido.\n\n", cmd);
-		return -1;
+	if (getIsProgram(cmd) == FALSE) {
+		function f = getCommandFunction(cmd);
+		if( f == 0 ) {
+			printf("Comando '%s' desconocido.\n\n", cmd);
+			return -1;
+		}
+		f(argv);
+	} else {
+		execProgram(cmd,argv);
 	}
-	f(argv);
+
 
 	printf("\n");
 
@@ -559,28 +581,28 @@ int main() {
 	currFontSize = getFontSize();
 	puts("\n");
 
-	command_register("time", cmd_time, "Muestra la fecha y hora del reloj del sistema");
-	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles");
-	command_register("clear", cmd_resetScreen, "Limpia la pantalla");
-	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola");
-	command_register("digital-clock", program_digitalClock, "Muestra un reloj digital en pantalla");
-	command_register("snake", program_Snake, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]");
-	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]");
-	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla");
-	command_register("toUppercase", program_toUppercase, "Test para pipes");
-	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado");
-	command_register("cd", cmd_cd, "Cambia el directorio actual");
-	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada");
-	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada");
-	command_register("rm", cmd_removeFile, "Elimina el archivo especificado");
-	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado");
-	command_register("cat", cmd_cat, "Imprime el archivo especificado");
-	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada");
-	command_register("prodcons", cmd_prodcons, "Simula el problema de productor consumidor");
-	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs");
-	command_register("arcoiris", program_arcoiris, "Cambia cada un segundo el color de fuente");
-	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado");
-	command_register("exit", cmd_exit, "Cierra la Shell");
+	command_register("time", cmd_time, "Muestra la fecha y hora del reloj del sistema", TRUE);
+	command_register("help", cmd_help, "Despliega informacion sobre los comandos disponibles", FALSE);
+	command_register("clear", cmd_resetScreen, "Limpia la pantalla", FALSE);
+	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola", TRUE);
+	command_register("digital-clock", (function)digitalClock, "Muestra un reloj digital en pantalla", TRUE);
+	command_register("snake", (function)snake_main, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]", TRUE);
+	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]", TRUE);
+	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE);
+	command_register("toUppercase", (function)toUppercase, "Test para pipes", TRUE);
+	command_register("ls", cmd_listDir, "Lista los archivos en el directorio especificado", TRUE);
+	command_register("cd", cmd_cd, "Cambia el directorio actual", FALSE);
+	command_register("mkdir", cmd_makeDirectory, "Crea un directorio en la ruta especificada", TRUE);
+	command_register("touch", cmd_touch, "Crea un archivo regular en la ruta especificada", TRUE);
+	command_register("rm", cmd_removeFile, "Elimina el archivo especificado", TRUE);
+	command_register("writeTo", cmd_writeTo, "Escribe en el archivo especificado", TRUE);
+	command_register("cat", cmd_cat, "Imprime el archivo especificado", TRUE);
+	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada", TRUE);
+	command_register("prodcons", (function)prodcons, "Simula el problema de productor consumidor", TRUE);
+	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE);
+	command_register("arcoiris", (function)arcoiris_main, "Cambia cada un segundo el color de fuente", TRUE);
+	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado", FALSE);
+	command_register("exit", cmd_exit, "Cierra la Shell", FALSE);
 
 	while(programStatus != 1) {
 		commandListener();
