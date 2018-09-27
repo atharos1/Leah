@@ -83,7 +83,7 @@ int command_register(char * name, function f, char * desc, int isProgram) {
 
 void execProgram(char * cmd, char ** args) {
 	function f = getCommandFunction(cmd);
-	execv(cmd, f, args, TRUE, NULL);
+	execv(cmd, (function_t)&f, args, TRUE, NULL);
 }
 
 
