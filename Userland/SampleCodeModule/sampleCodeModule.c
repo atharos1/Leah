@@ -83,7 +83,8 @@ int command_register(char * name, function f, char * desc, int isProgram) {
 
 void execProgram(char * cmd, char ** args) {
 	function f = getCommandFunction(cmd);
-	execv(cmd, (function_t)&f, args, TRUE, NULL);
+	int pid = execv(cmd, (function_t)&f, args, TRUE, NULL);
+	sys_waitPID(pid);
 }
 
 
