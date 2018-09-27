@@ -1,9 +1,9 @@
-#include "stdio.h"
+#include "include/stdio.h"
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
 #include <limits.h>
-#include "string.h"
-#include "math.h"
+#include "include/string.h"
+#include "include/math.h"
 #include "../asm/asmLibC.h"
 
 #define STD_OUT 1

@@ -1,8 +1,8 @@
-#include "mutex.h"
-#include "scheduler.h"
-#include "fileSystem.h"
+#include "include/mutex.h"
+#include "include/scheduler.h"
+#include "include/fileSystem.h"
 #include "asm/libasm.h"
-#include "malloc.h"
+#include "include/malloc.h"
 
 mutex_t mutex_create() {
 

@@ -1,8 +1,8 @@
 #define MAX_FUNCTIONS 255
 
-#include <drivers/timer.h>
-#include <sleep.h>
-#include <scheduler.h>
+#include "include/timer.h"
+#include "../include/sleep.h"
+#include "../include/scheduler.h"
 
 int timerSkip = FALSE;
 

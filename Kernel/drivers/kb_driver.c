@@ -1,9 +1,9 @@
 #include <stdint.h>
-#include <drivers/console.h>
-#include <drivers/kb_driver.h>
-#include <asm/libasm.h>
-#include <drivers/kb_layout.h>
-#include <fileSystem.h>
+#include "include/console.h"
+#include "include/kb_driver.h"
+#include "asm/libasm.h"
+#include "include/kb_layout.h"
+#include "../include/fileSystem.h"
 
 #define BUFF_SIZE 0xFF
 

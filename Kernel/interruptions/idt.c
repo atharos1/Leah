@@ -1,13 +1,13 @@
 #include <stdint.h>
-#include <interruptions/defs.h>
-#include <drivers/timer.h>
-#include <drivers/kb_driver.h>
-#include <drivers/console.h>
-#include <drivers/speaker.h>
-#include <asm/libasm.h>
-#include <interruptions/idt.h>
-#include <process.h>
-#include <scheduler.h>
+#include "defs.h"
+#include "../drivers/include/timer.h"
+#include "../drivers/include/kb_driver.h"
+#include "../drivers/include/console.h"
+#include "../drivers/include/speaker.h"
+#include "../asm/libasm.h"
+#include "../interruptions/idt.h"
+#include "../include/process.h"
+#include "../include/scheduler.h"
 
 void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP);
 

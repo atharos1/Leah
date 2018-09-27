@@ -1,7 +1,7 @@
-#include "sem.h"
+#include "include/sem.h"
 #include "asm/libasm.h"
-#include "scheduler.h"
-#include "malloc.h"
+#include "include/scheduler.h"
+#include "include/malloc.h"
 
 sem_t sem_create(int startValue) {
 	sem_t sem = malloc(sizeof(sem_struct));

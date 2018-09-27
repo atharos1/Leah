@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <lib.h>
-#include <moduleLoader.h>
-#include <drivers/console.h>
+#include "include/lib.h"
+#include "include/moduleLoader.h"
+#include "drivers/include/console.h"
 
 static uint32_t loadModule(uint8_t ** module, void * targetModuleAddress);
 static uint32_t readUint32(uint8_t ** address);

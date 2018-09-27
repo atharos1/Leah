@@ -1,14 +1,14 @@
 #include <stdint.h>
-#include <drivers/kb_driver.h>
-#include <drivers/console.h>
-#include <drivers/speaker.h>
-#include <drivers/video_vm.h>
-#include <drivers/timer.h>
-#include <memoryManagerTest.h>
-#include <asm/libasm.h>
-#include <fileSystem.h>
-#include <sleep.h>
-#include <scheduler.h>
+#include "../drivers/include/kb_driver.h"
+#include "../drivers/include/console.h"
+#include "../drivers/include/speaker.h"
+#include "../drivers/include/video_vm.h"
+#include "../drivers/include/timer.h"
+#include "../include/memoryManagerTest.h"
+#include "../asm/libasm.h"
+#include "../include/fileSystem.h"
+#include "../include/sleep.h"
+#include "../include/scheduler.h"
 
 int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 	switch(rdi) {

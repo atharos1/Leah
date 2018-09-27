@@ -1,18 +1,18 @@
 #include <stdint.h>
-#include <lib.h>
-#include <moduleLoader.h>
-#include <memoryManager.h>
-#include <drivers/console.h>
-#include <drivers/video_vm.h>
-#include <drivers/kb_driver.h>
-#include <drivers/speaker.h>
-#include <interruptions/idt.h>
-#include <asm/libasm.h>
-#include <fileSystem.h>
-#include <sleep.h>
-#include <scheduler.h>
-#include <process.h>
-#include <malloc.h>
+#include "include/lib.h"
+#include "include/moduleLoader.h"
+#include "include/memoryManager.h"
+#include "drivers/include/console.h"
+#include "drivers/include/video_vm.h"
+#include "drivers/include/kb_driver.h"
+#include "drivers/include/speaker.h"
+#include "interruptions/idt.h"
+#include "asm/libasm.h"
+#include "include/fileSystem.h"
+#include "include/sleep.h"
+#include "include/scheduler.h"
+#include "include/process.h"
+#include "include/malloc.h"
 
 extern uint8_t text;
 extern uint8_t rodata;

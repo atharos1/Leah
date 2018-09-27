@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <drivers/timer.h>
-#include <drivers/speaker.h>
-#include <asm/libasm.h>
+#include "include/timer.h"
+#include "include/speaker.h"
+#include "asm/libasm.h"
 
 
 void beep(uint32_t nFrequence, unsigned char duration) {

@@ -1,8 +1,8 @@
-#include <scheduler.h>
-#include <drivers/console.h>
-#include <asm/libasm.h>
-#include <lib.h>
-#include <roundRobin.h>
+#include "include/scheduler.h"
+#include "drivers/include/console.h"
+#include "asm/libasm.h"
+#include "include/lib.h"
+#include "include/roundRobin.h"
 
 #define TRUE 1
 #define FALSE 0

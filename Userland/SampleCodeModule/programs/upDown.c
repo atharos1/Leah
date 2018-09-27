@@ -1,7 +1,7 @@
-#include "upDown.h"
-#include <../StandardLibrary/mutex.h>
-#include <../StandardLibrary/pthread.h>
-#include <../StandardLibrary/stdio.h>
+#include "include/upDown.h"
+#include "../StandardLibrary/include/mutex.h"
+#include "../StandardLibrary/include/pthread.h"
+#include "../StandardLibrary/include/stdio.h"
 
 int global = 0;
 int m;

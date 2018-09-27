@@ -1,12 +1,12 @@
-#include <fileSystem.h>
-#include <memoryManager.h>
-#include <drivers/console.h>
-#include <scheduler.h>
-#include <asm/libasm.h>
-#include <sem.h>
-#include <mutex.h>
-#include "malloc.h"
-#include "stdlib.h"
+#include "include/fileSystem.h"
+#include "include/memoryManager.h"
+#include "drivers/include/console.h"
+#include "include/scheduler.h"
+#include "asm/libasm.h"
+#include "include/sem.h"
+#include "include/mutex.h"
+#include "include/malloc.h"
+#include "include/stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
 

@@ -1,5 +1,5 @@
-#include "timer.h"
-#include "stdlib.h"
+#include "include/timer.h"
+#include "include/stdlib.h"
 #include "../asm/asmLibC.h"
 
 void * tickTimer(timer_t t) {

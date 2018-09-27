@@ -1,12 +1,12 @@
 #include <stdarg.h> //Parámetros ilimitados
 #include <stdint.h>
-#include <drivers/console.h>
-#include <drivers/video_vm.h>
-#include <drivers/speaker.h>
-#include <drivers/kb_driver.h>
-#include <drivers/kb_layout.h>
-#include <drivers/timer.h>
-#include <asm/libasm.h>
+#include "include/console.h"
+#include "include/video_vm.h"
+#include "include/speaker.h"
+#include "include/kb_driver.h"
+#include "include/kb_layout.h"
+#include "include/timer.h"
+#include "asm/libasm.h"
 
 void cursorTick();
 int abs(int n);

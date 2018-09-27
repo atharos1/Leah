@@ -1,7 +1,7 @@
 #ifndef VIDEO_VM_H
 #define VIDEO_VM_H
 
-#include <drivers/font.h>
+#include "font.h"
 
 extern unsigned int SCREEN_WIDTH;
 extern unsigned int SCREEN_HEIGHT;

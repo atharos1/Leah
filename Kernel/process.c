@@ -1,7 +1,7 @@
-#include "process.h"
-#include "scheduler.h"
+#include "include/process.h"
+#include "include/scheduler.h"
 #include "asm/libasm.h"
-#include "drivers/console.h"
+#include "drivers/include/console.h"
 
 int getFreePID();
 int getFreeTID(process_t * process);

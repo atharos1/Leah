@@ -1,6 +1,6 @@
-#include "sem_bin.h"
+#include "include/sem_bin.h"
 #include "asm/libasm.h"
-#include "scheduler.h"
+#include "include/scheduler.h"
 
 sem_bin_t sem_bin_create(int startValue) {
 

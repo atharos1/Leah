@@ -1,7 +1,7 @@
-#include "sleep.h"
-#include <asm/libasm.h>
-#include <scheduler.h>
-#include "malloc.h"
+#include "include/sleep.h"
+#include "asm/libasm.h"
+#include "include/scheduler.h"
+#include "include/malloc.h"
 
 #define TICKS_PER_SECOND 18.2
 

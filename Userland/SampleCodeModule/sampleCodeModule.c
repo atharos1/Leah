@@ -1,18 +1,18 @@
 #include <stdarg.h> //Parámetros ilimitados
 
-#include "StandardLibrary/stdio.h"
-#include "StandardLibrary/string.h"
-#include "programs/snake.h"
-#include "programs/digitalClock.h"
-#include "programs/prodCons.h"
-#include "programs/upDown.h"
-#include "programs/toUppercase.h"
+#include "StandardLibrary/include/stdio.h"
+#include "StandardLibrary/include/string.h"
+#include "programs/include/snake.h"
+#include "programs/include/digitalClock.h"
+#include "programs/include/prodCons.h"
+#include "programs/include/upDown.h"
+#include "programs/include/toUppercase.h"
 #include "asm/asmLibC.h"
-#include "sem.h"
-#include "mutex.h"
-#include "StandardLibrary/pthread.h"
-#include "StandardLibrary/stdlib.h"
-#include "StandardLibrary/timer.h"
+#include "StandardLibrary/include/sem.h"
+#include "StandardLibrary/include/mutex.h"
+#include "StandardLibrary/include/pthread.h"
+#include "StandardLibrary/include/stdlib.h"
+#include "StandardLibrary/include/timer.h"
 
 
 #define MAX_COMMANDS 255

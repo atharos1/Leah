@@ -1,4 +1,4 @@
-#include "pthread.h"
+#include "include/pthread.h"
 
 pthread_t pthread_create(void *(*start_routine) (void *), void *arg) {
     return sys_newThread(start_routine, arg);

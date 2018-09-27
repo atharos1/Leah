@@ -1,7 +1,7 @@
-#include "roundRobin.h"
-#include "circularList.h"
-#include "drivers/console.h"
-#include "malloc.h"
+#include "include/roundRobin.h"
+#include "include/circularList.h"
+#include "drivers/include/console.h"
+#include "include/malloc.h"
 
 thread_t * roundRobin_nextThread(SCHEDULER_QUEUE * q) {
     data_RoundRubin * data = q->queueData;

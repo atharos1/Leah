@@ -1,6 +1,6 @@
-#include "../StandardLibrary/stdio.h"
+#include "../StandardLibrary/include/stdio.h"
 #include "../asm/asmLibC.h"
-#include "../StandardLibrary/pthread.h"
+#include "../StandardLibrary/include/pthread.h"
 
 #define MAX_LENGTH 100
 

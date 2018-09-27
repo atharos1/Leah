@@ -1,5 +1,5 @@
-#include "../StandardLibrary/stdio.h"
-#include "../StandardLibrary/string.h"
+#include "../StandardLibrary/include/stdio.h"
+#include "../StandardLibrary/include/string.h"
 #include "../asm/asmLibC.h"
 
 #define CANTCOLORS 5

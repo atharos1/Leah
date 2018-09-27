@@ -1,7 +1,7 @@
 #ifndef STD_PTHREAD
 #define STD_PTHREAD
 
-#include "../asm/asmLibC.h"
+#include "../../asm/asmLibC.h"
 
 typedef int (*function_t) ();
 

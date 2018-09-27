@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include <drivers/font.h>
-#include <drivers/video_vm.h>
-#include <drivers/console.h>
+#include "include/font.h"
+#include "include/video_vm.h"
+#include "include/console.h"
 
 unsigned int bgColor = 0x0;
 unsigned int fColor = 0xFFFFFF;

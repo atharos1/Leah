@@ -1,8 +1,8 @@
-#include "../StandardLibrary/stdio.h"
-#include "../StandardLibrary/string.h"
+#include "../StandardLibrary/include/stdio.h"
+#include "../StandardLibrary/include/string.h"
 #include <stdint.h>
 #include "../asm/asmLibC.h"
-#include "../StandardLibrary/timer.h"
+#include "../StandardLibrary/include/timer.h"
 
 #define NULL ((void *) 0)
 

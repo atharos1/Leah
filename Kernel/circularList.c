@@ -1,7 +1,7 @@
-#include "circularList.h"
-#include "memoryManager.h"
-#include "drivers/console.h"
-#include "malloc.h"
+#include "include/circularList.h"
+#include "include/memoryManager.h"
+#include "drivers/include/console.h"
+#include "include/malloc.h"
 
 NODE * createNewNode(void * data) {
 	NODE * newNode = (NODE *) malloc (sizeof(NODE));
