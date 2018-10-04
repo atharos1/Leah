@@ -11,12 +11,16 @@ GLOBAL _cli
 GLOBAL _picMasterMask
 GLOBAL _picSlaveMask
 
+GLOBAL _inportb
+GLOBAL _outportb
+
 ;Handlers
 GLOBAL _ex00Handler
 GLOBAL _ex06Handler
 
 GLOBAL _irq00Handler
 GLOBAL _irq01Handler
+GLOBAL _irq08Handler
 GLOBAL _int80handler
 
 ;Beeper functions
@@ -168,6 +172,34 @@ _force_scheduler:
 	int 20h
 	ret
 
+_RTC:
+	mov rax,rdi
+	out 70h,al
+	in al,71h
+	ret
+
+_inportb:
+	push rbp
+	mov rbp, rsp
+	mov rdx, rdi
+	mov rax, 0
+    in al, dx
+	mov rsp, rbp
+	pop rbp
+	ret
+
+_outportb:
+	push rbp
+	mov rbp, rsp
+	mov rax, rsi
+	mov rdx, rdi
+	;mov al, dl
+    ;mov dx, si
+    out dx, al
+	mov rsp, rbp
+	pop rbp
+	ret
+
 ;Timer (Timer Tick)
 _irq00Handler:
 	;irqHandlerMaster 0
@@ -188,6 +220,10 @@ _irq00Handler:
 ;Keyboard
 _irq01Handler:
 	irqHandlerMaster 1
+
+;RTC int
+_irq08Handler:
+	irqHandlerMaster 8
 
 ;DivByZero
 _ex00Handler:
@@ -231,13 +267,6 @@ _cpuVendor:
 
 	mov rsp, rbp
 	pop rbp
-	ret
-
-
-_RTC:
-	mov rax,rdi
-	out 70h,al
-	in al,71h
 	ret
 
 _readKey:

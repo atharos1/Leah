@@ -602,19 +602,19 @@ void cmd_ps(char ** args) {
 	int bufferCount;
 	sys_listProcess(buffer, &bufferCount);
 
-	char tmp[20];
+	char tmp[20][3];
 
 	printf("\n%8s%20s%20s%15s%15s%15s%20s\n", "PID", "NAME", "PARENT", "STATUS", "FOREGROUND", "THREAD COUNT", "HEAP SIZE");
 
 	for(int i = 0; i < bufferCount; i++)
 		printf("%8s%20s%20s%15s%15s%15s%20s\n",
-			itoa(buffer[i].pid, tmp, 10),
+			itoa(buffer[i].pid, tmp[0], 10),
 			buffer[i].name,
 			buffer[i].parentName,
 			(buffer[i].status == 0 ? "Alive" : "Zombie"),
 			(buffer[i].foreground == 0 ? "False" : "True"),
-			itoa(buffer[i].threadCount, tmp, 10),
-			itoa(buffer[i].heapSize, tmp, 10));
+			itoa(buffer[i].threadCount, tmp[1], 10),
+			itoa(buffer[i].heapSize, tmp[2], 10));
 
 }
 
@@ -667,7 +667,7 @@ int main() {
 	command_register("clear", cmd_resetScreen, "Limpia la pantalla", FALSE, FALSE);
 	command_register("font-size", cmd_setFontSize, "Establece el tamano de la fuente y limpia la consola", TRUE, FALSE);
 	command_register("digital-clock", digitalClock, "Muestra un reloj digital en pantalla", TRUE, TRUE);
-	command_register("snake", snake_main, "Juego Snake. Se juega con WASD. Argumentos: [*ticks por movimiento, *ratio de crecimiento]", TRUE, TRUE);
+	command_register("snake", snake_main, "Juego Snake. Se juega con WASD. Argumentos: [*movimientos * ms, *ratio de crecimiento]", TRUE, TRUE);
 	command_register("back-color", cmd_setBackColor, "Cambia el color de fondo e invierte el color de fuente adecuadamente. Argumentos: *[R G B]", TRUE, FALSE);
 	command_register("test-memory-manager", cmd_memoryManagerTest, "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE, FALSE);
 	command_register("toUppercase", toUppercase, "Test para pipes", TRUE, FALSE);

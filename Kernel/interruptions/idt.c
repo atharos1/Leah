@@ -11,6 +11,15 @@
 
 void dumpData(char * msg, uint64_t * RIP, uint64_t * RSP);
 
+
+unsigned char inportb(unsigned short portid) {
+	return _inportb(portid);
+}
+
+void outportb(unsigned short portid, unsigned char value) {
+	_outportb(portid, value);
+}
+
 /* Descriptor de interrupcion */
 typedef struct {
   uint16_t offset_l, selector;
@@ -61,6 +70,11 @@ void kernelPanic(char * msg, uint64_t * RIP, uint64_t * RSP) {
 
 }
 
+#define PIT_CHANNEL0 0x40  //PIT Channel 0's Data Register Port
+#define PIT_CHANNEL1 0x41  //PIT Channels 1's Data Register Port, we wont be using this here
+#define PIT_CHANNEL2 0x42  //PIT Channels 2's Data Register Port
+#define PIT_CMDREG 0x43  //PIT Chip's Command Register Port
+
 void writeIDT() {
 	_cli();
 
@@ -72,14 +86,46 @@ void writeIDT() {
 
 
 	setup_IDT_entry (0x21, (uint64_t)&_irq01Handler);
+
+	setup_IDT_entry (0x28, (uint64_t)&_irq08Handler); //RTC int
+
 	setup_IDT_entry (0x80, (uint64_t)&_int80handler);
 
 	//Habilita 1 y 2 (Timer_Tick y teclado)
 	_picMasterMask(0xFC);
-	_picSlaveMask(0xFF);
+	_picSlaveMask(0x00);
+
+	//Configuro frecuencia PIC
+	int hz = PIT_FREQUENCY;
+	int divisor = 1193180 / hz;       
+    outportb(PIT_CMDREG , 0x36);             
+    outportb(PIT_CHANNEL0, divisor & 0xFF);   
+    outportb(PIT_CHANNEL0, divisor >> 8);
+
+	/*
+	//Habilita 1 y 2 (Timer_Tick y teclado) y picSlave (3?)
+	_picMasterMask(0xF8);
+	//Habilita 1 (RTC interrupt)
+	_picSlaveMask(0xFE);
+	
+	//Configuro
+	outportb(0x70, 0x8B);		// select register B, and disable NMI
+	char prev=inportb(0x71);	// read the current value of register B
+	outportb(0x70, 0x8B);		// set the index again (a read will reset the index to register D)
+	outportb(0x71, prev | 0x40);	// write the previous value ORed with 0x40. This turns on bit 6 of register B*/
 
 	_sti();
 
+}
+
+void pruebaRTC() {
+	_cli();
+	printf("\nHOLA\n");
+	outportb(0x70, 0x8B);		// select register B, and disable NMI
+	char prev=inportb(0x71);	// read the current value of register B
+	outportb(0x70, 0x8B);		// set the index again (a read will reset the index to register D)
+	outportb(0x71, prev | 0x40);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
+	_sti();
 }
 
 void irqDispatcher(int n) {
@@ -89,6 +135,9 @@ void irqDispatcher(int n) {
 			break;
 		case 1: //Keyboard
 			kb_fetch();
+			break;
+		case 8: //RTC int
+			pruebaRTC();
 			break;
 	}
 }

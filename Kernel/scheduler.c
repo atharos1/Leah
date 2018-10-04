@@ -112,8 +112,8 @@ void * scheduler_nextTask(void * oldRSP) {
             currentThread.thread = nextThread;
             currentThread.queue = currQueue;
 
-            //if(aliveProcessCount() == 2) //INIT no cuenta
-            //    giveForeground(nextThread->process);
+            if(aliveProcessCount() <= 2)
+                giveForeground(nextThread->process);
 
             return nextThread->stack.current;
         }

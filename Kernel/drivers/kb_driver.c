@@ -51,13 +51,22 @@ void init_kb() {
 	stdin = openFileFromPath("/dev/stdin", O_RDWR);
 }
 
+unsigned char readKey() {
+	char c;
+	c = inportb(0x60);
+	return c;
+}
+
 /*
  * Fetches a char from the keyboard.
  * Use only in int_33()
  */
 char kb_fetch(){
-	unsigned char c=(unsigned char)_readKey();
+	//readKey();
+	unsigned char c;//=(unsigned char)_readKey();
 	unsigned char p;
+
+	c = readKey();
 
 	switch (c){
 		case KRRIGHT_SHIFT:

@@ -25,6 +25,7 @@ void _ex06Handler();
 
 void _irq00Handler();
 void _irq01Handler();
+void _irq08Handler();
 void _int80handler();
 
 /* Scheduler */
@@ -34,5 +35,8 @@ void _force_scheduler();
 void _sem_increment();
 void _sem_decrement();
 int _mutex_acquire(int * lockValue);
+
+unsigned char _inportb(unsigned short portid);
+void _outportb(unsigned short portid, unsigned char value);
 
 #endif

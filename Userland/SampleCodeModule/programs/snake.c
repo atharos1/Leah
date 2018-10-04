@@ -11,6 +11,8 @@
 #define SQUARE_SIZE 32
 #define SNAKE_MAX_LENGHT 500
 
+int semFD;
+
 int snake[SNAKE_MAX_LENGHT][2] = {{0}};
 
 int screen_width = 1024 / SQUARE_SIZE;
@@ -95,6 +97,7 @@ void * move(void * args) {
     }
 
     status = -1;
+    sem_signal(semFD);
     return 0;
 
 }
@@ -109,6 +112,7 @@ void refresh() {
 
         if(snakeLength >= SNAKE_MAX_LENGHT) {
             status = 2;
+            sem_signal(semFD);
         }
 
         printf("\7");
@@ -120,6 +124,7 @@ void refresh() {
     for (int i = snakeLength - 1;i > 0; i--) {
         if (snake[i][X] == snake[0][X] && snake[i][Y] == snake[0][Y]) {
             status = 1;
+            sem_signal(semFD);
         }
 
         snake[i][X] = snake[i - 1][X];
@@ -219,7 +224,7 @@ void displayInstructions() {
 
 int snake_main(char ** args) {
 
-    int ticks = 2;
+    int ticks = 80;
     int growrate = 4;
 
     if(args[0] != NULL) {
@@ -232,6 +237,10 @@ int snake_main(char ** args) {
     game_start(ticks, growrate);
     return 0;
 
+}
+
+void bla() {
+    printf("hola");
 }
 
 int game_start(int ticks, int growrate) {
@@ -274,15 +283,17 @@ int game_start(int ticks, int growrate) {
     //sys_timerAppend(refresh, ticks);
 
     pthread_t moveListener = pthread_create(move, NULL);
-    timer_t refreshTimer = newTimer(refresh, 1, TRUE);
+    timer_t refreshTimer = newTimer(refresh, ticks, TRUE);
 
-    while(status == 0) {
-        //status = checkStatus();
-    }
+    sem_create("snakeSem", 0);
+    semFD = sem_open("snakeSem");
+    sem_wait(semFD);
 
     //sys_timerRemove(refresh);
-    cancelTimer(refreshTimer);
     pthread_cancel(moveListener);
+    cancelTimer(refreshTimer);
+
+    sem_close(semFD);
 
     if(status == -1) //Salio
         return -1;

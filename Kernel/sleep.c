@@ -2,8 +2,7 @@
 #include "asm/libasm.h"
 #include "include/scheduler.h"
 #include "include/malloc.h"
-
-#define TICKS_PER_SECOND 18.2
+#include "interruptions/defs.h"
 
 sleepingThreadNode * sleepingThreadList = NULL;
 
@@ -21,7 +20,7 @@ void sleep(thread_t * thread, int millis) {
     sleepingThreadNode * n = malloc( sizeof(sleepingThreadNode) );
 
     n->thread = thread;
-    int calMillis = (millis * TICKS_PER_SECOND) / 1000;
+    int calMillis = (millis * PIT_FREQUENCY) / 1000;
     //printf("calMillis: %d\n", calMillis);
     n->ticks_remaining = (calMillis > 0 ? calMillis : 1);
 

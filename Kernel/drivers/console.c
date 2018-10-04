@@ -7,6 +7,7 @@
 #include "include/kb_layout.h"
 #include "include/timer.h"
 #include "asm/libasm.h"
+#include "../interruptions/defs.h"
 
 void cursorTick();
 int abs(int n);
@@ -30,12 +31,14 @@ unsigned short int curScreenCol = 0;
 int backgroundColor = 0x000001;
 int fontColor = 0xFFFFFF;
 short int cursorStatus = 0;
+short int cursorEnabled = FALSE;
 
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
 
 void setGraphicCursorStatus(unsigned int status) {
+	
 	if( status == 1 )
-		timer_appendFunction(cursorTick, 18);
+		timer_appendFunction(cursorTick, PIT_FREQUENCY);
 
 	if( status == 0 )
 		timer_removeFunction(cursorTick);
@@ -88,6 +91,7 @@ void cursorTick() {
 		drawRectangle(curScreenCol*char_Width, curScreenRow*char_Height, char_Width, char_Height, backgroundColor);
 
 	cursorStatus = !cursorStatus;
+
 }
 
 

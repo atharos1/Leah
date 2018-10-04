@@ -129,6 +129,9 @@ int getFreePID() {
 
 void killProcess(int pid, int retValue) {
 
+    if(pid == 0 || !isValidProcess(pid))
+        return;
+        
     int isCurrProcess = (getCurrentPID() == pid);
 
     purgeThreadList(processList[pid], TRUE, TRUE);
@@ -146,6 +149,10 @@ void killProcess(int pid, int retValue) {
 }
 
 int waitpid(int pid) {
+
+    if(pid == 0 || !isValidProcess(pid))
+        return -1;
+
     //TODO: VERIFICAR QUE SEA PADRE
     sem_wait( processList[pid]->finishedSem );
 
@@ -250,6 +257,8 @@ thread_t * createThread(process_t * process, void * code, void * args, int stack
     thread->retValue = NULL;
     thread->finishedSem = sem_create(0);
     thread->is_someone_joining = FALSE;
+
+    thread->sysPriority = thread->nice = 0;
 
     thread->status = READY;
 

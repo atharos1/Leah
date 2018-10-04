@@ -33,6 +33,8 @@ typedef struct thread_t {
     void * finishedSem;
     int is_someone_joining;
     memblock_t stack;
+    int nice;
+    int sysPriority;
 } thread_t;
 
 typedef struct process_t {

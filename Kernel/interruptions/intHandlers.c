@@ -209,6 +209,8 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 			return 0;
 			break;
 		case 200: //RTC
+			//_outportb(0x70, rsi);
+			//return _inportb(0x71);
 			return _RTC(rsi);
 			break;
 	}
