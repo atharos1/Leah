@@ -5,6 +5,7 @@
 #include "programs/include/snake.h"
 #include "programs/include/digitalClock.h"
 #include "programs/include/prodCons.h"
+#include "programs/include/philosophers.h"
 #include "programs/include/upDown.h"
 #include "programs/include/toUppercase.h"
 #include "asm/asmLibC.h"
@@ -107,7 +108,7 @@ void execProgram(char * cmd, char ** args, int argn) {
 
 	function f = getCommandFunction(cmd);
 	int pid = execv(cmd, f, args, TRUE, NULL);
-	
+
 	if(giveAwayForeground) {
 		sys_setForeground(pid);
 		sys_waitPID(pid);
@@ -680,6 +681,7 @@ int main() {
 	command_register("cat", cmd_cat, "Imprime el archivo especificado", FALSE, FALSE);
 	command_register("ps", cmd_ps, "Lista los procesos con su informacion asociada", TRUE, FALSE);
 	command_register("prodcons", prodcons, "Simula el problema de productor consumidor", TRUE, FALSE);
+	command_register("philosophers", philosophers, "Simula el problema de los filosofos cenando con numero variable de filosofos", TRUE, FALSE);
 	command_register("updown", cmd_upDown, "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE, FALSE);
 	command_register("arcoiris", arcoiris_main, "Cambia cada un segundo el color de fuente", TRUE, FALSE);
 	command_register("kill", cmd_killProcess, "Mata al proceso de PID especificado", FALSE, FALSE);

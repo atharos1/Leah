@@ -4,19 +4,23 @@
 #include "../StandardLibrary/include/pthread.h"
 #include "../StandardLibrary/include/stdio.h"
 
+void printMenuPhi();
+void terminateAllPhi();
+
 int pMutex;
-int philosophersQty, forks, philosophersToDie;
-pthread_t philosophers[MAX_PHI] = {0};
+int philosophersQty, forks, philosophersToDie, phiInTable;
+pthread_t phis[MAX_PHI] = {0};
 
 int philosophers() {
-  printMenu();
+  printMenuPhi();
   mutex_create("philosophersMutex");
   pMutex = mutex_open("philosophersMutex");
   philosophersQty = 0;
+  sem_create("forks", 0);
+  forks = sem_open("forks");
+  sem_create("inTable", 0);
+  phiInTable = sem_open("inTable");
   philosophersToDie = 0;
-  forks = 0;
-
-	printTable();
 
 	int c;
 	while((c = getchar()) != QUIT) {
@@ -32,22 +36,20 @@ int philosophers() {
 		}
 	}
 
-	terminateAll();
+	terminateAllPhi();
   mutex_delete("philosophersMutex");
+  sem_delete("forks");
+  sem_delete("inTable");
 	printf("La simulacion termino\n");
 	return 0;
 }
 
-void printMenu() {
+void printMenuPhi() {
   printf("\nEn la comunidad Leah hay un maximo de %d filosofos por nacer\n", MAX_PHI);
 	printf("Inserte:\n");
   printf("    %c para que un filosofo nazca\n", INC);
 	printf("    %c para que un filosofo muera\n", DEC);
 	printf("    %c para terminar la simulacion\n\n\n", QUIT);
-}
-
-void printTable() {
-
 }
 
 void born() {
@@ -57,24 +59,32 @@ void born() {
 		mutex_unlock(pMutex);
 		return;
 	}
-  forks++;
-	philosophers[philosophersQty++] = pthread_create(&philosopher, (void*) 0);
+  sem_signal(forks);
+	phis[philosophersQty++] = pthread_create(&philosopher, /*{philosophersQty-1}*/(void *) 0);
+  if (philosophersQty>1)
+    sem_signal(phiInTable);
 	mutex_unlock(pMutex);
 }
 
 void * philosopher(void * args) {
-	printf("Soy un filosofo que acaba de nacer!\n\n\n");
+  //int i = args[0];
+	printf("Soy el filosofo %d que acaba de nacer!\n\n\n",/*i*/ 0);
 	while(1) {
-		mutex_lock(pMutex);
+
     if (philosophersToDie > 0) {
       philosopherSuicide();
     }
-    // plates ++;
-    // sem_signal(empty);
-    //
-		// printTrays();
-    //
-		// mutex_unlock(mutex);
+    sem_wait(phiInTable);
+    sem_wait(forks);
+    sem_wait(forks);
+    //comer();
+    printf("estoy comiendo\n");
+    sem_signal(phiInTable);
+    sem_signal(forks);
+    sem_signal(forks);
+
+    //pensar();
+    printf("estoy pensando\n");
 	}
 	return 0;
 }
@@ -91,19 +101,21 @@ void die() {
 }
 
 void philosopherSuicide() {
+  mutex_lock(pMutex);
   philosophersQty--;
   philosophersToDie--;
-  forks--;
-  pthread_t phiToDie = philosophers[philosophersQty];
+  pthread_t phiToDie = phis[philosophersQty];
   mutex_unlock(pMutex);
+  sem_wait(forks);
+  sem_wait(phiInTable);
   printf("Un filosofo se murio\n\n\n");
   pthread_cancel(phiToDie);
 }
 
-void terminateAll() {
+void terminateAllPhi() {
   mutex_lock(pMutex);
 	for (int i = 0; i < philosophersQty; i++) {
-			pthread_cancel(philosophers[i]);
+			pthread_cancel(phis[i]);
 	}
   mutex_unlock(pMutex);
 }
