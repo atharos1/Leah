@@ -4,12 +4,17 @@
 #include "../StandardLibrary/include/pthread.h"
 #include "../StandardLibrary/include/stdio.h"
 
+typedef struct philos {
+  int id;
+  pthread_t phi;
+} philos_t;
+
 void printMenuPhi();
 void terminateAllPhi();
 
 int pMutex;
 int philosophersQty, forks, philosophersToDie, phiInTable, id;
-pthread_t phis[MAX_PHI] = {0};
+philos_t phis[MAX_PHI] = {0};
 
 int philosophers() {
   printMenuPhi();
@@ -62,7 +67,10 @@ void born() {
 	}
   sem_signal(forks);
   int index = id++;
-	phis[philosophersQty++] = pthread_create(&philosopher, index);
+  philos_t phi = {};
+  phi.phi = pthread_create(&philosopher, index);
+  phi.id = index;
+	phis[philosophersQty++] = phi;
   if (philosophersQty>1)
     sem_signal(phiInTable);
 	mutex_unlock(pMutex);
@@ -74,7 +82,7 @@ void * philosopher(void * args) {
 	while(1) {
 
     if (philosophersToDie > 0) {
-      philosopherSuicide(i);
+      philosopherSuicide();
     }
     sem_wait(phiInTable);
     sem_wait(forks);
@@ -102,13 +110,13 @@ void die() {
   mutex_unlock(pMutex);
 }
 
-void philosopherSuicide(int id) {
+void philosopherSuicide() {
   mutex_lock(pMutex);
   philosophersQty--;
   philosophersToDie--;
-  pthread_t phiToDie = phis[philosophersQty];
+  pthread_t phiToDie = (phis[philosophersQty]).phi;
   mutex_unlock(pMutex);
-  printf("El filosofo %d se murio\n\n\n",id);
+  printf("El filosofo %d se murio\n\n\n",(phis[philosophersQty]).id);
   sem_wait(forks);
   sem_wait(phiInTable);
   pthread_cancel(phiToDie);
@@ -117,7 +125,7 @@ void philosopherSuicide(int id) {
 void terminateAllPhi() {
   mutex_lock(pMutex);
 	for (int i = 0; i < philosophersQty; i++) {
-			pthread_cancel(phis[i]);
+			pthread_cancel((phis[i]).phi);
 	}
   mutex_unlock(pMutex);
 }

@@ -10,6 +10,6 @@ int philosophers();
 void born();
 void * philosopher(void * args);
 void die();
-void philosopherSuicide(int id);
+void philosopherSuicide();
 
 #endif
