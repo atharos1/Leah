@@ -16,6 +16,7 @@
         "malloc.h": "c",
         "stdio.h": "c",
         "comparators.h": "c",
-        "roundrobinwithpriority.h": "c"
+        "roundrobinwithpriority.h": "c",
+        "filesystem.h": "c"
     }
 }
