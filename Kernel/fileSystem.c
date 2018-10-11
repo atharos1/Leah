@@ -425,22 +425,21 @@ static fd_t *openFile(file_t *file, int mode)
   if (openedFile == NULL)
   {
     openedFile = malloc(sizeof(opened_file_t));
-    if (openedFile == NULL)
-    {
+    if (openedFile == NULL) {
       free(fd);
       return NULL;
     }
+
     openedFile->next = firstOpenedFile;
     firstOpenedFile = openedFile;
     openedFile->file = file;
     openedFile->readers = 0;
     openedFile->writers = 0;
 
-    if (file->type == BUFFER)
-    {
-      openedFile->implementation = (void *)openBuffer();
-      if (openedFile->implementation == NULL)
-      {
+    if (file->type == BUFFER) {
+      openedFile->implementation = (void*)openBuffer();
+      if (openedFile->implementation == NULL) {
+        free(fd);
         free(openedFile);
         return NULL;
       }
@@ -522,8 +521,14 @@ void closeFile(fd_t *fd)
     else
       previous->next = current->next;
 
-    if (openedFile->file->type == BUFFER)
+    if (openedFile->file->type == BUFFER) {
       closeBuffer(openedFile->implementation);
+
+      if (openedFile->file->directory == NULL) { //Es un unnamed pipe
+        removeBuffer(openedFile->file);
+        free(openedFile->file);
+      }
+    }
 
     free(openedFile);
   }
@@ -831,6 +836,28 @@ void mutexUnlock(int fdIndex)
 
   if (fd != NULL && fd->openedFile->file->type == MUTEX)
     mutex_unlock(((mutex_file_t *)(fd->openedFile->file->implementation))->mutex);
+}
+
+void openUnnamedPipe(int fd[2]) {
+  file_t * pipe = newFile("pipe", BUFFER);
+  if (pipe == NULL) {
+    fd[0] = -1;
+    fd[1] = -1;
+    return;
+  }
+
+  fd[0] = openFileToFD(pipe, RD_ONLY);
+  fd[1] = openFileToFD(pipe, WR_ONLY);
+
+  if (fd[0] == -1 && fd[1] == -1) {
+    removeBuffer(pipe);
+    free(pipe);
+  } else if (fd[0] == -1 || fd[1] == -1) {
+    closeFileFromFD(fd[0]);
+    closeFileFromFD(fd[1]);
+    fd[0] = -1;
+    fd[1] = -1;
+  }
 }
 
 ///// TESTING FUNCTIONS /////

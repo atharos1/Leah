@@ -92,7 +92,13 @@ void sys_chdir(char *path) { _systemCall(36, path, 0, 0, 0); }
 
 void sys_getcwd(char *pathBuff) { _systemCall(37, pathBuff, 0, 0, 0); }
 
-void sys_sleep(int millis) { _systemCall(40, millis, 0, 0, 0); }
+void sys_pipe(int fd[2]) {
+    _systemCall(38, fd, 0, 0, 0);
+}
+
+void sys_sleep(int millis) {
+    _systemCall(40, millis, 0, 0, 0);
+}
 
 void sys_listProcess(ps_struct buffer[], int *bufferCount) {
     _systemCall(41, buffer, bufferCount, 0, 0);

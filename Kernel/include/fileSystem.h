@@ -77,6 +77,8 @@ void mutexClose(int fdIndex);
 void mutexLock(int fdIndex);
 void mutexUnlock(int fdIndex);
 
+void openUnnamedPipe(int fd[2]);
+
 void listDir(char * path);
 
 #endif
