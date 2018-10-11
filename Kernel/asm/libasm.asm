@@ -42,7 +42,7 @@ EXTERN irqDispatcher
 EXTERN exDispatcher
 EXTERN int80Handler
 EXTERN noTimer
-EXTERN schedule
+EXTERN scheduler_shortTerm
 
 EXTERN end
 
@@ -207,7 +207,7 @@ _irq00Handler:
 	mov rdi, 0
 	call irqDispatcher ;;ejecutamos la rutina de interrupcion del tick original
 	mov rdi, rsp
-	call schedule
+	call scheduler_shortTerm
 	mov rsp, rax
 
 	; signal pic EOI (End of Interrupt)
