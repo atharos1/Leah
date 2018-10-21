@@ -58,7 +58,7 @@ void printMenuPhi() {
 	printf("Inserte:\n");
   printf("    %c para que un filosofo nazca\n", INC);
 	printf("    %c para que un filosofo muera\n", DEC);
-	printf("    %c para terminar la simulacion\n\n\n", QUIT);
+	printf("    %c para terminar la simulacion\n\n", QUIT);
 }
 
 void born() {
@@ -81,7 +81,7 @@ void born() {
 
 void * philosopher(void * args) {
   int i = (int)args;
-	printf("Soy el filosofo %d que acaba de nacer!\n\n\n",i);
+	printf("\nSoy el filosofo %d que acaba de nacer!\n\n",i);
 	while(1) {
 
     if (philosophersToDie > 0) {
@@ -117,7 +117,7 @@ void * philosopher(void * args) {
 void die() {
 	mutex_lock(pMutex);
   if(philosophersQty == 0) {
-		printf("No hay filosofos vivos\n\n\n");
+		printf("No hay filosofos vivos\n\n");
 		mutex_unlock(pMutex);
 		return;
 	}
@@ -131,7 +131,7 @@ void philosopherSuicide() {
   philosophersToDie--;
   pthread_t phiToDie = (phis[philosophersQty]).phi;
   mutex_unlock(pMutex);
-  printf("El filosofo %d se murio\n\n\n",(phis[philosophersQty]).id);
+  printf("\nEl filosofo %d ha muerto!\n\n",(phis[philosophersQty]).id);
   sem_wait(forks);
   sem_wait(phiInTable);
   pthread_cancel(phiToDie);

@@ -152,6 +152,18 @@ int parseCommand(char *cmd, int l) {
     char *argv[MAX_ARGS];
 
     // parse command
+    //-----------
+    int pipeQty = 0;
+    while(cmd[i] != 0) {
+        if(cmd[i] == '|') {
+            pipeQty++;
+        }
+        i++;
+    }
+    if(pipeQty > 0) {
+        return parseMultipleCommands(cmd, l, pipeQty);
+    }
+    //-----------
     while (cmd[i] != ' ' && cmd[i] != 0) i++;
 
     cmd[i] = '\0';
@@ -190,6 +202,29 @@ int parseCommand(char *cmd, int l) {
     // int pid = execv(cmd, f, args, TRUE, NULL);
 
     return 0;
+}
+
+int parseMultipleCommands(char *cmd, int l, int pipeQty) {
+    int cmdNum = 0;
+    int cmdStart = 0;
+    char *cmdList[pipeQty + 1];
+    for(int i = 0; i <= l; i++) {
+        if(cmd[i] == '|' || cmd[i] == 0) {
+            cmd[i] = 0;
+            cmdList[cmdNum] = &cmd[cmdStart];
+            cmdNum++;
+            cmdStart = i + 1;
+        }
+    }
+    
+    /* Check commands entered:
+    for(int j = 0; j <= pipeQty; j++) {
+        printf("Comando %d: %s\n", j+1, cmdList[j]);
+    }*/
+
+    // PARSE EACH COMMAND
+
+    return 1;
 }
 
 char hist[100][MAX_COMMAND_LENGTH];
