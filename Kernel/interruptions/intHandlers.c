@@ -1,53 +1,52 @@
 #include <stdint.h>
-#include "../drivers/include/kb_driver.h"
-#include "../drivers/include/console.h"
-#include "../drivers/include/speaker.h"
-#include "../drivers/include/video_vm.h"
-#include "../drivers/include/timer.h"
-#include "../include/memoryManagerTest.h"
 #include "../asm/libasm.h"
+#include "../drivers/include/console.h"
+#include "../drivers/include/kb_driver.h"
+#include "../drivers/include/speaker.h"
+#include "../drivers/include/timer.h"
+#include "../drivers/include/video_vm.h"
 #include "../include/fileSystem.h"
-#include "../include/sleep.h"
+#include "../include/memoryManagerTest.h"
+#include "../include/roundRobinWithPriority.h"
 #include "../include/scheduler.h"
+#include "../include/sleep.h"
 
 #include "../drivers/include/kb_driver.h"
 
 int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
-	switch(rdi) {
-		case 1: //Exit
-			while(1) {
-				printf("Codigo de salida: %d\n", rsi);
-				_halt();
-			}
-			break;
-		case 3: //Read
-			if( rsi == 1 ) { //stdin
-				char * buff = (char*)rdx;
-				char r;
-				int i;
-				for(i = 0; i < rcx && (r = getChar()) != -1; i++ )
-					buff[i] = r;
+    switch (rdi) {
+        case 1:  // Exit
+            while (1) {
+                printf("Codigo de salida: %d\n", rsi);
+                _halt();
+            }
+            break;
+        case 3:              // Read
+            if (rsi == 1) {  // stdin
+                char* buff = (char*)rdx;
+                char r;
+                int i;
+                for (i = 0; i < rcx && (r = getChar()) != -1; i++) buff[i] = r;
 
-				return i;
-			} else {
-				return readFromFD(rsi, (char*)rdx, rcx);
-			}
+                return i;
+            } else {
+                return readFromFD(rsi, (char*)rdx, rcx);
+            }
 
-			break;
-		case 4: //Write
-			if (rsi == 1 || rsi == 2) {
-				if( rsi == 2) { //STD_ERR
-					setFontColor(0x000000);
-					setBackgroundColor(0xDC143C);
-				}
-				char * str = (char*)rdx;
-				int i;
-				for(i = 0; i < rcx; i++)
-					printChar(str[i]);
-				return i;
-			} else {
-				return writeToFD(rsi, (char*)rdx, rcx);
-			}
+            break;
+        case 4:  // Write
+            if (rsi == 1 || rsi == 2) {
+                if (rsi == 2) {  // STD_ERR
+                    setFontColor(0x000000);
+                    setBackgroundColor(0xDC143C);
+                }
+                char* str = (char*)rdx;
+                int i;
+                for (i = 0; i < rcx; i++) printChar(str[i]);
+                return i;
+            } else {
+                return writeToFD(rsi, (char*)rdx, rcx);
+            }
 
 			break;
 		case 5: //ClearScreen
@@ -112,50 +111,53 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx) {
 		case 22: //sys_close
 			closeFileFromFD(rsi);
 			break;
-		case 23:
+		case 23: //sys_semCreate
 			semCreate((char*)rsi, rdx);
 			break;
-		case 24:
+		case 24: //sys_semDelete
 			semDelete((char*)rsi);
 			break;
-		case 25:
+		case 25: //sys_semOpen
 			return semOpen((char*)rsi);
 			break;
-		case 26:
+		case 26: //sys_semClose
 			semClose(rsi);
 			break;
-		case 27:
+		case 27: //sys_semSet
 			semSet(rsi, rdx);
 			break;
-		case 28:
+		case 28: //sys_semWait
 			semWait(rsi);
 			break;
-		case 29:
+		case 29: //sys_semSignal
 			semSignal(rsi);
 			break;
-		case 30:
+		case 30: //sys_mutexCreate
 			mutexCreate((char*)rsi);
 			break;
-		case 31:
+		case 31: //sys_mutexDelete
 			mutexDelete((char*)rsi);
 			break;
-		case 32:
+		case 32: //sys_mutexOpen
 			return mutexOpen((char*)rsi);
 			break;
-		case 33:
+		case 33: //sys_mutexClose
 			mutexClose(rsi);
 			break;
-		case 34:
+		case 34: //sys_mutexLock
 			mutexLock(rsi);
 			break;
-		case 35:
+		case 35: //sys_mutexUnlock
 			mutexUnlock(rsi);
 			break;
-		case 36:
+		case 36: //sys_chdir
 			changeCWD((char*)rsi);
 			break;
-		case 37:
+		case 37: //sys_getcwd
 			getCWDPath((char*)rsi);
+			break;
+		case 38: //sys_pipe
+			openUnnamedPipe((int*)rsi);
 			break;
 		case 40: //sleep
 			sleepCurrentThread(rsi);

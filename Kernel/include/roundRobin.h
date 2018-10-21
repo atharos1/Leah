@@ -6,9 +6,8 @@
 typedef struct {
     int quantum;
     int currQuantum;
-} data_RoundRubin;
+} data_RoundRobin;
 
 SCHEDULER_QUEUE * roundRobin_newQueue(int quantum);
-void roundRobin_yield(SCHEDULER_QUEUE * q);
 
 #endif

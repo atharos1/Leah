@@ -1,124 +1,117 @@
 #include "include/scheduler.h"
+#include "asm/libasm.h"
 #include "drivers/include/console.h"
 #include "drivers/include/kb_driver.h"
-#include "asm/libasm.h"
+#include "drivers/include/timer.h"
+#include "include/comparators.h"
 #include "include/lib.h"
 #include "include/roundRobin.h"
+#include "include/roundRobinWithPriority.h"
+#include "interruptions/defs.h"
 
 #define TRUE 1
 #define FALSE 0
 
-SCHEDULER_QUEUE * Queues[MAX_QUEUE_COUNT];
+SCHEDULER_QUEUE *Queues[MAX_QUEUE_COUNT];
 int queueCount = 0;
 
 int FORCE = FALSE;
 
-struct currentThread {
-    thread_t * thread;
-    int queue;
-} currentThread;
+thread_t *currentThread;
 
-
-int pointer_cmp(void * p1, void * p2);
-int is_thread_from_process_cmp(void * t, void * pid);
-void * scheduler_nextTask(void * oldRSP);
+void *scheduler_nextTask(void *oldRSP);
 
 void scheduler_init() {
-    currentThread.thread = NULL;
-    currentThread.queue = 0;
+    currentThread = NULL;
 
-    Queues[queueCount++] = roundRobin_newQueue(2);
+    Queues[1] = roundRobin_newQueue(4);
+    Queues[0] = roundRobinWithPriority_newQueue(3, Queues[0]);
+    queueCount = 2;
 
-    purgeProcessList(FALSE); //Esto va acá?
+    purgeProcessList(FALSE);  // Esto va acá?
+
+    timer_appendFunction(scheduler_midTerm,
+                         PIT_FREQUENCY * 10);  // Cada 10 segundos
 }
 
-void scheduler_enqueue(thread_t * thread) {
-    if (thread == NULL)
-      return;
-
-    SCHEDULER_QUEUE * q = Queues[0];
-
-    q->queue = insertAtEnd(q->queue, thread);
+void scheduler_midTerm() {
+    for (int currQueue = 0; currQueue < queueCount; currQueue++)
+        if (Queues[currQueue]->ageThreads != NULL)
+            Queues[currQueue]->ageThreads(Queues[currQueue]);
 }
 
-int scheduler_dequeue_thread(thread_t * t) {
-    int status = 0;
+void scheduler_enqueue(thread_t *thread) {
+    if (thread == NULL) return;
 
-    for(int currQueue = 0; currQueue < queueCount && status == 0; currQueue++)
-        (Queues[currQueue])->queue = deleteByValue((Queues[currQueue])->queue, t, pointer_cmp, &status, 1);
+    SCHEDULER_QUEUE *q = Queues[0];
 
-    return status;
+    q->addToQueue(q, thread);
+    thread->queue = q;
+}
+
+int scheduler_dequeue_thread(thread_t *t) {
+    if (t == currentThread) return (t == scheduler_dequeue_current());
+
+    return ((SCHEDULER_QUEUE *)(t->queue))->removeThread(t->queue, t);
 }
 
 void scheduler_dequeue_process(int pid) {
-    int status = 0;
+    process_t *p = getProcessByPID(pid);
 
-    for(int currQueue = 0; currQueue < queueCount; currQueue++)
-        (Queues[currQueue])->queue = deleteByValue((Queues[currQueue])->queue, &pid, is_thread_from_process_cmp, &status, 0);
-
-    if(currentThread.thread->process == pid)
-        FORCE = TRUE;
+    for (int i = 0; i < MAX_THREAD_COUNT; i++)
+        if (p->threadList[i] != NULL)
+            scheduler_dequeue_thread(p->threadList[i]);
 }
 
-thread_t * scheduler_dequeue_current() {
-    int status = 0;
-    (Queues[currentThread.queue])->queue = deleteByValue((Queues[currentThread.queue])->queue, currentThread.thread, pointer_cmp, &status, 1);
-
-    if(status != 0) {
+thread_t *scheduler_dequeue_current() {
+    if (((SCHEDULER_QUEUE *)(currentThread->queue))
+            ->removeThread(currentThread->queue, currentThread) >= 1) {
         FORCE = TRUE;
-        return currentThread.thread;
-    } else
+        return currentThread;
+    } else {
         return NULL;
+    }
 }
 
-int pointer_cmp(void * p1, void * p2) {
-    return !(p1 == p2);
-}
+thread_t *getCurrentThread() { return currentThread; }
 
-int is_thread_from_process_cmp(void * t, void * pid) {
-    return ( ((thread_t*)t)->process == *((int*)pid) );
-}
+int getCurrentPID() { return currentThread->process; }
 
-thread_t * getCurrentThread() {
-    return currentThread.thread;
-}
-
-int getCurrentPID() {
-    return currentThread.thread->process;
-}
-
-void * schedule(void * oldRSP) {
-    if(FORCE == TRUE) {
-        Queues[currentThread.queue]->restartEvictFunction(Queues[currentThread.queue]);
+void *scheduler_shortTerm(void *oldRSP) {
+    if (FORCE == TRUE) {
+        if (currentThread != NULL)
+            ((SCHEDULER_QUEUE *)(currentThread->queue))
+                ->restartEvictFunction(currentThread->queue);
         FORCE = FALSE;
     }
 
-    if( Queues[currentThread.queue]->checkEvictFunction(Queues[currentThread.queue]) )
+    if (aliveProcessCount() > 0 &&
+        (currentThread == NULL ||
+         ((SCHEDULER_QUEUE *)(currentThread->queue))
+             ->checkEvictFunction(currentThread->queue)))
         return scheduler_nextTask(oldRSP);
     else
         return oldRSP;
 }
 
-void * scheduler_nextTask(void * oldRSP) {
-    if(currentThread.thread != NULL)
-        currentThread.thread->stack.current = oldRSP;
+void *scheduler_nextTask(void *oldRSP) {
+    if (currentThread != NULL) currentThread->stack.current = oldRSP;
 
-    thread_t * nextThread = NULL;
+    thread_t *nextThread = NULL;
 
     int currQueue;
-    for(currQueue = 0; currQueue < queueCount; currQueue++) {
+    for (currQueue = 0; currQueue < queueCount; currQueue++) {
         nextThread = Queues[currQueue]->nextThreadFunction(Queues[currQueue]);
-        if( nextThread != NULL ) {
-            currentThread.thread = nextThread;
-            currentThread.queue = currQueue;
 
-            if(aliveProcessCount() <= 2)
-                giveForeground(nextThread->process);
+        if (nextThread != NULL) {
+            currentThread = nextThread;
+
+            if (aliveProcessCount() <= 2) giveForeground(nextThread->process);
 
             return nextThread->stack.current;
         }
     }
 
-    currentThread.thread = getProcessByPID(0)->threadList[0];
-    return currentThread.thread->stack.current; //Se ejecuta init
+    currentThread = getProcessByPID(0)->threadList[0];
+    return currentThread->stack.current;  // Se ejecuta init
 }

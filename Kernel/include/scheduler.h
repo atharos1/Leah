@@ -1,34 +1,36 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "memoryManager.h"
-#include "stdlib.h"
-#include "process.h"
 #include "circularList.h"
+#include "memoryManager.h"
+#include "process.h"
+#include "stdlib.h"
 
-#define MAX_QUEUE_COUNT 1
+#define MAX_QUEUE_COUNT 3
 
-//typedef thread_t * (*nextThreadFunction)(SCHEDULER_QUEUE *, void *);
+// typedef thread_t * (*nextThreadFunction)(SCHEDULER_QUEUE *, void *);
 
 extern int FORCE;
 
-
 typedef struct SCHEDULER_QUEUE {
-    NODE * queue;
-    thread_t * (*nextThreadFunction)(struct SCHEDULER_QUEUE *);
+    NODE *queue;
+    thread_t *(*nextThreadFunction)(struct SCHEDULER_QUEUE *);
     int (*checkEvictFunction)(struct SCHEDULER_QUEUE *);
     void (*restartEvictFunction)(struct SCHEDULER_QUEUE *);
-    //int threadCount;
-    void * queueData;
+    void (*addToQueue)(struct SCHEDULER_QUEUE *, thread_t *);
+    int (*removeThread)(struct SCHEDULER_QUEUE *, thread_t *);
+    void (*ageThreads)(struct SCHEDULER_QUEUE *);
+    void *queueData;
 } SCHEDULER_QUEUE;
 
 void scheduler_init();
-void * schedule(void * oldRSP);
-void scheduler_enqueue(thread_t * thread);
-thread_t * getCurrentThread();
+void *scheduler_shortTerm(void *oldRSP);
+void scheduler_midTerm();
+void scheduler_enqueue(thread_t *thread);
+thread_t *getCurrentThread();
 int getCurrentPID();
-thread_t * scheduler_dequeue_current();
-int scheduler_dequeue_thread(thread_t * t);
+thread_t *scheduler_dequeue_current();
+int scheduler_dequeue_thread(thread_t *t);
 void scheduler_dequeue_process(int pid);
 
 #endif

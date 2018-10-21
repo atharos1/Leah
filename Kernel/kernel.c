@@ -63,8 +63,6 @@ void * initializeKernelBinary()
 	init_fileSystem();
 	init_kb();
 
-	scheduler_init();
-
 	return getStackBase();
 }
 
@@ -94,11 +92,11 @@ int pruebaTask() {
 void initThread() {
 	scheduler_dequeue_current();
 
+	int mainPID;
+
 	while(1) {
-		if(aliveProcessCount() == 1) {
-			createProcess("Terminalator", sampleCodeModuleAddress, (char*[]){NULL},  4, 4);
-			giveForeground(1);
-		}
+		if(aliveProcessCount() == 1)
+			giveForeground( createProcess("Terminalator", sampleCodeModuleAddress, (char*[]){NULL},  4, 4) );
 
 		_force_scheduler();
 	}
@@ -106,24 +104,17 @@ void initThread() {
 
 int main()
 {
-
-  writeIDT();
-
+  	writeIDT();
+	scheduler_init();
+	createProcess("Init", &initThread, NULL, 1, 0);
 	setFontSize(1);
 
-	extern uint64_t * instructionPointerBackup;
+	/*extern uint64_t * instructionPointerBackup;
 	instructionPointerBackup = sampleCodeModuleAddress;
 	extern void * stackPointerBackup;
-	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?
-
-	createProcess("Init", &initThread, (char*[]){NULL}, 1, 0);
+	stackPointerBackup = _rsp() - 2*8; //Llamada a función pushea ESTADO LOCAL (o algo asi) y dir de retorno?*/
 
 	_force_scheduler();
-
-	//int returnValue = ((EntryPoint)sampleCodeModuleAddress)();
-	//printf("El programa finalizo con codigo de respuesta: %d\n", returnValue);
-	// printf("Userlandsize\n");
-	// printBase(userlandSize, 16);
 
 	return 0;
 }

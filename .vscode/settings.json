@@ -14,6 +14,9 @@
         "pthread.h": "c",
         "timer.h": "c",
         "malloc.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "comparators.h": "c",
+        "roundrobinwithpriority.h": "c",
+        "filesystem.h": "c"
     }
 }

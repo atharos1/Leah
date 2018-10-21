@@ -4,20 +4,22 @@
 #include "include/malloc.h"
 #include "interruptions/defs.h"
 
-sleepingThreadNode * sleepingThreadList = NULL;
+sleepingThreadNode *sleepingThreadList = NULL;
 
-void sleepCurrentThread(int millis) {
-    thread_t * thread = getCurrentThread();
+void sleepCurrentThread(int millis)
+{
+    thread_t *thread = getCurrentThread();
     sleep(thread, millis);
     scheduler_dequeue_current();
     _force_scheduler();
 }
 
-void sleep(thread_t * thread, int millis) {
+void sleep(thread_t *thread, int millis)
+{
 
     thread->status = SLEEPING;
 
-    sleepingThreadNode * n = malloc( sizeof(sleepingThreadNode) );
+    sleepingThreadNode *n = malloc(sizeof(sleepingThreadNode));
 
     n->thread = thread;
     int calMillis = (millis * PIT_FREQUENCY) / 1000;
@@ -26,34 +28,42 @@ void sleep(thread_t * thread, int millis) {
 
     n->next = sleepingThreadList;
     sleepingThreadList = n;
-
 }
 
-void sleep_update() {
-    sleepingThreadNode * n = sleepingThreadList;
-    sleepingThreadNode * prev = NULL;
+void sleep_update()
+{
+    sleepingThreadNode *n = sleepingThreadList;
+    sleepingThreadNode *prev = NULL;
+    sleepingThreadNode *aux;
 
-    while(n != NULL) {
+    while (n != NULL)
+    {
         n->ticks_remaining--;
-        if(n->ticks_remaining == 0) {
-            if(n == sleepingThreadList) //soy el primero
+        if (n->ticks_remaining == 0)
+        {
+            if (n == sleepingThreadList) //soy el primero
                 sleepingThreadList = n->next;
             else
                 prev->next = n->next;
 
-            //printf("%d", n->thread->status);
-
-            if(n->thread->status == DEAD) {
+            if (n->thread->status == DEAD)
+            {
                 eraseTCB(n->thread);
-            } else {
+            }
+            else
+            {
                 n->thread->status = READY;
                 scheduler_enqueue(n->thread);
             }
-            
-            free(n);
 
+            aux = n;
+            n = n->next;
+            free(aux);
         }
-        prev = n;
-        n = n->next;
+        else
+        {
+            prev = n;
+            n = n->next;
+        }
     }
 }
