@@ -12,8 +12,8 @@ typedef struct philos {
 void printMenuPhi();
 void terminateAllPhi();
 
-int pMutex;
-int philosophersQty, forks, philosophersToDie, phiInTable, id;
+int pMutex, eMutex;
+int philosophersQty, forks, philosophersToDie, phiInTable, id, eatingQty;
 philos_t phis[MAX_PHI] = {0};
 
 int philosophers() {
@@ -27,6 +27,9 @@ int philosophers() {
   phiInTable = sem_open("inTable");
   philosophersToDie = 0;
   id = 0;
+  mutex_create("eatingMutex");
+  eMutex = mutex_open("eatingMutex");
+  eatingQty = 0;
 
 	int c;
 	while((c = getchar()) != QUIT) {
@@ -88,13 +91,25 @@ void * philosopher(void * args) {
     sem_wait(forks);
     sem_wait(forks);
     //comer();
-    printf("El filosofo %d esta comiendo\n",i);
+    mutex_lock(eMutex);
+    eatingQty++;
+    mutex_unlock(eMutex);
+    if(i < 10)
+      printf("El filosofo %d esta comiendo. \t",i);
+    else
+      printf("El filosofo %d esta comiendo.\t",i);
+    printStatus();
+    sys_sleep(1000);
     sem_signal(forks);
     sem_signal(forks);
     sem_signal(phiInTable);
 
     //pensar();
-    printf("El filosofo %d esta pensando\n",i);
+    mutex_lock(eMutex);
+    eatingQty--;
+    mutex_unlock(eMutex);
+    //printf("El filosofo %d esta pensando.\n",i);
+    //printStatus();
 	}
 	return 0;
 }
@@ -128,4 +143,20 @@ void terminateAllPhi() {
 			pthread_cancel((phis[i]).phi);
 	}
   mutex_unlock(pMutex);
+}
+
+void printStatus() {
+  int n;
+  printf("Comiendo: ");
+  for(n = 0; n < eatingQty; n++) {
+    printf("*");
+  }
+  for(n = eatingQty; n < 12; n++) {
+    printf(" ");
+  }
+  printf("Pensando: ");
+  for(n = eatingQty; n < philosophersQty; n++) {
+    printf("*");
+  }
+  printf("\n");
 }
