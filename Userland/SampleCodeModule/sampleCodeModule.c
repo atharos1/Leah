@@ -216,15 +216,56 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
             cmdStart = i + 1;
         }
     }
-    
-    /* Check commands entered:
-    for(int j = 0; j <= pipeQty; j++) {
-        printf("Comando %d: %s\n", j+1, cmdList[j]);
-    }*/
 
-    // PARSE EACH COMMAND
+    for(int j = pipeQty; j >= 0; j--) {
+        if (*cmd == '\0') return 1;
 
-    return 1;
+        char *args;
+        int i = 0;
+
+        char *argv[MAX_ARGS];
+
+        while(cmdList[j][i] == ' ' || cmdList[j][i] == '\t') i++;
+        cmdList[j] = &cmdList[j][i];
+        int cmdLength = strlen(cmdList[j]);
+        i = 0;
+        while (cmdList[j][i] != ' ' && cmdList[j][i] != 0) i++;
+
+        cmdList[j][i] = '\0';
+        i++;
+        args = cmdList[j] + i;
+
+        // parse args
+        int currArg = 0;
+        int argBegin = 0;
+        for (int k = 0; k <= cmdLength - i; k++) {
+            if (args[k] == ' ' || args[k] == 0) {
+                args[k] = 0;
+                if (!str_is_whitespace_only(&args[argBegin])) {
+                    argv[currArg] = &args[argBegin];
+                    currArg++;
+                }
+                argBegin = k + 1;
+            }
+        }
+        argv[currArg] = NULL;
+
+        function f = getCommandFunction(cmdList[j]);
+        if (f == 0) {
+            printf("Comando '%s' desconocido.\n\n", cmdList[j]);
+            return -1;
+        }
+
+        if (getIsProgram(cmdList[j]) == FALSE) {
+            f(argv);
+        } else {
+            execProgram(cmdList[j], argv, currArg);
+        }
+
+        printf("\n");
+    }
+
+    return 0;
 }
 
 char hist[100][MAX_COMMAND_LENGTH];
