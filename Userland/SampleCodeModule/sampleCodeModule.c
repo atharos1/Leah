@@ -151,7 +151,6 @@ int parseCommand(char *cmd, int l) {
 
     char *argv[MAX_ARGS];
 
-    // parse command
     //-----------
     int pipeQty = 0;
     while(cmd[i] != 0) {
@@ -164,6 +163,11 @@ int parseCommand(char *cmd, int l) {
         return parseMultipleCommands(cmd, l, pipeQty);
     }
     //-----------
+
+    // parse command
+    i = 0;
+    while(cmd[i] == ' ' || cmd[i] == '\t') i++;
+    cmd = &cmd[i];
     while (cmd[i] != ' ' && cmd[i] != 0) i++;
 
     cmd[i] = '\0';
