@@ -60,7 +60,7 @@ CIRC_BUFFER buff = {{0}, 0, 0, 0};
 void init_kb() { stdin = openFileFromPath("/dev/stdin", O_RDWR); }
 
 unsigned char readKey() {
-    char c = inportb(0x60);
+    char c = _inportb(0x60);
     return c;
 }
 
