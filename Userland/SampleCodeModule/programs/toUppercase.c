@@ -39,13 +39,15 @@ int toUppercase() {
 					putchar(c);
 			  }
 			} else if (c == '\n') {
-      	sys_write(fd1, buff, cursor);
-        cursor = 0;
-        putchar(c);
-        int aux = sys_read(fd2, buff, MAX_LENGTH);
-        buff[aux] = 0;
-        printf("En mayusculas: %s\n", buff);
-        printf("Introduzca un texto: ");
+        if (cursor > 0) {
+          sys_write(fd1, buff, cursor);
+          cursor = 0;
+          putchar(c);
+          int aux = sys_read(fd2, buff, MAX_LENGTH);
+          buff[aux] = 0;
+          printf("En mayusculas: %s\n", buff);
+          printf("Introduzca un texto: ");
+        }
       } else {
 				if (cursor < 100) {
 					if (c >= ' ' && c < 0x80) {

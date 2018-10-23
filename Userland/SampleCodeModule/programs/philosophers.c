@@ -82,7 +82,7 @@ void born() {
   sem_signal(forks);
   int index = id++;
   philos_t phi = {};
-  phi.phi = pthread_create(&philosopher, index);
+  phi.phi = pthread_create(&philosopher, (void*)index);
   phi.id = index;
 	phis[philosophersQty++] = phi;
   if (philosophersQty>1)

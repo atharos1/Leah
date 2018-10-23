@@ -3,7 +3,8 @@
 
 #include "../../asm/asmLibC.h"
 
-typedef int (*function_t)();
+typedef int (*process_t)();
+typedef void * (*thread_t)(void *);
 
 pthread_t pthread_create(void *(*start_routine)(void *), void *arg);
 void pthread_join(pthread_t thread, void **retval);

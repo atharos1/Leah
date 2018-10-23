@@ -15,7 +15,7 @@ timer_t newTimer(void function(), int millis, int enabled) {
     //t->enabled = enabled;
     t->millis = millis;
     t->function = function;
-    t->thread = pthread_create(tickTimer, t);
+    t->thread = pthread_create((thread_t)tickTimer, t);
 
     return t;
 }

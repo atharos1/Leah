@@ -17,10 +17,10 @@
 
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
+#define MAX_ARGS 50
 
 #define FALSE 0
 #define TRUE 1
-#define NULL ((void *)0)
 
 unsigned int currFontColor = 0xFFFFFF;
 unsigned int currBackColor = 0x000000;
@@ -29,8 +29,10 @@ unsigned int currFontSize = 1;
 typedef void (*function)();
 // typedef int (*programCode)(char**args);
 
-unsigned int programStatus = 0;
+void cmd_resetScreen();
+void cmd_printWelcome();
 
+unsigned int programStatus = 0;
 unsigned long commandsNum = 0;
 
 typedef struct command {
@@ -108,7 +110,7 @@ void execProgram(char *cmd, char **args, int argn) {
 
     function f = getCommandFunction(cmd);
 
-    int pid = execv(cmd, f, args, TRUE, NULL);
+    int pid = execv(cmd, (process_t)f, args, TRUE, NULL);
 
     if (giveAwayForeground) {
         sys_setForeground(pid);
@@ -139,73 +141,6 @@ int str_is_whitespace_only(char *str) {
         if (str[i] != ' ') return FALSE;
 
     return TRUE;
-}
-
-#define MAX_ARGS 50
-
-int parseCommand(char *cmd, int l) {
-    if (*cmd == '\0') return 1;
-
-    char *args;
-    int i = 0;
-
-    char *argv[MAX_ARGS];
-
-    //-----------
-    int pipeQty = 0;
-    while(cmd[i] != 0) {
-        if(cmd[i] == '|') {
-            pipeQty++;
-        }
-        i++;
-    }
-    if(pipeQty > 0) {
-        return parseMultipleCommands(cmd, l, pipeQty);
-    }
-    //-----------
-
-    // parse command
-    i = 0;
-    while(cmd[i] == ' ' || cmd[i] == '\t') i++;
-    cmd = &cmd[i];
-    while (cmd[i] != ' ' && cmd[i] != 0) i++;
-
-    cmd[i] = '\0';
-    i++;
-    args = cmd + i;
-
-    // parse args
-    int currArg = 0;
-    int argBegin = 0;
-    for (int j = 0; j <= l - i; j++) {
-        if (args[j] == ' ' || args[j] == 0) {
-            args[j] = 0;
-            if (!str_is_whitespace_only(&args[argBegin])) {
-                argv[currArg] = &args[argBegin];
-                currArg++;
-            }
-            argBegin = j + 1;
-        }
-    }
-    argv[currArg] = NULL;
-
-    function f = getCommandFunction(cmd);
-    if (f == 0) {
-        printf("Comando '%s' desconocido.\n\n", cmd);
-        return -1;
-    }
-
-    if (getIsProgram(cmd) == FALSE) {
-        f(argv);
-    } else {
-        execProgram(cmd, argv, currArg);
-    }
-
-    printf("\n");
-
-    // int pid = execv(cmd, f, args, TRUE, NULL);
-
-    return 0;
 }
 
 int parseMultipleCommands(char *cmd, int l, int pipeQty) {
@@ -268,6 +203,71 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
 
         printf("\n");
     }
+
+    return 0;
+}
+
+int parseCommand(char *cmd, int l) {
+    if (*cmd == '\0') return 1;
+
+    char *args;
+    int i = 0;
+
+    char *argv[MAX_ARGS];
+
+    //-----------
+    int pipeQty = 0;
+    while(cmd[i] != 0) {
+        if(cmd[i] == '|') {
+            pipeQty++;
+        }
+        i++;
+    }
+    if(pipeQty > 0) {
+        return parseMultipleCommands(cmd, l, pipeQty);
+    }
+    //-----------
+
+    // parse command
+    i = 0;
+    while(cmd[i] == ' ' || cmd[i] == '\t') i++;
+    cmd = &cmd[i];
+    while (cmd[i] != ' ' && cmd[i] != 0) i++;
+
+    cmd[i] = '\0';
+    i++;
+    args = cmd + i;
+
+    // parse args
+    int currArg = 0;
+    int argBegin = 0;
+    for (int j = 0; j <= l - i; j++) {
+        if (args[j] == ' ' || args[j] == 0) {
+            args[j] = 0;
+            if (!str_is_whitespace_only(&args[argBegin])) {
+                argv[currArg] = &args[argBegin];
+                currArg++;
+            }
+            argBegin = j + 1;
+        }
+    }
+    argv[currArg] = NULL;
+
+    function f = getCommandFunction(cmd);
+    if (f == 0) {
+        printf("Comando '%s' desconocido.\n\n", cmd);
+        return -1;
+    }
+
+    if (getIsProgram(cmd) == FALSE) {
+        f(argv);
+    } else {
+        execProgram(cmd, argv, currArg);
+    }
+
+    printf("\n");
+
+    // int pid = execv(cmd, f, args, TRUE, NULL);
 
     return 0;
 }
@@ -430,14 +430,6 @@ void cmd_exit() {
     sys_exit(0);
 }
 
-void cmd_printWelcome() {
-    printf(
-        "Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' "
-        "para "
-        "mas informacion.");
-    puts("\n");
-}
-
 void cmd_resetScreen() {
     setFontColor(currFontColor);
     setBackgroundColor(currBackColor);
@@ -445,6 +437,14 @@ void cmd_resetScreen() {
     clearScreen();
     cmd_printWelcome();
     // puts("\n");
+}
+
+void cmd_printWelcome() {
+    printf(
+        "Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' "
+        "para "
+        "mas informacion.");
+    puts("\n");
 }
 
 void cmd_setFontSize(char **args) {
@@ -592,7 +592,7 @@ void cmd_writeTo(char **args) {
 
 void program_digitalClock() {
     int pid =
-        execv("Digital Clock", (function_t)&digitalClock, NULL, TRUE, NULL);
+        execv("Digital Clock", (process_t)&digitalClock, NULL, TRUE, NULL);
 
     sys_waitPID(pid);
 
@@ -600,7 +600,7 @@ void program_digitalClock() {
 }
 
 void program_toUppercase() {
-    int pid = execv("To Uppercase", (function_t)toUppercase, NULL, TRUE, NULL);
+    int pid = execv("To Uppercase", (process_t)toUppercase, NULL, TRUE, NULL);
 
     sys_waitPID(pid);
 
@@ -671,7 +671,7 @@ int arcoiris_main() {
 }
 
 void program_arcoiris() {
-    execv("Arcoiris", (function_t)&arcoiris_main, NULL, TRUE, NULL);
+    execv("Arcoiris", (process_t)&arcoiris_main, NULL, TRUE, NULL);
 }
 
 int main() {
@@ -703,10 +703,10 @@ int main() {
                      "adecuadamente. Argumentos: *[R G B]",
                      TRUE, FALSE);
     command_register(
-        "test-memory-manager", cmd_memoryManagerTest,
+        "test-memory-manager", (function)cmd_memoryManagerTest,
         "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE,
         FALSE);
-    command_register("toUppercase", toUppercase, "Test para pipes", TRUE,
+    command_register("toUppercase", (function)toUppercase, "Test para pipes", TRUE,
                      FALSE);
     command_register("ls", cmd_listDir,
                      "Lista los archivos en el directorio especificado", FALSE,
@@ -727,73 +727,9 @@ int main() {
     command_register("ps", cmd_ps,
                      "Lista los procesos con su informacion asociada", TRUE,
                      FALSE);
-    command_register("prodcons", prodcons,
+    command_register("prodcons", (function)prodcons,
                      "Simula el problema de productor consumidor", TRUE, FALSE);
-    command_register(
-        "updown", cmd_upDown,
-        "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE,
-        FALSE);
-    command_register("arcoiris", arcoiris_main,
-                     "Cambia cada un segundo el color de fuente", TRUE, FALSE);
-    command_register("kill", cmd_killProcess,
-                     "Mata al proceso de PID especificado", FALSE, FALSE);
-    command_register("foreground", cmd_giveForeground,
-                     "Cede el primer plano al procedo de PID especificado",
-                     FALSE, FALSE);
-    command_register("testforeground", testForeground,
-                     "Prueba de foreground. Pide un texto y lo imprime", TRUE,
-                     FALSE);
-    command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
-
-    command_register("time", cmd_time,
-                     "Muestra la fecha y hora del reloj del sistema", TRUE,
-                     FALSE);
-    command_register("help", cmd_help,
-                     "Despliega informacion sobre los comandos disponibles",
-                     FALSE, FALSE);
-    command_register("clear", cmd_resetScreen, "Limpia la pantalla", FALSE,
-                     FALSE);
-    command_register("font-size", cmd_setFontSize,
-                     "Establece el tamano de la fuente y limpia la consola",
-                     TRUE, FALSE);
-    command_register("digital-clock", digitalClock,
-                     "Muestra un reloj digital en pantalla", TRUE, TRUE);
-    command_register("snake", snake_main,
-                     "Juego Snake. Se juega con WASD. Argumentos: "
-                     "[*movimientos * ms, *ratio de crecimiento]",
-                     TRUE, TRUE);
-    command_register("back-color", cmd_setBackColor,
-                     "Cambia el color de fondo e invierte el color de fuente "
-                     "adecuadamente. Argumentos: *[R G B]",
-                     TRUE, FALSE);
-    command_register(
-        "test-memory-manager", cmd_memoryManagerTest,
-        "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE,
-        FALSE);
-    command_register("toUppercase", toUppercase, "Test para pipes", TRUE,
-                     FALSE);
-    command_register("ls", cmd_listDir,
-                     "Lista los archivos en el directorio especificado", FALSE,
-                     FALSE);
-    command_register("cd", cmd_cd, "Cambia el directorio actual", FALSE, FALSE);
-    command_register("mkdir", cmd_makeDirectory,
-                     "Crea un directorio en la ruta especificada", FALSE,
-                     FALSE);
-    command_register("touch", cmd_touch,
-                     "Crea un archivo regular en la ruta especificada", FALSE,
-                     FALSE);
-    command_register("rm", cmd_removeFile, "Elimina el archivo especificado",
-                     FALSE, FALSE);
-    command_register("writeTo", cmd_writeTo,
-                     "Escribe en el archivo especificado", FALSE, FALSE);
-    command_register("cat", cmd_cat, "Imprime el archivo especificado", FALSE,
-                     FALSE);
-    command_register("ps", cmd_ps,
-                     "Lista los procesos con su informacion asociada", TRUE,
-                     FALSE);
-    command_register("prodcons", prodcons,
-                     "Simula el problema de productor consumidor", TRUE, FALSE);
-    command_register("philosophers", philosophers,
+    command_register("philosophers", (function)philosophers,
                      "Simula el problema de los filosofos cenando con numero "
                      "variable de filosofos",
                      TRUE, FALSE);
@@ -801,17 +737,18 @@ int main() {
         "updown", cmd_upDown,
         "Testea si una variable queda en 0 despues de 5000 ups y downs", TRUE,
         FALSE);
-    command_register("arcoiris", arcoiris_main,
+    command_register("arcoiris", (function)arcoiris_main,
                      "Cambia cada un segundo el color de fuente", TRUE, FALSE);
     command_register("kill", cmd_killProcess,
                      "Mata al proceso de PID especificado", FALSE, FALSE);
     command_register("foreground", cmd_giveForeground,
                      "Cede el primer plano al procedo de PID especificado",
                      FALSE, FALSE);
-    command_register("testforeground", testForeground,
+    command_register("testforeground", (function)testForeground,
                      "Prueba de foreground. Pide un texto y lo imprime", TRUE,
                      FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
+
     while (programStatus != 1) {
         commandListener();
     }
