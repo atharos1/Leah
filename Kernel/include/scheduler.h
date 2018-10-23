@@ -14,6 +14,8 @@ extern int FORCE;
 
 typedef struct SCHEDULER_QUEUE {
     NODE *queue;
+    int queueQuantum;
+    int currQueueQuantum;
     thread_t *(*nextThreadFunction)(struct SCHEDULER_QUEUE *);
     int (*checkEvictFunction)(struct SCHEDULER_QUEUE *);
     void (*restartEvictFunction)(struct SCHEDULER_QUEUE *);
@@ -21,12 +23,13 @@ typedef struct SCHEDULER_QUEUE {
     int (*removeThread)(struct SCHEDULER_QUEUE *, thread_t *);
     void (*ageThreads)(struct SCHEDULER_QUEUE *);
     void *queueData;
+    int nextQueue;
 } SCHEDULER_QUEUE;
 
 void scheduler_init();
 void *scheduler_shortTerm(void *oldRSP);
 void scheduler_midTerm();
-void scheduler_enqueue(thread_t *thread);
+void scheduler_enqueue(thread_t *thread, int queue);
 thread_t *getCurrentThread();
 int getCurrentPID();
 thread_t *scheduler_dequeue_current();

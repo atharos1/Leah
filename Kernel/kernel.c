@@ -96,7 +96,7 @@ void initThread() {
 
 	while(1) {
 		if(aliveProcessCount() == 1)
-			giveForeground( createProcess("Terminalator", sampleCodeModuleAddress, (char*[]){NULL},  4, 4) );
+			giveForeground( createProcess("Terminalator", sampleCodeModuleAddress, (char*[]){NULL},  4, 4, NULL) );
 
 		_force_scheduler();
 	}
@@ -106,7 +106,7 @@ int main()
 {
   	writeIDT();
 	scheduler_init();
-	createProcess("Init", &initThread, NULL, 1, 0);
+	createProcess("Init", &initThread, NULL, 1, 0, NULL);
 	setFontSize(1);
 
 	/*extern uint64_t * instructionPointerBackup;

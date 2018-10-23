@@ -30,8 +30,8 @@ void scheduler_init() {
 
     purgeProcessList(FALSE);  // Esto va acá?
 
-    timer_appendFunction(scheduler_midTerm,
-                         PIT_FREQUENCY * 10);  // Cada 10 segundos
+    /*timer_appendFunction(scheduler_midTerm,
+                         PIT_FREQUENCY * 10);  // Cada 10 segundos*/
 }
 
 void scheduler_midTerm() {
@@ -40,10 +40,12 @@ void scheduler_midTerm() {
             Queues[currQueue]->ageThreads(Queues[currQueue]);
 }
 
-void scheduler_enqueue(thread_t *thread) {
+void scheduler_enqueue(thread_t *thread, int queue) {
     if (thread == NULL) return;
 
-    SCHEDULER_QUEUE *q = Queues[0];
+    thread->queueID = queue;
+
+    SCHEDULER_QUEUE *q = Queues[queue];
 
     q->addToQueue(q, thread);
     thread->queue = q;

@@ -10,7 +10,9 @@ char kb_fetch();
 char getChar();
 void giveForeground(int pid);
 int getForegroundPID();
-//unsigned char peekChar();
-//void ungetc(unsigned char c);
+// unsigned char peekChar();
+// void ungetc(unsigned char c);
+
+extern fd_t* stdin;
 
 #endif

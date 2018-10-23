@@ -1,11 +1,13 @@
 #include "include/fileSystem.h"
 #include "asm/libasm.h"
 #include "drivers/include/console.h"
+#include "drivers/include/kb_driver.h"
 #include "include/malloc.h"
 #include "include/memoryManager.h"
 #include "include/mutex.h"
+#include "include/process.h"
 #include "include/scheduler.h"
-#include "include/sem.h"
+#include "drivers/include/kb_driver.h"
 #include "include/stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
@@ -623,6 +625,7 @@ uint32_t writeToFD(int fdIndex, char *buff, uint32_t bytes) {
 }
 
 uint32_t readFromFD(int fdIndex, char *buff, uint32_t bytes) {
+    //return readFile(stdin, buff, bytes);
     return readFile(getFD(getCurrentPID(), fdIndex), buff, bytes);
 }
 
@@ -752,6 +755,25 @@ void openUnnamedPipe(int fd[2]) {
         fd[0] = -1;
         fd[1] = -1;
     }
+}
+
+void cloneFD(int fdFrom, int fdTo, void *processNoCast) {
+    if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 || fdTo >= MAX_FD_COUNT)
+        return;
+
+    process_t *process = (process_t *)processNoCast;
+
+    process_t *origin = getProcessByPID(getCurrentPID());
+
+    if (origin->fd_table[fdTo] != NULL) return;
+
+    fd_t *originFD = origin->fd_table[fdFrom];
+    if (originFD == NULL) return;
+
+    fd_t *destinyFD = openFile(originFD->openedFile->file, originFD->mode);
+    if (destinyFD == NULL) return;
+
+    origin->fd_table[fdTo] = destinyFD;
 }
 
 ///// TESTING FUNCTIONS /////

@@ -81,4 +81,6 @@ void openUnnamedPipe(int fd[2]);
 
 void listDir(char* path);
 
+void cloneFD(int fdFrom, int fdTo, void* processNoCast);
+
 #endif

@@ -166,9 +166,6 @@ void exDispatcher(int n, uint64_t * RIP, uint64_t * RSP, uint64_t r) {
 	setFontColor(0x000000);
 	setBackgroundColor(0xDC143C);
 
-	extern uint64_t * instructionPointerBackup;
-	extern void * stackPointerBackup;
-
 	uint64_t RIP_Back = (uint64_t)&RIP;
 	uint64_t RSP_Back = (uint64_t)&RSP;
 

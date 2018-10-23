@@ -12,7 +12,6 @@ void * tickTimer(timer_t t) {
 timer_t newTimer(void function(), int millis, int enabled) {
     timer_t t = malloc( sizeof(struct timer) );
 
-    //t->enabled = enabled;
     t->millis = millis;
     t->function = function;
     t->thread = pthread_create((thread_t)tickTimer, t);

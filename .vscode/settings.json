@@ -17,6 +17,9 @@
         "stdio.h": "c",
         "comparators.h": "c",
         "roundrobinwithpriority.h": "c",
-        "filesystem.h": "c"
+        "filesystem.h": "c",
+        "list.h": "c",
+        "stdlib.h": "c",
+        "kb_driver.h": "c"
     }
 }

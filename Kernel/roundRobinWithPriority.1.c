@@ -1,8 +1,72 @@
-#include "include/roundRobinWithPriority.h"
+#include "include/roundRobinWithPriority.1.h"
 #include "drivers/include/console.h"
 #include "include/comparators.h"
-#include "include/linkedList.h"
 #include "include/malloc.h"
+/*
+SCHEDULER_QUEUE* roundRobinWithPriority_newQueue(int queueQuantum,
+                                                 int nextQueueID) {
+    SCHEDULER_QUEUE* q = malloc(sizeof(SCHEDULER_QUEUE));
+    data_RoundRobinWithPriority* data =
+        malloc(sizeof(data_RoundRobinWithPriority));
+
+    /*q->nextThreadFunction = roundRobinWithPriority_nextThread;
+    q->checkEvictFunction = roundRobinWithPriority_checkEvict;
+    q->restartEvictFunction = roundRobinWithPriority_restartEvict;
+    q->addToQueue = roundRobinWithPriority_addToQueue;
+    q->removeThread = roundRobinWithPriority_removeThread;*/
+/*
+    q->queueQuantum = queueQuantum;
+    q->currQueueQuantum = 0;
+
+    data->nextQueue = nextQueueID;
+    data->currThreadQuantum = 0;
+    data->currentMaxPriority = -1;
+    data->currentPriority = 0;
+
+    for (int i = 0; i < MAX_PRIORITY; i++) 
+        data->queues[i] = linkedList_new();
+
+    q->queueData = data;
+
+    return q;
+}
+
+
+void addToQueue(SCHEDULER_QUEUE* q, thread_t* t) {
+    data_RoundRobinWithPriority* data = q->queueData;
+
+    int currNice = getProcessByPID(t->process)->nice;
+
+    if(currNice == 0) {
+        scheduler_enqueue(t, q->nextQueue);
+        return;
+    }
+
+    linkedList_offer(data->queues[currNice - 1], t);
+}
+
+int removeThread(SCHEDULER_QUEUE* q, thread_t* t) {
+    data_RoundRobinWithPriority* data = q->queueData;
+    int status = 0;
+    int currNice = getProcessByPID(t->process)->nice;
+
+    return linkedList_removeByValue(data->queues[currNice - 1], t, 1);
+}
+
+thread_t* getThread(SCHEDULER_QUEUE* q) {
+    thread_t* ret = NULL;
+
+    data_RoundRobinWithPriority* data = q->queueData;
+
+    int currPriority = data->maxPriority - 1;
+    NODE* currQueue;
+
+    while (ret == NULL && currPriority >= 0) {
+        currQueue = data->priorityArray[currPriority];
+    }
+
+    return ret;
+}
 
 void roundRobinWithPriority_addToQueue(SCHEDULER_QUEUE* q, thread_t* t);
 
@@ -120,7 +184,7 @@ SCHEDULER_QUEUE* roundRobinWithPriority_newQueue(int queueQuantum,
     q->restartEvictFunction = roundRobinWithPriority_restartEvict;
     q->addToQueue = roundRobinWithPriority_addToQueue;
     q->removeThread = roundRobinWithPriority_removeThread;
-    // q->ageThreads = roundRobinWithPriority_ageThreads;
+    q->ageThreads = roundRobinWithPriority_ageThreads;
 
     q->queueQuantum = queueQuantum;
     q->currQueueQuantum = 0;
@@ -134,3 +198,4 @@ SCHEDULER_QUEUE* roundRobinWithPriority_newQueue(int queueQuantum,
 
     return q;
 }
+*/

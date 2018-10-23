@@ -51,8 +51,12 @@ void erasePCB(process_t *process) {
     freeMemory(process);
 }
 
+void dup2(int fdFrom, int fdTo) {
+    cloneFD(fdFrom, fdTo, processList[getCurrentPID()]);
+}
+
 int createProcess(char *name, void *code, char **args, int stack_size,
-                  int heap_size) {
+                  int heap_size, int fdReplace[][2]) {
     int pid = getFreePID();
     if (pid == -1)  // No entran mas
         return -1;
@@ -85,6 +89,16 @@ int createProcess(char *name, void *code, char **args, int stack_size,
 
     purgeFdList(process, FALSE);
     purgeThreadList(process, FALSE, FALSE);
+
+    if(fdReplace != NULL){
+        for (int i = 0; fdReplace[i][0] != -1 && fdReplace[i][1] != -1; i++) {
+            printf("reemplazando: %d %d\n", fdReplace[i][0], fdReplace[i][1]);
+            cloneFD(fdReplace[i][0], fdReplace[i][1], process);
+        }
+    }
+
+    if(process->fd_table[0] == NULL)
+        process->fd_table[0] = openFileFromPath("/dev/stdin", O_RDWR);
 
     process->cwd = getRoot();
 
@@ -248,7 +262,7 @@ thread_t *createThread(process_t *process, void *code, void *args,
     process->threadList[thread->tid] = thread;
     // process->threadCount++;
 
-    scheduler_enqueue(thread);
+    scheduler_enqueue(thread, 0);
 
     return thread;
 }
@@ -322,7 +336,7 @@ fd_t *unregisterFD(int pid, int fdIndex) {
 }
 
 fd_t *getFD(int pid, int fdIndex) {
-    if (fdIndex < 3 || fdIndex >= MAX_FD_COUNT) return NULL;
+    if (fdIndex < 0 || fdIndex >= MAX_FD_COUNT) return NULL;
     return processList[pid]->fd_table[fdIndex];
 }
 

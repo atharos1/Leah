@@ -104,8 +104,8 @@ void sys_listProcess(ps_struct buffer[], int *bufferCount) {
     _systemCall(41, buffer, bufferCount, 0, 0);
 }
 
-int sys_newProcess(char *name, int (*start_routine)(char **args), char **args) {
-    return _systemCall(42, name, start_routine, args);
+int sys_newProcess(char *name, int (*start_routine)(char **args), char **args, int ** fdReplace) {
+    return _systemCall(42, name, start_routine, args, fdReplace);
 }
 
 int sys_waitPID(int pid) { return _systemCall(43, pid, 0, 0); }
@@ -119,6 +119,8 @@ void sys_killProcess(int pid) { _systemCall(46, pid, 0, 0); }
 void sys_exit(int retVal) { _systemCall(47, retVal, 0, 0); }
 
 void sys_setForeground(int pid) { _systemCall(48, pid, 0, 0); }
+
+void sys_dup2(int oldFd, int newFd) { _systemCall(49, oldFd, newFd, 0); }
 
 pthread_t sys_newThread(void *(*start_routine)(void *), void *arg) {
     return _systemCall(50, start_routine, arg, 0);

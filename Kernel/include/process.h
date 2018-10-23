@@ -33,6 +33,7 @@ typedef struct thread_t {
     void *finishedSem;
     int is_someone_joining;
     memblock_t stack;
+    int queueID;
     void *queue;
     int usedProcessor;
 } thread_t;
@@ -65,7 +66,7 @@ typedef struct {
 typedef ps_struct *ps_info;
 
 int createProcess(char *name, void *code, char **args, int stack_size,
-                  int heap_size);
+                  int heap_size, int fdReplace[][2]);
 thread_t *createThread(process_t *process, void *code, void *args,
                        int stack_size, int isMain);
 process_t *getProcessByPID(int pid);
@@ -86,5 +87,6 @@ void *getHeapBase(int pid);
 int getHeapSize(int pid);
 int isValidProcess(int pid);
 void setNiceness(int pid);
+void dup2(int fdFrom, int fdTo);
 
 #endif

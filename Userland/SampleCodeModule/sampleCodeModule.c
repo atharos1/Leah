@@ -7,6 +7,7 @@
 #include "StandardLibrary/include/stdlib.h"
 #include "StandardLibrary/include/string.h"
 #include "StandardLibrary/include/timer.h"
+#include "StandardLibrary/include/linkedList.h"
 #include "asm/asmLibC.h"
 #include "programs/include/digitalClock.h"
 #include "programs/include/philosophers.h"
@@ -206,6 +207,28 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
 
     return 0;
 }
+
+int commandParser(char *cmd) {
+    if (*cmd == '\0') return;
+    linkedList_t l = linkedList_new();
+
+    //parseCommand(cmd, l);
+}
+
+/*void parseCommand(char * cmd, linkedList_t l) {
+    int i = 0;
+    while(cmd[i] != '\0' && (cmd[i] != '|' || cmd[i+1] != '|') ) {
+        i++;
+    }
+
+    linkedList_offer(l, cmd);
+
+    if(cmd[i] == '|' && cmd[i+1] == '|')
+        parseCommand(cmd[i+2], l);
+
+
+
+}*/
 
 int parseCommand(char *cmd, int l) {
     if (*cmd == '\0') return 1;
@@ -608,6 +631,26 @@ void program_toUppercase() {
     puts("\n");
 }
 
+int prog(char **args) {
+    while(1) {
+        char c = getchar();
+        printf("1%c", c);
+    }
+}
+
+int progPadre(char **args) {
+    int fd[2];
+    sys_pipe(fd);
+    int fdReplace[2][2] = {{fd[0],0}, {-1,-1}};
+    dup2(1, fd[1]);
+    int pid = execv("To Uppercase", (process_t)prog, NULL, FALSE, fdReplace);
+}
+
+void cmd_p(char **args) {
+    int pid = execv("To Uppercase", (process_t)prog, NULL, TRUE, NULL);
+    sys_setForeground(pid);
+}
+
 void cmd_cat(char **args) {
     char str[16];
     int fd = sys_open(args[0], O_RDONLY);
@@ -747,6 +790,7 @@ int main() {
     command_register("testforeground", (function)testForeground,
                      "Prueba de foreground. Pide un texto y lo imprime", TRUE,
                      FALSE);
+    command_register("p", cmd_p, "Cierra la Shell", FALSE, FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
     while (programStatus != 1) {
