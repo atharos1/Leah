@@ -863,14 +863,23 @@ void cmd_p(char **args)
     sys_setForeground(pid);
 }
 
-void cmd_cat(char **args)
+int prog_cat(char **args)
 {
+    int fd;
     char str[16];
-    int fd = sys_open(args[0], O_RDONLY);
-    if (fd == -1)
+
+    if (args[0] == NULL)
     {
-        printf("Error al abrir el archivo\n");
-        return;
+        fd = 0;
+    }
+    else
+    {
+        fd = sys_open(args[0], O_RDONLY);
+        if (fd == -1)
+        {
+            printf("Error al abrir el archivo\n");
+            return -1;
+        }
     }
 
     int aux;
@@ -880,7 +889,10 @@ void cmd_cat(char **args)
         printf("%s", str);
     }
 
-    sys_close(fd);
+    if (args[0] != NULL)
+        sys_close(fd);
+
+    return 0;
 }
 
 void cmd_cd(char **args) { sys_chdir(args[0]); }
@@ -987,7 +999,7 @@ int main()
                      FALSE, FALSE);
     command_register("writeTo", cmd_writeTo,
                      "Escribe en el archivo especificado", FALSE, FALSE);
-    command_register("cat", cmd_cat, "Imprime el archivo especificado", FALSE,
+    command_register("cat", prog_cat, "Imprime el archivo especificado", TRUE,
                      FALSE);
     command_register("ps", cmd_ps,
                      "Lista los procesos con su informacion asociada", TRUE,
@@ -1012,8 +1024,8 @@ int main()
     command_register("testforeground", (function)testForeground,
                      "Prueba de foreground. Pide un texto y lo imprime", TRUE,
                      FALSE);
-    command_register("prog_echo", prog_echo, "Echo como programa", TRUE, FALSE);
-    command_register("prog_prueba", prog, "Para correr con echo", TRUE, FALSE);
+    command_register("echo", prog_echo, "Echo como programa", TRUE, FALSE);
+    command_register("prueba", prog, "Para correr con echo", TRUE, FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
     while (programStatus != 1)
