@@ -10,7 +10,7 @@ int philosophers();
 void born();
 void * philosopher(void * args);
 void die();
-void philosopherSuicide(int pId);
+void philosopherSuicide();
 void printStatus();
 
 #endif
