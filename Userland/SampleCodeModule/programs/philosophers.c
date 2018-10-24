@@ -14,8 +14,8 @@ typedef struct philos {
 void printMenuPhi();
 void terminateAllPhi();
 
-int pMutex, dieMutex, eMutex;
-int philosophersQty, forks, philosophersToDie, phiInTable, id;
+int pMutex, eMutex;
+int philosophersQty, forks, philosophersToDie, phiInTable, id, indexToDie;
 philos_t phis[MAX_PHI] = {0};
 Node * thinkingList, * eatingList;
 
@@ -23,6 +23,8 @@ int philosophers() {
   printMenuPhi();
   mutex_create("philosophersMutex");
   pMutex = mutex_open("philosophersMutex");
+  mutex_create("eatingMutex");
+  eMutex = mutex_open("eatingMutex");
   philosophersQty = 0;
   sem_create("forks", 0);
   forks = sem_open("forks");
@@ -30,10 +32,7 @@ int philosophers() {
   phiInTable = sem_open("inTable");
   philosophersToDie = 0;
   id = 0;
-  mutex_create("dieMutex");
-  dieMutex = mutex_open("dieMutex");
-  mutex_create("eatingMutex");
-  eMutex = mutex_open("eatingMutex");
+  indexToDie = 0;
   //--------------
   thinkingList = integerList_init();
   eatingList = integerList_init();
@@ -55,8 +54,6 @@ int philosophers() {
 
 	terminateAllPhi();
   mutex_delete("philosophersMutex");
-  mutex_delete("dieMutex");
-  mutex_delete("eatingMutex");
   sem_delete("forks");
   sem_delete("inTable");
 	printf("La simulacion termino\n");
@@ -83,57 +80,52 @@ void born() {
   philos_t phi = {};
   phi.phi = pthread_create(&philosopher, (void*)index);
   phi.id = index;
+  indexToDie = id-1;
 	phis[philosophersQty++] = phi;
   if (philosophersQty>1)
     sem_signal(phiInTable);
-  //---------------
+  mutex_unlock(pMutex);
+
   mutex_lock(eMutex);
-  thinkingList = insertElement(thinkingList, index);
-  mutex_unlock(eMutex);
   //---------------
-	mutex_unlock(pMutex);
+  thinkingList = insertElement(thinkingList, index);
+  //---------------
+  mutex_unlock(eMutex);
+
 }
 
 void * philosopher(void * args) {
   int i = (int)args;
-	printf("\nEl filosofo %d ha nacido!\n\n",i);
+	printf("\nSoy el filosofo %d que acaba de nacer!\n\n",i);
 	while(1) {
-
-    mutex_lock(dieMutex);
-    if (philosophersToDie > 0) {
-      philosopherSuicide(i);
-    }
-    mutex_unlock(dieMutex);
-
+    mutex_lock(pMutex);
+    if (philosophersToDie > 0 && i == indexToDie) {
+      philosopherSuicide();
+    } else
+      mutex_unlock(pMutex);
     sem_wait(phiInTable);
     sem_wait(forks);
     sem_wait(forks);
-    
-    //comer();
+
     mutex_lock(eMutex);
     //----------
     thinkingList = deleteElement(thinkingList, i);
     eatingList = insertElement(eatingList, i);
-    
+    printStatus(i);
     //----------
     mutex_unlock(eMutex);
-    printStatus();
-    sys_sleep(1000);
 
+    sys_sleep(1000);
     sem_signal(forks);
     sem_signal(forks);
     sem_signal(phiInTable);
 
-    //pensar();
     mutex_lock(eMutex);
     //----------
     eatingList = deleteElement(eatingList, i);
     thinkingList = insertElement(thinkingList, i);
     //----------
     mutex_unlock(eMutex);
-    printStatus();
-    sys_sleep(1000);
-
 	}
 	return 0;
 }
@@ -149,22 +141,23 @@ void die() {
   mutex_unlock(pMutex);
 }
 
-void philosopherSuicide(int pId) {
-  mutex_lock(pMutex);
+void philosopherSuicide() {
   philosophersQty--;
   philosophersToDie--;
-  pthread_t phiToDie = (phis[pId]).phi;
-  //----------- Podria hacer una funcion contains()
+  indexToDie = (phis[philosophersQty-1]).id;
+  pthread_t phiToDie = (phis[philosophersQty]).phi;
+
   mutex_lock(eMutex);
-  thinkingList = deleteElement(thinkingList, pId);
-  eatingList = deleteElement(eatingList, pId);
-  mutex_unlock(eMutex);
+  //----------- Podria hacer una funcion contains()
+  thinkingList = deleteElement(thinkingList, (phis[philosophersQty]).id);
+  eatingList = deleteElement(eatingList, (phis[philosophersQty]).id);
   //-----------
+  mutex_unlock(eMutex);
+
   mutex_unlock(pMutex);
-  printf("\nEl filosofo %d ha muerto!\n\n",pId);
-  sem_wait(forks);
   sem_wait(phiInTable);
-  mutex_unlock(dieMutex);
+  sem_wait(forks);
+  printf("\nEl filosofo %d ha muerto!\n\n",(phis[philosophersQty]).id);
   pthread_cancel(phiToDie);
 }
 
@@ -181,8 +174,8 @@ void terminateAllPhi() {
 }
 
 void printStatus() {
-  mutex_lock(dieMutex);
   int spacesE = countSpaces(eatingList);
+
   printf("Comiendo: ");
   printList(eatingList);
 
@@ -194,7 +187,4 @@ void printStatus() {
   printList(thinkingList);
 
   printf("\n");
-  mutex_unlock(dieMutex);
-
-  return;
 }
