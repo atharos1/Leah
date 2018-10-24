@@ -8,6 +8,7 @@
 #define BUFFER 2
 #define SEMAPHORE 3
 #define MUTEX 4
+#define EXECUTABLE 5
 
 #define MAX_NAME_LENGTH 64
 #define MAX_PATH_LENGTH 256
@@ -55,7 +56,8 @@ int openFileToFD(file_t* file, int mode);
 int openFileFromPathToFD(char* path, int mode);
 void closeFile(fd_t* fd);
 void closeFileFromFD(int fdIndex);
-// fd_t * cloneOpenedFile(fd_t * fd);
+void openUnnamedPipe(int fd[2]);
+void cloneFD(int fdFrom, int fdTo, void* processNoCast);
 
 uint32_t writeFile(fd_t* fd, char* buff, uint32_t bytes);
 uint32_t readFile(fd_t* fd, char* buff, uint32_t bytes);
@@ -77,10 +79,8 @@ void mutexClose(int fdIndex);
 void mutexLock(int fdIndex);
 void mutexUnlock(int fdIndex);
 
-void openUnnamedPipe(int fd[2]);
+void execCreate(char * name, void * pointer);
 
 void listDir(char* path);
-
-void cloneFD(int fdFrom, int fdTo, void* processNoCast);
 
 #endif

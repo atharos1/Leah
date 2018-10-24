@@ -96,6 +96,10 @@ void sys_pipe(int fd[2]) {
     _systemCall(38, fd, 0, 0, 0);
 }
 
+void sys_execCreate(char * name, void * pointer) {
+    _systemCall(39, name, pointer, 0, 0);
+}
+
 void sys_sleep(int millis) {
     _systemCall(40, millis, 0, 0, 0);
 }

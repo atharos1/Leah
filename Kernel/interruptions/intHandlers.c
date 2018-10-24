@@ -198,6 +198,9 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
         case 38:  // sys_pipe
             openUnnamedPipe((int*)rsi);
             break;
+        case 39:  // sys_execCreate
+            execCreate((char*)rsi, (void*)rdx);
+            break;
         case 40:  // sleep
             sleepCurrentThread(rsi);
             break;
@@ -205,7 +208,6 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
             listProcess((ps_struct*)rsi, (int*)rdx);
             break;
         case 42:  // new process
-        //printf("Recibo r8: %d\n", r8);
             return createProcess((char*)rsi, (void*)rdx, (char**)rcx, 4, 4, (int**)r8);
             break;
         case 43:  // waitpid

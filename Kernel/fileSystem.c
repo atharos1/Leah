@@ -19,12 +19,14 @@ static void *createDirectory();
 static void *createRegularFile();
 static void *createSemaphore();
 static void *createMutex();
+static void *createExecutable();
 
 static void removeDirectory(file_t *file);
 static void removeBuffer(file_t *file);
 static void removeRegularFile(file_t *file);
 static void removeSemaphore(file_t *file);
 static void removeMutex(file_t *file);
+static void removeExecutable(file_t *file);
 
 static file_t *newFile(char name[], int type);
 
@@ -49,6 +51,10 @@ typedef struct semaphore {
 typedef struct mutex {
     mutex_t mutex;
 } mutex_file_t;
+
+typedef struct executable {
+    void * pointer;
+} executable_t;
 
 file_t *root;
 opened_file_t *firstOpenedFile;
@@ -176,12 +182,17 @@ static file_t *newFile(char name[], int type) {
         newFile->implementation = createSemaphore();
     else if (type == MUTEX)
         newFile->implementation = createMutex();
+    else if (type == EXECUTABLE)
+        newFile->implementation = createExecutable();
 
     return newFile;
 }
 
 static void *createBuffer() {
     buffer_t *buff = malloc(sizeof(buffer_t));
+
+    if (buff == NULL) return NULL;
+
     return (void *)buff;
 }
 
@@ -231,6 +242,16 @@ static void *createMutex() {
     return (void *)file;
 }
 
+static void *createExecutable() {
+    executable_t *file = malloc(sizeof(executable_t));
+
+    if (file == NULL) return NULL;
+
+    file->pointer = NULL;
+
+    return (void *)file;
+}
+
 static file_t *removeFileR(file_t *currFile, file_t *targetFile) {
     if (currFile == NULL) return currFile;
 
@@ -245,6 +266,8 @@ static file_t *removeFileR(file_t *currFile, file_t *targetFile) {
             removeSemaphore(currFile);
         else if (currFile->type == MUTEX)
             removeMutex(currFile);
+        else if (currFile->type == EXECUTABLE)
+            removeExecutable(currFile);
 
         free(currFile);
         return currFile->next;
@@ -290,6 +313,8 @@ static void removeMutex(file_t *file) {
     mutex_delete(mutex->mutex);
     free(mutex);
 }
+
+static void removeExecutable(file_t *file) { free(file->implementation); }
 
 file_t *getRoot() { return root; }
 
@@ -350,6 +375,7 @@ static uint32_t readRegularFile(opened_file_t *openedFile, char *buff,
                                 uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t *openedFile, char *buff,
                            uint32_t bytes);
+static uint32_t readExecutable(opened_file_t *openedFile, char *buff); 
 
 static fd_t *openFile(file_t *file, int mode) {
     if (file == NULL || file->type == DIRECTORY) return NULL;
@@ -487,6 +513,47 @@ static void closeBuffer(opened_buffer_t *openedBuffer) {
     free(openedBuffer);
 }
 
+void openUnnamedPipe(int fd[2]) {
+    file_t *pipe = newFile("pipe", BUFFER);
+    if (pipe == NULL) {
+        fd[0] = -1;
+        fd[1] = -1;
+        return;
+    }
+
+    fd[0] = openFileToFD(pipe, O_RDONLY);
+    fd[1] = openFileToFD(pipe, O_WRONLY);
+
+    if (fd[0] == -1 && fd[1] == -1) {
+        removeBuffer(pipe);
+        free(pipe);
+    } else if (fd[0] == -1 || fd[1] == -1) {
+        closeFileFromFD(fd[0]);
+        closeFileFromFD(fd[1]);
+        fd[0] = -1;
+        fd[1] = -1;
+    }
+}
+
+void cloneFD(int fdFrom, int fdTo, void *processNoCast) {
+    if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 || fdTo >= MAX_FD_COUNT)
+        return;
+
+    process_t *process = (process_t *)processNoCast;
+
+    process_t *origin = getProcessByPID(getCurrentPID());
+
+    if (origin->fd_table[fdTo] != NULL) return;
+
+    fd_t *originFD = origin->fd_table[fdFrom];
+    if (originFD == NULL) return;
+
+    fd_t *destinyFD = openFile(originFD->openedFile->file, originFD->mode);
+    if (destinyFD == NULL) return;
+
+    origin->fd_table[fdTo] = destinyFD;
+}
+
 uint32_t writeFile(fd_t *fd, char *buff, uint32_t bytes) {
     if (bytes == 0 || fd == NULL) return 0;
 
@@ -566,6 +633,9 @@ uint32_t readFile(fd_t *fd, char *buff, uint32_t bytes) {
     if (fd->openedFile->file->type == BUFFER)
         return readBuffer(fd->openedFile, buff, bytes);
 
+    if (fd->openedFile->file->type == EXECUTABLE)
+        return readExecutable(fd->openedFile, buff);
+
     return 0;
 }
 
@@ -620,12 +690,18 @@ static uint32_t readBuffer(opened_file_t *openedFile, char *buff,
     return bytesToRead;
 }
 
+static uint32_t readExecutable(opened_file_t *openedFile, char *buff) {
+    executable_t *executable = (executable_t*)(openedFile->file->implementation);
+    void **pointer = (void**)buff;
+    *pointer = executable->pointer;
+    return sizeof(void*);
+}
+
 uint32_t writeToFD(int fdIndex, char *buff, uint32_t bytes) {
     return writeFile(getFD(getCurrentPID(), fdIndex), buff, bytes);
 }
 
 uint32_t readFromFD(int fdIndex, char *buff, uint32_t bytes) {
-    //return readFile(stdin, buff, bytes);
     return readFile(getFD(getCurrentPID(), fdIndex), buff, bytes);
 }
 
@@ -735,45 +811,12 @@ void mutexUnlock(int fdIndex) {
             ((mutex_file_t *)(fd->openedFile->file->implementation))->mutex);
 }
 
-void openUnnamedPipe(int fd[2]) {
-    file_t *pipe = newFile("pipe", BUFFER);
-    if (pipe == NULL) {
-        fd[0] = -1;
-        fd[1] = -1;
-        return;
+void execCreate(char * name, void * pointer) {
+    file_t * file = makeFile(name, EXECUTABLE);
+    if (file != NULL && file->type == EXECUTABLE) {
+      executable_t * executable = (executable_t*)(file->implementation);
+      executable->pointer = pointer;
     }
-
-    fd[0] = openFileToFD(pipe, O_RDONLY);
-    fd[1] = openFileToFD(pipe, O_WRONLY);
-
-    if (fd[0] == -1 && fd[1] == -1) {
-        removeBuffer(pipe);
-        free(pipe);
-    } else if (fd[0] == -1 || fd[1] == -1) {
-        closeFileFromFD(fd[0]);
-        closeFileFromFD(fd[1]);
-        fd[0] = -1;
-        fd[1] = -1;
-    }
-}
-
-void cloneFD(int fdFrom, int fdTo, void *processNoCast) {
-    if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 || fdTo >= MAX_FD_COUNT)
-        return;
-
-    process_t *process = (process_t *)processNoCast;
-
-    process_t *origin = getProcessByPID(getCurrentPID());
-
-    if (origin->fd_table[fdTo] != NULL) return;
-
-    fd_t *originFD = origin->fd_table[fdFrom];
-    if (originFD == NULL) return;
-
-    fd_t *destinyFD = openFile(originFD->openedFile->file, originFD->mode);
-    if (destinyFD == NULL) return;
-
-    origin->fd_table[fdTo] = destinyFD;
 }
 
 ///// TESTING FUNCTIONS /////
