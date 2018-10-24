@@ -177,8 +177,8 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
             }
 
             if(lastCommand > 0 && internalCmdCount > 0) {
-                printf("Error: No pueden usarse tuberias en combinacion con
-            comandos internos de la shell.\n"); return -1;
+                printf("Error: No pueden usarse tuberias en combinacion con comandos internos de la shell.\n");
+                return -1;
             }*/
 
             foundPipe = FALSE;
@@ -285,6 +285,8 @@ int checkBackground(char *cmd) {
 typedef char *argv[MAX_ARGS];
 
 int commandParser(char *cmd, int length) {
+    if (*cmd == '\0') return -1;
+
     char *cmdList[MAX_FUNCTION_IN_COMMAND];
     int commandCount =
         parseCommands(cmd, length, cmdList, MAX_FUNCTION_IN_COMMAND);
@@ -299,7 +301,7 @@ int commandParser(char *cmd, int length) {
 
     paramCount = parseArgs(cmdList[0], length, argvList[0], MAX_ARGS);
     int isProgram = getIsProgram(cmdList[0]);
-    
+
     if (!isProgram) {
         if (paramCount == -1) return -1;
         getCommandFunction(cmdList[0])(argvList[0]);
@@ -863,7 +865,7 @@ void program_toUppercase() {
 }
 
 int prog(char **args) {
-    printf("Jelou");
+    printf("Jelou ");
     char c;
     while (c = getchar(), c != -1) {
         printf("1%c", c);
