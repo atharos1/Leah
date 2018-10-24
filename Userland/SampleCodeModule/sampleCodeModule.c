@@ -1,4 +1,4 @@
-#include <stdarg.h>  //Parámetros ilimitados
+#include <stdarg.h> //Parámetros ilimitados
 
 #include "StandardLibrary/include/linkedList.h"
 #include "StandardLibrary/include/mutex.h"
@@ -40,7 +40,8 @@ void cmd_printWelcome();
 unsigned int programStatus = 0;
 unsigned long commandsNum = 0;
 
-typedef struct command {
+typedef struct command
+{
     char name[MAX_COMMAND_NAME_LENGTH];
     char desc[300];
     function f;
@@ -50,7 +51,8 @@ typedef struct command {
 
 struct command commandList[MAX_COMMANDS];
 
-function getCommandFunction(char *commandName) {
+function getCommandFunction(char *commandName)
+{
     for (int i = 0; i < commandsNum; i++)
         if (strcmp(commandList[i].name, commandName) == 0)
             return commandList[i].f;
@@ -58,7 +60,8 @@ function getCommandFunction(char *commandName) {
     return NULL;
 }
 
-int getIsFullscreen(char *commandName) {
+int getIsFullscreen(char *commandName)
+{
     for (int i = 0; i < commandsNum; i++)
         if (strcmp(commandList[i].name, commandName) == 0)
             return commandList[i].isFullscreen;
@@ -66,24 +69,30 @@ int getIsFullscreen(char *commandName) {
     return -1;
 }
 
-int getIsProgram(char *commandName) {
-    for (int i = 0; i < commandsNum; i++) {
+int getIsProgram(char *commandName)
+{
+    for (int i = 0; i < commandsNum; i++)
+    {
         if (strcmp(commandList[i].name, commandName) == 0)
             return commandList[i].isProgram;
     }
     return -1;
 }
 
-long getCommandID(char *commandName) {
+long getCommandID(char *commandName)
+{
     for (int i = 0; i < commandsNum; i++)
-        if (strcmp(commandList[i].name, commandName) == 0) return i;
+        if (strcmp(commandList[i].name, commandName) == 0)
+            return i;
 
     return -1;
 }
 
 int command_register(char *name, function f, char *desc, int isProgram,
-                     int isFullscreen) {
-    if (commandsNum >= MAX_COMMANDS - 1 || getCommandFunction(name)) return -1;
+                     int isFullscreen)
+{
+    if (commandsNum >= MAX_COMMANDS - 1 || getCommandFunction(name))
+        return -1;
 
     strcpy(commandList[commandsNum].name, name);
     strcpy(commandList[commandsNum].desc, desc);
@@ -96,16 +105,19 @@ int command_register(char *name, function f, char *desc, int isProgram,
     return 0;
 }
 
-void execProgram(char *cmd, char **args, int argn) {
+void execProgram(char *cmd, char **args, int argn)
+{
     int giveAwayForeground = 1;
 
     int isFullscreen = getIsFullscreen(cmd);
 
-    if (argn > 0 && strcmp(args[argn - 1], "&") == 0) {
+    if (argn > 0 && strcmp(args[argn - 1], "&") == 0)
+    {
         giveAwayForeground = 0;
     }
 
-    if (!giveAwayForeground && isFullscreen) {
+    if (!giveAwayForeground && isFullscreen)
+    {
         printf(
             "No puede ejecutar en segundo plano un programa de pantalla "
             "completa.");
@@ -117,21 +129,26 @@ void execProgram(char *cmd, char **args, int argn) {
 
     int pid = execv(cmd, (process_t)f, args, TRUE, NULL);
 
-    if (giveAwayForeground) {
+    if (giveAwayForeground)
+    {
         sys_setForeground(pid);
 
         sys_waitPID(pid);
 
-        if (isFullscreen) cmd_resetScreen();
+        if (isFullscreen)
+            cmd_resetScreen();
     }
 }
 
-int command_unregister(char *name) {
+int command_unregister(char *name)
+{
     int id = getCommandID(name);
 
-    if (commandsNum == 0 || id == -1) return -1;
+    if (commandsNum == 0 || id == -1)
+        return -1;
 
-    for (int i = id; i < commandsNum - 1; i++) {
+    for (int i = id; i < commandsNum - 1; i++)
+    {
         strcpy(commandList[i].name, commandList[i + 1].name);
         commandList[i].f = commandList[i + 1].f;
     }
@@ -141,14 +158,17 @@ int command_unregister(char *name) {
     return 0;
 }
 
-int str_is_whitespace_only(char *str) {
+int str_is_whitespace_only(char *str)
+{
     for (int i = 0; str[i] != 0; i++)
-        if (str[i] != ' ' && str[i] != '\t') return FALSE;
+        if (str[i] != ' ' && str[i] != '\t')
+            return FALSE;
 
     return TRUE;
 }
 
-int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
+int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit)
+{
     int i = 0;
     int lastCommand = 0;
     int foundPipe = TRUE;
@@ -158,11 +178,15 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
     int internalCmdCount = 0;
     int isProgram = FALSE;
 
-    while (i < cmdLength && lastCommand < commandLimit) {
-        while (cmd[i] == ' ' && !quoteEnabled) i++;
+    while (i < cmdLength && lastCommand < commandLimit)
+    {
+        while (cmd[i] == ' ' && !quoteEnabled)
+            i++;
 
-        if (foundPipe) {
-            if (cmd[i] == '|') {
+        if (foundPipe)
+        {
+            if (cmd[i] == '|')
+            {
                 printf("Error de sintaxis.\n");
                 return -1;
             }
@@ -189,25 +213,31 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
             quoteEnabled = !quoteEnabled;
         else if (cmd[i] == '\\' && quoteEnabled)
             isEscaped = TRUE;
-        else if (cmd[i] == '|' && !quoteEnabled) {
+        else if (cmd[i] == '|' && !quoteEnabled)
+        {
             cmd[i] = 0;
             foundPipe = TRUE;
-        } else {
+        }
+        else
+        {
             isEscaped = FALSE;
         }
 
         i++;
     }
 
-    if (i == 0) return 0;
+    if (i == 0)
+        return 0;
 
-    if (lastCommand > commandLimit) {
+    if (lastCommand > commandLimit)
+    {
         printf("Error: se admite concatenar como mucho %d comandos.\n",
                commandLimit);
         return -1;
     }
 
-    if (foundPipe == TRUE) {
+    if (foundPipe == TRUE)
+    {
         printf("Error de sintaxis.\n");
         return -1;
     }
@@ -222,29 +252,35 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
     return lastCommand;
 }
 
-int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs) {
+int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs)
+{
     int currArg = 0;
     int quoteEnabled = FALSE;
     int foundArg = FALSE;
 
     // TODO: \0 DENTRO DEL PARAMETRO ENTRE COMILLAS
 
-    for (int i = 0; i < cmd[i] != 0 && currArg < maxArgs; i++) {
-        if (foundArg && cmd[i] != ' ' && cmd[i] != '\t') {
+    for (int i = 0; i < cmd[i] != 0 && currArg < maxArgs; i++)
+    {
+        if (foundArg && cmd[i] != ' ' && cmd[i] != '\t')
+        {
             argv[currArg] = cmd + i;
             currArg++;
             foundArg = FALSE;
         }
 
-        if (cmd[i] == '\"' || cmd[i] == '\'') quoteEnabled = !quoteEnabled;
+        if (cmd[i] == '\"' || cmd[i] == '\'')
+            quoteEnabled = !quoteEnabled;
 
-        if ((cmd[i] == ' ' || cmd[i] == '\t') && !quoteEnabled) {
+        if ((cmd[i] == ' ' || cmd[i] == '\t') && !quoteEnabled)
+        {
             cmd[i] = 0;
             foundArg = TRUE;
         }
     }
 
-    if (currArg > maxArgs) {
+    if (currArg > maxArgs)
+    {
         printf("Error: un comando puede contener un maximo de %d parametros.\n",
                maxArgs);
         return -1;
@@ -270,13 +306,17 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs) {
         }
 }*/
 
-int checkBackground(char *cmd) {
+int checkBackground(char *cmd)
+{
     int quoteEnabled = FALSE;
 
-    for (int i = 0; cmd[i] != 0; i++) {
-        if (cmd[i] == '\"' || cmd[i] == '\'') quoteEnabled = !quoteEnabled;
+    for (int i = 0; cmd[i] != 0; i++)
+    {
+        if (cmd[i] == '\"' || cmd[i] == '\'')
+            quoteEnabled = !quoteEnabled;
 
-        if (cmd[i] == '&' && !quoteEnabled) return TRUE;
+        if (cmd[i] == '&' && !quoteEnabled)
+            return TRUE;
     }
 
     return FALSE;
@@ -284,7 +324,8 @@ int checkBackground(char *cmd) {
 
 typedef char *argv[MAX_ARGS];
 
-int commandParser(char *cmd, int length) {
+int commandParser(char *cmd, int length)
+{
     char *cmdList[MAX_FUNCTION_IN_COMMAND];
     int commandCount =
         parseCommands(cmd, length, cmdList, MAX_FUNCTION_IN_COMMAND);
@@ -297,233 +338,97 @@ int commandParser(char *cmd, int length) {
     int fdList[MAX_FUNCTION_IN_COMMAND][2];
     int pidList[MAX_FUNCTION_IN_COMMAND];
 
-    paramCount = parseArgs(cmdList[0], length, argvList[0], MAX_ARGS);
-    int isProgram = getIsProgram(cmdList[0]);
-    
-    if (!isProgram) {
-        if (paramCount == -1) return -1;
-        getCommandFunction(cmdList[0])(argvList[0]);
+    for (int i = 0; i < commandCount; i++)
+    {
+        paramCount = parseArgs(cmdList[i], length, argvList[i], MAX_ARGS);
+        if (paramCount == -1)
+            return -1;
 
-    } else {
-        for (int i = 0; i < commandCount; i++) {
-            if (i != 0)
-                paramCount = parseArgs(cmdList[i], length, argvList[i], MAX_ARGS);
-
-            if (commandCount - i > 1)  // Hay pipes
-                sys_pipe(fdList[i]);
-
-            if (i == 0) {
-                if (!isProgram)
-                    getCommandFunction(cmdList[i])(argvList[i]);
-                else {
-                    runInBackground = checkBackground(cmdList[i]);
-
-                    if (commandCount > 1) {
-                      int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
-
-                      pidList[i] =
-                          execv(cmdList[i],
-                                (process_t)getCommandFunction(cmdList[i]),
-                                argvList[i], FALSE, fdReplace);
-
-                      sys_close(fdList[i][1]);
-                    }
-
-                    else
-                        pidList[i] =
-                            execv(cmdList[i],
-                                  (process_t)getCommandFunction(cmdList[i]),
-                                  argvList[i], FALSE, NULL);
-
-                    if (!runInBackground) {
-                        sys_setForeground(pidList[i]);
-                    }
-                }
-            } else {
-                if (commandCount - 1 != i) {
-                  int fdReplace[3][2] = {
-                      {fdList[i - 1][0], 0}, {fdList[i][1], 1}, {-1, -1}};
-
-                  pidList[i] = execv(
-                      cmdList[i], (process_t)getCommandFunction(cmdList[i]),
-                      argvList[i], FALSE, fdReplace);
-
-                  sys_close(fdList[i][1]);
-
-                } else {
-                  int fdReplace[2][2] = {{fdList[i - 1][0], 0}, {-1, -1}};
-
-                  pidList[i] = execv(
-                      cmdList[i], (process_t)getCommandFunction(cmdList[i]),
-                      argvList[i], FALSE, fdReplace);
-                }
-
-                sys_close(fdList[i - 1][0]);
+        if (getIsProgram(cmdList[i]))
+        {
+            if (commandCount > 1)
+            {
+                printf("No se pueden utilizar pipes con comandos internos de la shell\n");
+                return -1;
+            }
+            else
+            {
+                getCommandFunction(cmdList[i])(argvList[i]);
             }
         }
 
-        if (!runInBackground) {
-            for (int i = 0; i < commandCount; i++) {
-                sys_waitPID(pidList[i]);
-            }
-        }
-
-        // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
-        // NO CORRA EL SNAKE O DIGITAL-CLOCK CON PIPES
+        if (commandCount - i > 1) // Hay pipes
+            sys_pipe(fdList[i]);
     }
+
+    for (int i = 0; i < commandCount; i++)
+    {
+        if (i == 0)
+        {
+            runInBackground = checkBackground(cmdList[i]);
+
+            if (commandCount > 1)
+            {
+                int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
+
+                pidList[i] =
+                    execv(cmdList[i],
+                          (process_t)getCommandFunction(cmdList[i]),
+                          argvList[i], FALSE, fdReplace);
+
+                sys_close(fdList[i][1]);
+            }
+
+            else
+                pidList[i] =
+                    execv(cmdList[i],
+                          (process_t)getCommandFunction(cmdList[i]),
+                          argvList[i], FALSE, NULL);
+
+            if (!runInBackground)
+            {
+                sys_setForeground(pidList[i]);
+            }
+        }
+        else
+        {
+            if (commandCount - 1 != i)
+            {
+                int fdReplace[3][2] = {
+                    {fdList[i - 1][0], 0}, {fdList[i][1], 1}, {-1, -1}};
+
+                pidList[i] = execv(
+                    cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                    argvList[i], FALSE, fdReplace);
+
+                sys_close(fdList[i][1]);
+            }
+            else
+            {
+                int fdReplace[2][2] = {{fdList[i - 1][0], 0}, {-1, -1}};
+
+                pidList[i] = execv(
+                    cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                    argvList[i], FALSE, fdReplace);
+            }
+            sys_close(fdList[i - 1][0]);
+        }
+    }
+
+    if (!runInBackground)
+    {
+        for (int i = 0; i < commandCount; i++)
+        {
+            sys_waitPID(pidList[i]);
+        }
+    }
+
+    // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
+    // NO CORRA EL SNAKE O DIGITAL-CLOCK CON PIPES
 
     printf("\n");
 
     return commandCount;
-}
-
-int parseMultipleCommands(char *cmd, int l, int pipeQty) {
-    int cmdNum = 0;
-    int cmdStart = 0;
-    char *cmdList[pipeQty + 1];
-    for (int i = 0; i <= l; i++) {
-        if (cmd[i] == '|' || cmd[i] == 0) {
-            cmd[i] = 0;
-            cmdList[cmdNum] = &cmd[cmdStart];
-            cmdNum++;
-            cmdStart = i + 1;
-        }
-    }
-
-    for (int j = pipeQty; j >= 0; j--) {
-        if (*cmd == '\0') return 1;
-
-        char *args;
-        int i = 0;
-
-        char *argv[MAX_ARGS];
-
-        while (cmdList[j][i] == ' ' || cmdList[j][i] == '\t') i++;
-        cmdList[j] = &cmdList[j][i];
-        int cmdLength = strlen(cmdList[j]);
-        i = 0;
-        while (cmdList[j][i] != ' ' && cmdList[j][i] != 0) i++;
-
-        cmdList[j][i] = '\0';
-        i++;
-        args = cmdList[j] + i;
-
-        // parse args
-        int currArg = 0;
-        int argBegin = 0;
-        for (int k = 0; k <= cmdLength - i; k++) {
-            if (args[k] == ' ' || args[k] == 0) {
-                args[k] = 0;
-                if (!str_is_whitespace_only(&args[argBegin])) {
-                    argv[currArg] = &args[argBegin];
-                    currArg++;
-                }
-                argBegin = k + 1;
-            }
-        }
-        argv[currArg] = NULL;
-
-        for (int a = 0; a <= j; a++) printf("Comando #%d: %s\n", a, cmdList[a]);
-
-        function f = getCommandFunction(cmdList[j]);
-        if (f == 0) {
-            printf("Comando '%s' desconocido.\n\n", cmdList[j]);
-            return -1;
-        }
-
-        if (getIsProgram(cmdList[j]) == FALSE) {
-            f(argv);
-        } else {
-            execProgram(cmdList[j], argv, currArg);
-        }
-
-        printf("\n");
-    }
-
-    return 0;
-}
-
-/*void parseCommand(char * cmd, linkedList_t l) {
-    int i = 0;
-    while(cmd[i] != '\0' && (cmd[i] != '|' || cmd[i+1] != '|') ) {
-        i++;
-    }
-
-    linkedList_offer(l, cmd);
-
-    if(cmd[i] == '|' && cmd[i+1] == '|')
-        parseCommand(cmd[i+2], l);
-
-
-
-}*/
-
-int parseCommand(char *cmd, int l) {
-    commandParser(cmd, l);
-    return 0;
-
-    if (*cmd == '\0') return 1;
-
-    char *args;
-    int i = 0;
-
-    char *argv[MAX_ARGS];
-
-    //-----------
-    int pipeQty = 0;
-    while (cmd[i] != 0) {
-        if (cmd[i] == '|') {
-            pipeQty++;
-        }
-        i++;
-    }
-    if (pipeQty > 0) {
-        return parseMultipleCommands(cmd, l, pipeQty);
-    }
-    //-----------
-
-    // parse command
-    i = 0;
-    while (cmd[i] == ' ' || cmd[i] == '\t') i++;
-    cmd = &cmd[i];
-    while (cmd[i] != ' ' && cmd[i] != 0) i++;
-
-    cmd[i] = '\0';
-    i++;
-    args = cmd + i;
-
-    // parse args
-    int currArg = 0;
-    int argBegin = 0;
-    for (int j = 0; j <= l - i; j++) {
-        if (args[j] == ' ' || args[j] == 0) {
-            args[j] = 0;
-            if (!str_is_whitespace_only(&args[argBegin])) {
-                argv[currArg] = &args[argBegin];
-                currArg++;
-            }
-            argBegin = j + 1;
-        }
-    }
-    argv[currArg] = NULL;
-
-    function f = getCommandFunction(cmd);
-    if (f == 0) {
-        printf("Comando '%s' desconocido.\n\n", cmd);
-        return -1;
-    }
-
-    if (getIsProgram(cmd) == FALSE) {
-        f(argv);
-    } else {
-        execProgram(cmd, argv, currArg);
-    }
-
-    printf("\n");
-
-    // int pid = execv(cmd, f, args, TRUE, NULL);
-
-    return 0;
 }
 
 char hist[100][MAX_COMMAND_LENGTH];
@@ -531,36 +436,49 @@ unsigned int histCurrentIndex = 0;
 unsigned int histAccessIndex = 0;
 unsigned int histSize = 0;
 
-void clearCmd(char cmd[]) {
-    for (int i = 0; i < 100; i++) {
+void clearCmd(char cmd[])
+{
+    for (int i = 0; i < 100; i++)
+    {
         cmd[i] = 0;
     }
 }
 
-void clearLine(unsigned int lineLong) {
-    for (int i = 0; i < lineLong; i++) {
+void clearLine(unsigned int lineLong)
+{
+    for (int i = 0; i < lineLong; i++)
+    {
         printf("\b");
     }
 }
 
-int testForeground(char **args) {
+int testForeground(char **args)
+{
     char c;
     char buff[100];
     int cursor = 0;
 
     printf("Introduzca el texto que desea imprimir:\n");
 
-    while (c = getchar(), c != '\n') {
-        if (c != EOF) {
-            if (c == 8) {  // backspace
-                if (cursor > 0) {
+    while (c = getchar(), c != '\n')
+    {
+        if (c != EOF)
+        {
+            if (c == 8)
+            { // backspace
+                if (cursor > 0)
+                {
                     buff[cursor] = '\0';
                     cursor--;
                     putchar(c);
                 }
-            } else {
-                if (cursor < 100) {
-                    if (c >= ' ' && c < 0x80) {
+            }
+            else
+            {
+                if (cursor < 100)
+                {
+                    if (c >= ' ' && c < 0x80)
+                    {
                         buff[cursor] = c;
                         cursor++;
                     }
@@ -577,7 +495,8 @@ int testForeground(char **args) {
     return 0;
 }
 
-void commandListener() {
+void commandListener()
+{
     char c;
     char cmd[MAX_COMMAND_LENGTH];
     int cursor = 0;
@@ -590,28 +509,44 @@ void commandListener() {
 
     setGraphicCursorStatus(1);
 
-    while (c = getchar(), c != '\n') {
-        if (c != EOF) {
-            if (c == 8) {  // backspace
-                if (cursor > 0) {
-                    for (int i = cursor; i < lastChar; i++) cmd[i] = cmd[i + 1];
+    while (c = getchar(), c != '\n')
+    {
+        if (c != EOF)
+        {
+            if (c == 8)
+            { // backspace
+                if (cursor > 0)
+                {
+                    for (int i = cursor; i < lastChar; i++)
+                        cmd[i] = cmd[i + 1];
 
                     cmd[lastChar] = '\0';
                     lastChar--;
                     cursor--;
                     putchar(c);
                 }
-            } else if (c == 1 || c == 2) {  // up or down arrow
-                if (c == 1) {
-                    if (histAccessIndex > 0) {
+            }
+            else if (c == 1 || c == 2)
+            { // up or down arrow
+                if (c == 1)
+                {
+                    if (histAccessIndex > 0)
+                    {
                         histAccessIndex--;
-                    } else if (histSize > 0) {
+                    }
+                    else if (histSize > 0)
+                    {
                         histAccessIndex = histSize - 1;
                     }
-                } else {
-                    if (histAccessIndex < (histSize - 1)) {
+                }
+                else
+                {
+                    if (histAccessIndex < (histSize - 1))
+                    {
                         histAccessIndex++;
-                    } else {
+                    }
+                    else
+                    {
                         histAccessIndex = 0;
                     }
                 }
@@ -619,15 +554,20 @@ void commandListener() {
                 clearCmd(cmd);
                 cursor = 0;
                 lastChar = 0;
-                while (hist[histAccessIndex][cursor] != 0) {
+                while (hist[histAccessIndex][cursor] != 0)
+                {
                     cursor++;
                     lastChar++;
                 }
                 strcpy(cmd, hist[histAccessIndex]);
                 printf("%s", cmd);
-            } else {
-                if (cursor < MAX_COMMAND_LENGTH) {
-                    if (c >= ' ' && c < 0x80) {
+            }
+            else
+            {
+                if (cursor < MAX_COMMAND_LENGTH)
+                {
+                    if (c >= ' ' && c < 0x80)
+                    {
                         cmd[cursor] = c;
                         cursor++;
                         lastChar++;
@@ -646,13 +586,15 @@ void commandListener() {
 
     putchar('\n');
 
-    if (histCurrentIndex >= 100) {
+    if (histCurrentIndex >= 100)
+    {
         histCurrentIndex = 0;
     }
 
     strcpy(hist[histCurrentIndex++], cmd);
 
-    if (histSize != 100) {
+    if (histSize != 100)
+    {
         histSize++;
     }
 
@@ -663,28 +605,34 @@ void commandListener() {
 
 void invalidArgument(char *args) { printf("Argumento '%s' invalido", args); }
 
-void cmd_time(char *args) {
+void cmd_time(char *args)
+{
     printf("Fecha y hora del sistema: %X/%X/%X %X:%X:%X", sys_rtc(7),
            sys_rtc(8), sys_rtc(9), sys_rtc(4), sys_rtc(2), sys_rtc(0));
 }
 
-void cmd_help() {
-    for (int i = 0; i < commandsNum; i++) {
+void cmd_help()
+{
+    for (int i = 0; i < commandsNum; i++)
+    {
         setFontColor(0xFF6347);
         printf("%20s", commandList[i].name);
         setFontColor(currFontColor);
         printf("%s", commandList[i].desc);
-        if (i < commandsNum - 1) putchar('\n');
+        if (i < commandsNum - 1)
+            putchar('\n');
     }
 }
 
-void cmd_exit() {
+void cmd_exit()
+{
     printf("Finalizando shell...");
     programStatus = 1;
     sys_exit(0);
 }
 
-void cmd_resetScreen() {
+void cmd_resetScreen()
+{
     setFontColor(currFontColor);
     setBackgroundColor(currBackColor);
     setFontSize(currFontSize);
@@ -693,7 +641,8 @@ void cmd_resetScreen() {
     // puts("\n");
 }
 
-void cmd_printWelcome() {
+void cmd_printWelcome()
+{
     printf(
         "Leah v0.1\nInterprete de comandos Terminalator. Digite 'help' "
         "para "
@@ -701,10 +650,12 @@ void cmd_printWelcome() {
     puts("\n");
 }
 
-void cmd_setFontSize(char **args) {
+void cmd_setFontSize(char **args)
+{
     int num = atoi(args[0]);
 
-    if (num <= 0) {
+    if (num <= 0)
+    {
         invalidArgument(args[num]);
         return;
     }
@@ -713,7 +664,8 @@ void cmd_setFontSize(char **args) {
     cmd_resetScreen();
 }
 
-void cmd_setBackColor(char **args) {
+void cmd_setBackColor(char **args)
+{
     // int r, g, b;
 
     /*int leidos = sscanf(args, "%d %d %d", &r, &g, &b);
@@ -731,7 +683,8 @@ void cmd_setBackColor(char **args) {
     cmd_resetScreen();
 }
 
-int cmd_memoryManagerTest(void **args) {
+int cmd_memoryManagerTest(void **args)
+{
     char c = 8;
     int bytes = 0;
     int cursor = 0;
@@ -742,41 +695,57 @@ int cmd_memoryManagerTest(void **args) {
         "\nPresione ESC para salir (todos los bloques seran "
         "liberados)\n\n");
     printf("Inserte numero de bytes para reservar: ");
-    while (c = getchar(), c != 27 && blocksAllocated < 16) {  // Esc
+    while (c = getchar(), c != 27 && blocksAllocated < 16)
+    { // Esc
 
-        if (c != '\n') {
-            switch (c) {
-                case 8:  // backspace
+        if (c != '\n')
+        {
+            switch (c)
+            {
+            case 8: // backspace
 
-                    if (cursor > 0) {
-                        cursor--;
-                        putchar(c);
-                        if (cursor == notNum) notNum = 0;
+                if (cursor > 0)
+                {
+                    cursor--;
+                    putchar(c);
+                    if (cursor == notNum)
+                        notNum = 0;
+                }
+                break;
+
+            default:
+
+                if (c != -1)
+                {
+                    if (isNumeric(c))
+                    {
+                        bytes = c - '0' + bytes * 10;
                     }
-                    break;
-
-                default:
-
-                    if (c != -1) {
-                        if (isNumeric(c)) {
-                            bytes = c - '0' + bytes * 10;
-                        } else {
-                            if (notNum == 0) notNum = cursor;
-                        }
-                        cursor++;
-                        putchar(c);
+                    else
+                    {
+                        if (notNum == 0)
+                            notNum = cursor;
                     }
-                    break;
+                    cursor++;
+                    putchar(c);
+                }
+                break;
             }
-        } else {
-            if (bytes != 0) {
-                if (notNum == 0) {
+        }
+        else
+        {
+            if (bytes != 0)
+            {
+                if (notNum == 0)
+                {
                     sys_memoryManagerTest(bytes);
                     blocksAllocated++;
                     bytes = 0;
                     if (blocksAllocated < 16)
                         printf("Inserte numero de bytes para reservar: ");
-                } else {
+                }
+                else
+                {
                     printf("\nSolo se aceptan numeros!\n\n");
                     printf("Inserte numero de bytes para reservar: ");
                 }
@@ -785,7 +754,8 @@ int cmd_memoryManagerTest(void **args) {
             }
         }
     }
-    if (blocksAllocated < 16) putchar('-');
+    if (blocksAllocated < 16)
+        putchar('-');
     sys_memoryManagerTest(-1);
     printf("\n\n\n      Todos los bloques alocados fueron liberados\n");
 
@@ -798,37 +768,48 @@ void cmd_makeDirectory(char **args) { sys_makeFile(args[0], DIRECTORY); }
 
 void cmd_touch(char **args) { sys_makeFile(args[0], REGULAR_FILE); }
 
-void cmd_killProcess(char **args) {
+void cmd_killProcess(char **args)
+{
     sys_killProcess(atoi(args[0]));
     sys_waitPID(atoi(args[0]));
 }
 
 void cmd_removeFile(char **args) { sys_removeFile(args[0]); }
 
-void cmd_writeTo(char **args) {
+void cmd_writeTo(char **args)
+{
     char c;
     char buff[100];
     int cursor = 0;
 
     int fd = sys_open(args[0], O_WRONLY);
-    if (fd == -1) {
+    if (fd == -1)
+    {
         printf("Error al abrir el archivo\n");
         return;
     }
 
     printf("Introduzca el texto que desea guardar:\n");
 
-    while (c = getchar(), c != '\n') {
-        if (c != EOF) {
-            if (c == 8) {  // backspace
-                if (cursor > 0) {
+    while (c = getchar(), c != '\n')
+    {
+        if (c != EOF)
+        {
+            if (c == 8)
+            { // backspace
+                if (cursor > 0)
+                {
                     buff[cursor] = '\0';
                     cursor--;
                     putchar(c);
                 }
-            } else {
-                if (cursor < 100) {
-                    if (c >= ' ' && c < 0x80) {
+            }
+            else
+            {
+                if (cursor < 100)
+                {
+                    if (c >= ' ' && c < 0x80)
+                    {
                         buff[cursor] = c;
                         cursor++;
                     }
@@ -844,7 +825,8 @@ void cmd_writeTo(char **args) {
     sys_close(fd);
 }
 
-void program_digitalClock() {
+void program_digitalClock()
+{
     int pid =
         execv("Digital Clock", (process_t)&digitalClock, NULL, TRUE, NULL);
 
@@ -853,7 +835,8 @@ void program_digitalClock() {
     cmd_resetScreen();
 }
 
-void program_toUppercase() {
+void program_toUppercase()
+{
     int pid = execv("To Uppercase", (process_t)toUppercase, NULL, TRUE, NULL);
 
     sys_waitPID(pid);
@@ -862,31 +845,37 @@ void program_toUppercase() {
     puts("\n");
 }
 
-int prog(char **args) {
+int prog(char **args)
+{
     printf("Jelou");
     char c;
-    while (c = getchar(), c != -1) {
+    while (c = getchar(), c != -1)
+    {
         printf("1%c", c);
     }
 }
 
 int prog_echo(char **args) { printf("%s\n", args[0]); }
 
-void cmd_p(char **args) {
+void cmd_p(char **args)
+{
     int pid = execv("To Uppercase", (process_t)prog, NULL, TRUE, NULL);
     sys_setForeground(pid);
 }
 
-void cmd_cat(char **args) {
+void cmd_cat(char **args)
+{
     char str[16];
     int fd = sys_open(args[0], O_RDONLY);
-    if (fd == -1) {
+    if (fd == -1)
+    {
         printf("Error al abrir el archivo\n");
         return;
     }
 
     int aux;
-    while ((aux = sys_read(fd, str, 15)) > 0) {
+    while ((aux = sys_read(fd, str, 15)) > 0)
+    {
         str[aux] = 0;
         printf("%s", str);
     }
@@ -896,7 +885,8 @@ void cmd_cat(char **args) {
 
 void cmd_cd(char **args) { sys_chdir(args[0]); }
 
-void cmd_ps(char **args) {
+void cmd_ps(char **args)
+{
     ps_struct buffer[MAX_PROCESS_COUNT];
     int bufferCount;
     sys_listProcess(buffer, &bufferCount);
@@ -906,7 +896,8 @@ void cmd_ps(char **args) {
     printf("%6s%16s%16s%10s%13s%15s%13s%5s", "PID", "NAME", "PARENT", "STATUS",
            "FOREGROUND", "THREAD COUNT", "HEAP SIZE", "NICE");
 
-    for (int i = 0; i < bufferCount; i++) {
+    for (int i = 0; i < bufferCount; i++)
+    {
         printf("\n%6s%16s%16s%10s%13s%15s%13s%d",
                itoa(buffer[i].pid, tmp[0], 10), buffer[i].name,
                buffer[i].parentName,
@@ -922,16 +913,19 @@ void cmd_prodcons(char **args) { prodcons(); }
 
 void cmd_upDown(char *args) { upDown(); }
 
-void cmd_giveForeground(char **args) {
+void cmd_giveForeground(char **args)
+{
     int pid = atoi(args[0]);
     sys_setForeground(pid);
 }
 
-int arcoiris_main() {
+int arcoiris_main()
+{
     int j = 0;
     int colors[7] = {0x4444DD, 0x11aabb, 0xaacc22, 0xd0c310,
                      0xff9933, 0xff4422, 0x72a4c9};
-    while (1) {
+    while (1)
+    {
         j++;
         setFontColor(colors[j % 7]);
         sys_sleep(1000);
@@ -939,11 +933,13 @@ int arcoiris_main() {
     return 0;
 }
 
-void program_arcoiris() {
+void program_arcoiris()
+{
     execv("Arcoiris", (process_t)&arcoiris_main, NULL, TRUE, NULL);
 }
 
-int main() {
+int main()
+{
     cmd_printWelcome();
     currBackColor = getBackgroundColor();
     currFontColor = getFontColor();
@@ -1020,7 +1016,8 @@ int main() {
     command_register("prog_prueba", prog, "Para correr con echo", TRUE, FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
-    while (programStatus != 1) {
+    while (programStatus != 1)
+    {
         commandListener();
     }
 
