@@ -33,10 +33,9 @@ int philosophers() {
   philosophersToDie = 0;
   id = 0;
   indexToDie = 0;
-  //--------------
+
   thinkingList = integerList_init();
   eatingList = integerList_init();
-  //--------------
 
 	int c;
 	while((c = getchar()) != QUIT) {
@@ -54,6 +53,7 @@ int philosophers() {
 
 	terminateAllPhi();
   mutex_delete("philosophersMutex");
+  mutex_delete("eatingMutex");
   sem_delete("forks");
   sem_delete("inTable");
 	printf("La simulacion termino\n");
@@ -86,33 +86,30 @@ void born() {
     sem_signal(phiInTable);
   mutex_unlock(pMutex);
 
+	printf("\nSoy el filosofo %d que acaba de nacer!\n\n",index);
+
   mutex_lock(eMutex);
-  //---------------
   thinkingList = insertElement(thinkingList, index);
-  //---------------
   mutex_unlock(eMutex);
 
 }
 
 void * philosopher(void * args) {
   int i = (int)args;
-	printf("\nSoy el filosofo %d que acaba de nacer!\n\n",i);
+
 	while(1) {
-    mutex_lock(pMutex);
     if (philosophersToDie > 0 && i == indexToDie) {
       philosopherSuicide();
-    } else
-      mutex_unlock(pMutex);
+    }
+
     sem_wait(phiInTable);
     sem_wait(forks);
     sem_wait(forks);
 
     mutex_lock(eMutex);
-    //----------
     thinkingList = deleteElement(thinkingList, i);
     eatingList = insertElement(eatingList, i);
     printStatus(i);
-    //----------
     mutex_unlock(eMutex);
 
     sys_sleep(1000);
@@ -121,10 +118,8 @@ void * philosopher(void * args) {
     sem_signal(phiInTable);
 
     mutex_lock(eMutex);
-    //----------
     eatingList = deleteElement(eatingList, i);
     thinkingList = insertElement(thinkingList, i);
-    //----------
     mutex_unlock(eMutex);
 	}
 	return 0;
@@ -142,22 +137,19 @@ void die() {
 }
 
 void philosopherSuicide() {
+  mutex_lock(pMutex);
   philosophersQty--;
   philosophersToDie--;
   indexToDie = (phis[philosophersQty-1]).id;
   pthread_t phiToDie = (phis[philosophersQty]).phi;
 
-  mutex_lock(eMutex);
-  //----------- Podria hacer una funcion contains()
-  thinkingList = deleteElement(thinkingList, (phis[philosophersQty]).id);
-  eatingList = deleteElement(eatingList, (phis[philosophersQty]).id);
-  //-----------
-  mutex_unlock(eMutex);
-
   mutex_unlock(pMutex);
   sem_wait(phiInTable);
   sem_wait(forks);
   printf("\nEl filosofo %d ha muerto!\n\n",(phis[philosophersQty]).id);
+  mutex_lock(eMutex);
+  thinkingList = deleteElement(thinkingList, (phis[philosophersQty]).id);
+  mutex_unlock(eMutex);
   pthread_cancel(phiToDie);
 }
 
@@ -166,10 +158,10 @@ void terminateAllPhi() {
 	for (int i = 0; i < philosophersQty; i++) {
 			pthread_cancel((phis[i]).phi);
 	}
-  //-----------
+
   free(eatingList);
   free(thinkingList);
-  //-----------
+
   mutex_unlock(pMutex);
 }
 
