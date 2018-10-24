@@ -108,7 +108,7 @@ void sys_listProcess(ps_struct buffer[], int *bufferCount) {
     _systemCall(41, buffer, bufferCount, 0, 0);
 }
 
-int sys_newProcess(char *name, int (*start_routine)(char **args), char **args, int ** fdReplace) {
+int sys_newProcess(char *name, int (*start_routine)(char **args), char **args, int fdReplace[][2]) {
     return _systemCall(42, name, start_routine, args, fdReplace);
 }
 

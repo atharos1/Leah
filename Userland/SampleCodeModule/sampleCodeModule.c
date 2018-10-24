@@ -1,5 +1,6 @@
 #include <stdarg.h>  //Parámetros ilimitados
 
+#include "StandardLibrary/include/linkedList.h"
 #include "StandardLibrary/include/mutex.h"
 #include "StandardLibrary/include/pthread.h"
 #include "StandardLibrary/include/sem.h"
@@ -7,7 +8,6 @@
 #include "StandardLibrary/include/stdlib.h"
 #include "StandardLibrary/include/string.h"
 #include "StandardLibrary/include/timer.h"
-#include "StandardLibrary/include/linkedList.h"
 #include "asm/asmLibC.h"
 #include "programs/include/digitalClock.h"
 #include "programs/include/philosophers.h"
@@ -19,6 +19,10 @@
 #define MAX_COMMANDS 255
 #define MAX_COMMAND_LENGTH 100
 #define MAX_ARGS 50
+
+#define MAX_FUNCTION_IN_COMMAND 10
+
+#define MAX_COMMAND_NAME_LENGTH 30
 
 #define FALSE 0
 #define TRUE 1
@@ -37,7 +41,7 @@ unsigned int programStatus = 0;
 unsigned long commandsNum = 0;
 
 typedef struct command {
-    char name[30];
+    char name[MAX_COMMAND_NAME_LENGTH];
     char desc[300];
     function f;
     int isProgram;
@@ -51,7 +55,7 @@ function getCommandFunction(char *commandName) {
         if (strcmp(commandList[i].name, commandName) == 0)
             return commandList[i].f;
 
-    return 0;
+    return NULL;
 }
 
 int getIsFullscreen(char *commandName) {
@@ -59,7 +63,7 @@ int getIsFullscreen(char *commandName) {
         if (strcmp(commandList[i].name, commandName) == 0)
             return commandList[i].isFullscreen;
 
-    return 0;
+    return -1;
 }
 
 int getIsProgram(char *commandName) {
@@ -139,17 +143,236 @@ int command_unregister(char *name) {
 
 int str_is_whitespace_only(char *str) {
     for (int i = 0; str[i] != 0; i++)
-        if (str[i] != ' ') return FALSE;
+        if (str[i] != ' ' && str[i] != '\t') return FALSE;
 
     return TRUE;
+}
+
+int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
+    int i = 0;
+    int lastCommand = 0;
+    int foundPipe = TRUE;
+    int quoteEnabled = FALSE;
+    int isEscaped = FALSE;
+
+    int internalCmdCount = 0;
+    int isProgram = FALSE;
+
+    while (i < cmdLength && lastCommand < commandLimit) {
+        while (cmd[i] == ' ' && !quoteEnabled) i++;
+
+        if (foundPipe) {
+            if (cmd[i] == '|') {
+                printf("Error de sintaxis.\n");
+                return -1;
+            }
+            cmdList[lastCommand] = cmd + i;
+
+            // TODO: ARREGLAR!!
+            /*isProgram = getIsProgram(cmdList[lastCommand]); //TODO: ANDA BIEN?
+            if(isProgram == -1) {
+                printf("Error: Comando %s desconocido.\n",
+            cmdList[lastCommand]); return -1; } else if(isProgram == FALSE) {
+                internalCmdCount++;
+            }
+
+            if(lastCommand > 0 && internalCmdCount > 0) {
+                printf("Error: No pueden usarse tuberias en combinacion con
+            comandos internos de la shell.\n"); return -1;
+            }*/
+
+            foundPipe = FALSE;
+            lastCommand++;
+        }
+
+        if ((cmd[i] == '\"' || cmd[i] == '\'') && !isEscaped)
+            quoteEnabled = !quoteEnabled;
+        else if (cmd[i] == '\\' && quoteEnabled)
+            isEscaped = TRUE;
+        else if (cmd[i] == '|' && !quoteEnabled) {
+            cmd[i] = 0;
+            foundPipe = TRUE;
+        } else {
+            isEscaped = FALSE;
+        }
+
+        i++;
+    }
+
+    if (i == 0) return 0;
+
+    if (lastCommand > commandLimit) {
+        printf("Error: se admite concatenar como mucho %d comandos.\n",
+               commandLimit);
+        return -1;
+    }
+
+    if (foundPipe == TRUE) {
+        printf("Error de sintaxis.\n");
+        return -1;
+    }
+
+    /*isProgram = getIsProgram(cmdList[lastCommand - 1]); //TODO: ANDA BIEN?
+        if(isProgram == -1) {
+            printf("Error: Comando desconocidoAAA.\n");
+            return -1;
+        } else if(isProgram == FALSE) {
+            internalCmdCount++;
+        }*/
+
+    return lastCommand;
+}
+
+int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs) {
+    int currArg = 0;
+    int quoteEnabled = FALSE;
+    int foundArg = FALSE;
+
+    // TODO: \0 DENTRO DEL PARAMETRO ENTRE COMILLAS
+
+    for (int i = 0; i < cmd[i] != 0 && currArg < maxArgs; i++) {
+        if (foundArg && cmd[i] != ' ' && cmd[i] != '\t') {
+            argv[currArg] = cmd + i;
+            currArg++;
+            foundArg = FALSE;
+        }
+
+        if (cmd[i] == '\"' || cmd[i] == '\'') quoteEnabled = !quoteEnabled;
+
+        if ((cmd[i] == ' ' || cmd[i] == '\t') && !quoteEnabled) {
+            cmd[i] = 0;
+            foundArg = TRUE;
+        }
+    }
+
+    if (currArg > maxArgs) {
+        printf("Error: un comando puede contener un maximo de %d parametros.\n",
+               maxArgs);
+        return -1;
+    }
+
+    argv[currArg] = NULL;
+
+    return currArg;
+}
+
+/*int commandExec(char * cmd, char ** argv, int argCount, int background) {
+
+        function f = getCommandFunction(cmd);
+        if (f == 0) {
+            printf("Comando '%s' desconocido.\n\n", cmd);
+            return -1;
+        }
+
+        if (getIsProgram(cmd) == FALSE) {
+            f(argv);
+        } else {
+            execProgram(cmd, argv, argCount, background);
+        }
+}*/
+
+int checkBackground(char *cmd) {
+    int quoteEnabled = FALSE;
+
+    for (int i = 0; cmd[i] != 0; i++) {
+        if (cmd[i] == '\"' || cmd[i] == '\'') quoteEnabled = !quoteEnabled;
+
+        if (cmd[i] == '&' && !quoteEnabled) return TRUE;
+    }
+
+    return FALSE;
+}
+
+int commandParser(char *cmd, int length) {
+    char *cmdList[MAX_FUNCTION_IN_COMMAND];
+    int commandCount =
+        parseCommands(cmd, length, cmdList, MAX_FUNCTION_IN_COMMAND);
+
+    char cmdName[MAX_COMMAND_NAME_LENGTH];
+    char *argv[MAX_ARGS];
+    int paramCount = 0;
+    int runInBackground = FALSE;
+
+    int fdList[MAX_FUNCTION_IN_COMMAND][2];
+    int pidList[MAX_FUNCTION_IN_COMMAND];
+
+    paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
+    int isProgram = getIsProgram(cmdList[0]);
+
+    if (!isProgram) {
+        paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
+        if (paramCount == -1) return -1;
+        // getCommandFunction(cmdList[0])(argv);
+
+    } else {
+        for (int i = 0; i < commandCount; i++) {
+            if (i != 0)
+                paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
+
+            if (commandCount > 1)  // Hay pipes
+                sys_pipe(fdList[i]);
+
+            if (i == 0) {
+                if (!isProgram)
+                    getCommandFunction(cmdList[i])(argv);
+                else {
+                    runInBackground = checkBackground(cmdList[i]);
+
+                    int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
+
+                    if (commandCount > 1)
+                        pidList[i] =
+                            execv(cmdList[i],
+                                  (process_t)getCommandFunction(cmdList[i]),
+                                  argv, FALSE, fdReplace);
+                    else
+                        pidList[i] =
+                            execv(cmdList[i],
+                                  (process_t)getCommandFunction(cmdList[i]),
+                                  argv, FALSE, NULL);
+
+                    if (!runInBackground) {
+                        sys_setForeground(pidList[i]);
+                    }
+                }
+            } else {
+                int fdReplace[3][2] = {
+                    {fdList[i - 1][0], 0}, {1, fdList[i][1]}, {-1, -1}};
+
+                int fdReplace2[2][2] = {{fdList[i - 1][0], 0}, {-1, -1}};
+
+                if (commandCount - 1 != i)
+                    pidList[i] = execv(
+                        cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                        argv, FALSE, fdReplace);
+                else
+                    pidList[i] = execv(
+                        cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                        argv, FALSE, fdReplace2);
+            }
+        }
+
+        if (!runInBackground) {
+            for (int i = 0; i < commandCount; i++) {
+                sys_waitPID(pidList[i]);
+            }
+        }
+
+        // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
+        // NO CORRA EL SNAKE O DIGITAL-CLOCK CON PIPES
+    }
+
+    printf("\n");
+
+    return commandCount;
 }
 
 int parseMultipleCommands(char *cmd, int l, int pipeQty) {
     int cmdNum = 0;
     int cmdStart = 0;
     char *cmdList[pipeQty + 1];
-    for(int i = 0; i <= l; i++) {
-        if(cmd[i] == '|' || cmd[i] == 0) {
+    for (int i = 0; i <= l; i++) {
+        if (cmd[i] == '|' || cmd[i] == 0) {
             cmd[i] = 0;
             cmdList[cmdNum] = &cmd[cmdStart];
             cmdNum++;
@@ -157,7 +380,7 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
         }
     }
 
-    for(int j = pipeQty; j >= 0; j--) {
+    for (int j = pipeQty; j >= 0; j--) {
         if (*cmd == '\0') return 1;
 
         char *args;
@@ -165,7 +388,7 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
 
         char *argv[MAX_ARGS];
 
-        while(cmdList[j][i] == ' ' || cmdList[j][i] == '\t') i++;
+        while (cmdList[j][i] == ' ' || cmdList[j][i] == '\t') i++;
         cmdList[j] = &cmdList[j][i];
         int cmdLength = strlen(cmdList[j]);
         i = 0;
@@ -190,6 +413,8 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
         }
         argv[currArg] = NULL;
 
+        for (int a = 0; a <= j; a++) printf("Comando #%d: %s\n", a, cmdList[a]);
+
         function f = getCommandFunction(cmdList[j]);
         if (f == 0) {
             printf("Comando '%s' desconocido.\n\n", cmdList[j]);
@@ -208,13 +433,6 @@ int parseMultipleCommands(char *cmd, int l, int pipeQty) {
     return 0;
 }
 
-int commandParser(char *cmd) {
-    if (*cmd == '\0') return;
-    linkedList_t l = linkedList_new();
-
-    //parseCommand(cmd, l);
-}
-
 /*void parseCommand(char * cmd, linkedList_t l) {
     int i = 0;
     while(cmd[i] != '\0' && (cmd[i] != '|' || cmd[i+1] != '|') ) {
@@ -231,6 +449,9 @@ int commandParser(char *cmd) {
 }*/
 
 int parseCommand(char *cmd, int l) {
+    commandParser(cmd, l);
+    return 0;
+
     if (*cmd == '\0') return 1;
 
     char *args;
@@ -240,20 +461,20 @@ int parseCommand(char *cmd, int l) {
 
     //-----------
     int pipeQty = 0;
-    while(cmd[i] != 0) {
-        if(cmd[i] == '|') {
+    while (cmd[i] != 0) {
+        if (cmd[i] == '|') {
             pipeQty++;
         }
         i++;
     }
-    if(pipeQty > 0) {
+    if (pipeQty > 0) {
         return parseMultipleCommands(cmd, l, pipeQty);
     }
     //-----------
 
     // parse command
     i = 0;
-    while(cmd[i] == ' ' || cmd[i] == '\t') i++;
+    while (cmd[i] == ' ' || cmd[i] == '\t') i++;
     cmd = &cmd[i];
     while (cmd[i] != ' ' && cmd[i] != 0) i++;
 
@@ -632,7 +853,8 @@ void program_toUppercase() {
 }
 
 int prog(char **args) {
-    while(1) {
+    printf("Jelou");
+    while (1) {
         char c = getchar();
         printf("1%c", c);
     }
@@ -641,10 +863,12 @@ int prog(char **args) {
 int progPadre(char **args) {
     int fd[2];
     sys_pipe(fd);
-    int fdReplace[2][2] = {{fd[0],0}, {-1,-1}};
+    int fdReplace[2][2] = {{fd[0], 0}, {-1, -1}};
     dup2(1, fd[1]);
     int pid = execv("To Uppercase", (process_t)prog, NULL, FALSE, fdReplace);
 }
+
+int prog_echo(char **args) { printf("%s\n", args[0]); }
 
 void cmd_p(char **args) {
     int pid = execv("To Uppercase", (process_t)prog, NULL, TRUE, NULL);
@@ -749,8 +973,8 @@ int main() {
         "test-memory-manager", (function)cmd_memoryManagerTest,
         "Realiza alocaciones de memoria y muestra el mapa en pantalla", TRUE,
         FALSE);
-    command_register("toUppercase", (function)toUppercase, "Test para pipes", TRUE,
-                     FALSE);
+    command_register("toUppercase", (function)toUppercase, "Test para pipes",
+                     TRUE, FALSE);
     command_register("ls", cmd_listDir,
                      "Lista los archivos en el directorio especificado", FALSE,
                      FALSE);
@@ -790,7 +1014,8 @@ int main() {
     command_register("testforeground", (function)testForeground,
                      "Prueba de foreground. Pide un texto y lo imprime", TRUE,
                      FALSE);
-    command_register("p", cmd_p, "Cierra la Shell", FALSE, FALSE);
+    command_register("prog_echo", prog_echo, "Echo como programa", TRUE, FALSE);
+    command_register("prog_prueba", prog, "Para correr con echo", TRUE, FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
     while (programStatus != 1) {

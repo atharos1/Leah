@@ -74,7 +74,7 @@ void _throwInvalidOpCode();
 void sys_sleep();
 void sys_listProcess(ps_struct buffer[], int *bufferCount);
 
-int sys_newProcess(char *name, int (*start_routine)(char **args), char **args, int ** fdReplace);
+int sys_newProcess(char *name, int (*start_routine)(char **args), char **args, int fdReplace[][2]);
 int sys_waitPID(int pid);
 int sys_getHeapSize();
 void *sys_getHeapBase();

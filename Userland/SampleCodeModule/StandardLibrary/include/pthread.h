@@ -12,7 +12,7 @@ void pthread_cancel(pthread_t thread);
 // int execv(char * name, int (*start_routine) (char ** args), int foreground,
 // char * fdReplace);
 int execv(char *name, int (*start_routine)(), char **args, int foreground,
-          int **fdReplace);
+          int fdReplace[][2]);
 
 int dup2(int oldFd, int newFd);
 
