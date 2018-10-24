@@ -109,7 +109,7 @@ void * philosopher(void * args) {
     mutex_lock(eMutex);
     thinkingList = deleteElement(thinkingList, i);
     eatingList = insertElement(eatingList, i);
-    printStatus(i);
+    printStatus();
     mutex_unlock(eMutex);
 
     sys_sleep(1000);
