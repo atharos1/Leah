@@ -58,7 +58,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
             }
             break;
         case 3:    //Read
-            if (getCurrentPID() != foregroundPID) {  // No es el current
+            if (rsi == 0 && getProcessByPID(getCurrentPID())->fd_table[rsi] == NULL && getCurrentPID() != foregroundPID) {  // No es el current
                 thread_t* current = scheduler_dequeue_current();
 
                 bgNode n = getMemory(sizeof(struct bgnode));

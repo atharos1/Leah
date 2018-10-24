@@ -375,7 +375,7 @@ static uint32_t readRegularFile(opened_file_t *openedFile, char *buff,
                                 uint32_t bytes, uint32_t position);
 static uint32_t readBuffer(opened_file_t *openedFile, char *buff,
                            uint32_t bytes);
-static uint32_t readExecutable(opened_file_t *openedFile, char *buff); 
+static uint32_t readExecutable(opened_file_t *openedFile, char *buff);
 
 static fd_t *openFile(file_t *file, int mode) {
     if (file == NULL || file->type == DIRECTORY) return NULL;
@@ -539,19 +539,17 @@ void cloneFD(int fdFrom, int fdTo, void *processNoCast) {
     if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 || fdTo >= MAX_FD_COUNT)
         return;
 
-    process_t *process = (process_t *)processNoCast;
+    process_t *destiny = (process_t *)processNoCast;
+    if (destiny->fd_table[fdTo] != NULL) return;
 
     process_t *origin = getProcessByPID(getCurrentPID());
-
-    if (origin->fd_table[fdTo] != NULL) return;
-
     fd_t *originFD = origin->fd_table[fdFrom];
     if (originFD == NULL) return;
 
     fd_t *destinyFD = openFile(originFD->openedFile->file, originFD->mode);
     if (destinyFD == NULL) return;
 
-    origin->fd_table[fdTo] = destinyFD;
+    destiny->fd_table[fdTo] = destinyFD;
 }
 
 uint32_t writeFile(fd_t *fd, char *buff, uint32_t bytes) {

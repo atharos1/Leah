@@ -219,7 +219,6 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit) {
         } else if(isProgram == FALSE) {
             internalCmdCount++;
         }*/
-
     return lastCommand;
 }
 
@@ -283,72 +282,83 @@ int checkBackground(char *cmd) {
     return FALSE;
 }
 
+typedef char *argv[MAX_ARGS];
+
 int commandParser(char *cmd, int length) {
     char *cmdList[MAX_FUNCTION_IN_COMMAND];
     int commandCount =
         parseCommands(cmd, length, cmdList, MAX_FUNCTION_IN_COMMAND);
 
     char cmdName[MAX_COMMAND_NAME_LENGTH];
-    char *argv[MAX_ARGS];
+    argv argvList[commandCount];
     int paramCount = 0;
     int runInBackground = FALSE;
 
     int fdList[MAX_FUNCTION_IN_COMMAND][2];
     int pidList[MAX_FUNCTION_IN_COMMAND];
 
-    paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
+    paramCount = parseArgs(cmdList[0], length, argvList[0], MAX_ARGS);
     int isProgram = getIsProgram(cmdList[0]);
-
+    
     if (!isProgram) {
-        paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
         if (paramCount == -1) return -1;
-        // getCommandFunction(cmdList[0])(argv);
+        getCommandFunction(cmdList[0])(argvList[0]);
 
     } else {
         for (int i = 0; i < commandCount; i++) {
             if (i != 0)
-                paramCount = parseArgs(cmdList[0], length, argv, MAX_ARGS);
+                paramCount = parseArgs(cmdList[i], length, argvList[i], MAX_ARGS);
 
-            if (commandCount > 1)  // Hay pipes
+            if (commandCount - i > 1)  // Hay pipes
                 sys_pipe(fdList[i]);
 
             if (i == 0) {
                 if (!isProgram)
-                    getCommandFunction(cmdList[i])(argv);
+                    getCommandFunction(cmdList[i])(argvList[i]);
                 else {
                     runInBackground = checkBackground(cmdList[i]);
 
-                    int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
+                    if (commandCount > 1) {
+                      int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
 
-                    if (commandCount > 1)
-                        pidList[i] =
-                            execv(cmdList[i],
-                                  (process_t)getCommandFunction(cmdList[i]),
-                                  argv, FALSE, fdReplace);
+                      pidList[i] =
+                          execv(cmdList[i],
+                                (process_t)getCommandFunction(cmdList[i]),
+                                argvList[i], FALSE, fdReplace);
+
+                      sys_close(fdList[i][1]);
+                    }
+
                     else
                         pidList[i] =
                             execv(cmdList[i],
                                   (process_t)getCommandFunction(cmdList[i]),
-                                  argv, FALSE, NULL);
+                                  argvList[i], FALSE, NULL);
 
                     if (!runInBackground) {
                         sys_setForeground(pidList[i]);
                     }
                 }
             } else {
-                int fdReplace[3][2] = {
-                    {fdList[i - 1][0], 0}, {1, fdList[i][1]}, {-1, -1}};
+                if (commandCount - 1 != i) {
+                  int fdReplace[3][2] = {
+                      {fdList[i - 1][0], 0}, {fdList[i][1], 1}, {-1, -1}};
 
-                int fdReplace2[2][2] = {{fdList[i - 1][0], 0}, {-1, -1}};
+                  pidList[i] = execv(
+                      cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                      argvList[i], FALSE, fdReplace);
 
-                if (commandCount - 1 != i)
-                    pidList[i] = execv(
-                        cmdList[i], (process_t)getCommandFunction(cmdList[i]),
-                        argv, FALSE, fdReplace);
-                else
-                    pidList[i] = execv(
-                        cmdList[i], (process_t)getCommandFunction(cmdList[i]),
-                        argv, FALSE, fdReplace2);
+                  sys_close(fdList[i][1]);
+
+                } else {
+                  int fdReplace[2][2] = {{fdList[i - 1][0], 0}, {-1, -1}};
+
+                  pidList[i] = execv(
+                      cmdList[i], (process_t)getCommandFunction(cmdList[i]),
+                      argvList[i], FALSE, fdReplace);
+                }
+
+                sys_close(fdList[i - 1][0]);
             }
         }
 
@@ -648,7 +658,7 @@ void commandListener() {
 
     histAccessIndex = histCurrentIndex;
 
-    parseCommand(cmd, lastChar);
+    commandParser(cmd, lastChar);
 }
 
 void invalidArgument(char *args) { printf("Argumento '%s' invalido", args); }
@@ -854,18 +864,10 @@ void program_toUppercase() {
 
 int prog(char **args) {
     printf("Jelou");
-    while (1) {
-        char c = getchar();
+    char c;
+    while (c = getchar(), c != -1) {
         printf("1%c", c);
     }
-}
-
-int progPadre(char **args) {
-    int fd[2];
-    sys_pipe(fd);
-    int fdReplace[2][2] = {{fd[0], 0}, {-1, -1}};
-    dup2(1, fd[1]);
-    int pid = execv("To Uppercase", (process_t)prog, NULL, FALSE, fdReplace);
 }
 
 int prog_echo(char **args) { printf("%s\n", args[0]); }

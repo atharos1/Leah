@@ -58,7 +58,7 @@ void dup2(int fdFrom, int fdTo) {
 int createProcess(char *name, void *code, char **args, int stack_size,
                   int heap_size, int fdReplace[][2]) {
     int pid = getFreePID();
-    if (pid == -1)  // No entran mas
+    if (pid == -1 || code == NULL)  // No entran mas
         return -1;
 
     process_t *process = getMemory(sizeof(process_t));
@@ -92,13 +92,13 @@ int createProcess(char *name, void *code, char **args, int stack_size,
 
     if(fdReplace != NULL){
         for (int i = 0; fdReplace[i][0] != -1 && fdReplace[i][1] != -1; i++) {
-            printf("reemplazando: %d %d\n", fdReplace[i][0], fdReplace[i][1]);
             cloneFD(fdReplace[i][0], fdReplace[i][1], process);
         }
     }
 
     if(process->fd_table[0] == NULL)
-        process->fd_table[0] = openFileFromPath("/dev/stdin", O_RDWR);
+      process->fd_table[0] = openFileFromPath("/dev/stdin", O_RDWR);
+
 
     process->cwd = getRoot();
 
@@ -114,8 +114,6 @@ int createProcess(char *name, void *code, char **args, int stack_size,
     alive_process_count++;
 
     createThread(process, code, args, stack_size, TRUE);
-
-    // printf("Creando %s\n", process->name);
 
     return process->pid;
 }
@@ -225,7 +223,7 @@ void killThread(int pid, int tid, int called_from_kill_process) {
 
 thread_t *createThread(process_t *process, void *code, void *args,
                        int stack_size, int isMain) {
-    if (stack_size == 0) return NULL;
+    if (stack_size == 0 || code == NULL) return NULL;
 
     int tid = getFreeTID(process);
     if (tid == -1)  // No entran mas
