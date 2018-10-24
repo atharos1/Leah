@@ -345,7 +345,12 @@ int commandParser(char *cmd, int length) {
         if (paramCount == -1)
             return -1;
 
-        if (getIsProgram(cmdList[i]))
+        if (getCommandFunction(cmdList[i]) == NULL) {
+            printf("Comando '%s' desconocido\n", cmdList[i]);
+            return -1;
+        }
+
+        if (!getIsProgram(cmdList[i]))
         {
             if (commandCount > 1)
             {
@@ -355,6 +360,8 @@ int commandParser(char *cmd, int length) {
             else
             {
                 getCommandFunction(cmdList[i])(argvList[i]);
+                printf("\n");
+                return 0;
             }
         }
 
