@@ -7,7 +7,6 @@
 #include "include/mutex.h"
 #include "include/process.h"
 #include "include/scheduler.h"
-#include "drivers/include/kb_driver.h"
 #include "include/stdlib.h"
 
 #define BUFFER_SIZE PAGE_SIZE
@@ -27,7 +26,7 @@ static void removeRegularFile(file_t *file);
 static void removeSemaphore(file_t *file);
 static void removeMutex(file_t *file);
 static void removeExecutable(file_t *file);
-static int isFileOpened(file_t * file);
+static int isFileOpened(file_t *file);
 
 static file_t *newFile(char name[], int type);
 
@@ -54,7 +53,7 @@ typedef struct mutex {
 } mutex_file_t;
 
 typedef struct executable {
-    void * pointer;
+    void *pointer;
 } executable_t;
 
 file_t *root;
@@ -284,12 +283,14 @@ int removeFile(file_t *file) {
     if (file->type == DIRECTORY) {
         file_t *currFile = ((directory_t *)(file->implementation))->first;
         while (currFile != NULL) {
-            file_t * aux = currFile->next;
-            if (removeFile(currFile) ==  -1) return -1;
+            file_t *aux = currFile->next;
+            if (removeFile(currFile) == -1) return -1;
             currFile = aux;
         }
     }
     dir->first = removeFileR(dir->first, file);
+
+    return 0;
 }
 
 int removeFileFromPath(char *path) { return removeFile(getFile(path)); }
@@ -453,7 +454,8 @@ void closeFile(fd_t *fd) {
     if (mode == O_WRONLY || mode == O_RDWR) {
         openedFile->writers--;
         if (openedFile->writers == 0 && openedFile->file->type == BUFFER) {
-            opened_buffer_t *openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+            opened_buffer_t *openedBuffer =
+                (opened_buffer_t *)(openedFile->implementation);
             openedBuffer->hasEOF = 1;
             if (openedBuffer->allowReaders == 0) {
                 openedBuffer->allowReaders = 1;
@@ -520,12 +522,11 @@ static void closeBuffer(opened_buffer_t *openedBuffer) {
     free(openedBuffer);
 }
 
-static int isFileOpened(file_t * file) {
-    opened_file_t * currentOpenedFile = firstOpenedFile;
+static int isFileOpened(file_t *file) {
+    opened_file_t *currentOpenedFile = firstOpenedFile;
     while (currentOpenedFile != NULL) {
-      if (currentOpenedFile->file == file)
-        return 1;
-      currentOpenedFile = currentOpenedFile->next;
+        if (currentOpenedFile->file == file) return 1;
+        currentOpenedFile = currentOpenedFile->next;
     }
 
     return 0;
@@ -554,7 +555,8 @@ void openUnnamedPipe(int fd[2]) {
 }
 
 void cloneFD(int fdFrom, int fdTo, void *processNoCast) {
-    if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 || fdTo >= MAX_FD_COUNT)
+    if (fdFrom < 0 || fdFrom >= MAX_FD_COUNT || fdTo < 0 ||
+        fdTo >= MAX_FD_COUNT)
         return;
 
     process_t *destiny = (process_t *)processNoCast;
@@ -707,10 +709,11 @@ static uint32_t readBuffer(opened_file_t *openedFile, char *buff,
 }
 
 static uint32_t readExecutable(opened_file_t *openedFile, char *buff) {
-    executable_t *executable = (executable_t*)(openedFile->file->implementation);
-    void **pointer = (void**)buff;
+    executable_t *executable =
+        (executable_t *)(openedFile->file->implementation);
+    void **pointer = (void **)buff;
     *pointer = executable->pointer;
-    return sizeof(void*);
+    return sizeof(void *);
 }
 
 uint32_t writeToFD(int fdIndex, char *buff, uint32_t bytes) {
@@ -827,11 +830,11 @@ void mutexUnlock(int fdIndex) {
             ((mutex_file_t *)(fd->openedFile->file->implementation))->mutex);
 }
 
-void execCreate(char * name, void * pointer) {
-    file_t * file = makeFile(name, EXECUTABLE);
+void execCreate(char *name, void *pointer) {
+    file_t *file = makeFile(name, EXECUTABLE);
     if (file != NULL && file->type == EXECUTABLE) {
-      executable_t * executable = (executable_t*)(file->implementation);
-      executable->pointer = pointer;
+        executable_t *executable = (executable_t *)(file->implementation);
+        executable->pointer = pointer;
     }
 }
 

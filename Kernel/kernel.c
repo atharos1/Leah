@@ -77,8 +77,6 @@ int pruebaTask() {
 void initThread() {
     scheduler_dequeue_current();
 
-    int mainPID;
-
     while (1) {
         if (aliveProcessCount() == 1)
             giveForeground(createProcess("Terminalator",

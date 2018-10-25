@@ -49,7 +49,8 @@ void giveForeground(int pid) {
     }
 }
 
-int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8) {
+int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx,
+                 uint64_t r8) {
     switch (rdi) {
         case 1:  // Exit
             while (1) {
@@ -57,8 +58,10 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
                 _halt();
             }
             break;
-        case 3:    //Read
-            if (rsi == 0 && getProcessByPID(getCurrentPID())->fd_table[rsi] == NULL && getCurrentPID() != foregroundPID) {  // No es el current
+        case 3:  // Read
+            if (rsi == 0 &&
+                getProcessByPID(getCurrentPID())->fd_table[rsi] == NULL &&
+                getCurrentPID() != foregroundPID) {  // No es el current
                 thread_t* current = scheduler_dequeue_current();
 
                 bgNode n = getMemory(sizeof(struct bgnode));
@@ -74,7 +77,8 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
 
             break;
         case 4:  // Write
-            if ((rsi == 1 || rsi == 2) && getProcessByPID(getCurrentPID())->fd_table[rsi] == NULL) {
+            if ((rsi == 1 || rsi == 2) &&
+                getProcessByPID(getCurrentPID())->fd_table[rsi] == NULL) {
                 if (rsi == 2) {  // STD_ERR
                     setFontColor(0x000000);
                     setBackgroundColor(0xDC143C);
@@ -208,7 +212,8 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
             listProcess((ps_struct*)rsi, (int*)rdx);
             break;
         case 42:  // new process
-            return createProcess((char*)rsi, (void*)rdx, (char**)rcx, 4, 4, (int**)r8);
+            return createProcess((char*)rsi, (void*)rdx, (char**)rcx, 4, 4,
+                                 (int**)r8);
             break;
         case 43:  // waitpid
             return waitpid(rsi);
@@ -242,7 +247,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
         case 52:  // thread cancel
             killThread(getCurrentPID(), rsi, FALSE);
             break;
-        case 53: //nice
+        case 53:  // nice
             return setNiceness(rsi, rdx);
             break;
         case 100:  // timerAppend, return 0 if successful, -1 if error

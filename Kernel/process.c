@@ -181,9 +181,10 @@ int setNiceness(int pid, int nice) {
 
     if (processList[pid]->nice == nice) return 0;
 
+    scheduler_dequeue_process(pid);
+
     processList[pid]->nice = nice;
 
-    scheduler_dequeue_process(pid);
     for (int i = 0; i < MAX_THREAD_COUNT; i++)
         if (processList[pid]->threadList[i] != NULL)
             scheduler_enqueue(processList[pid]->threadList[i], 0);
@@ -191,6 +192,8 @@ int setNiceness(int pid, int nice) {
     if (pid == getCurrentPID()) {
         FORCE = TRUE;
     }
+
+    return 0;
 }
 // ** MANEJO DE PROCESOS ** //
 

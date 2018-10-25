@@ -1,4 +1,5 @@
 #include "include/linkedList.h"
+#include "include/malloc.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -73,20 +74,20 @@ void* linkedList_poll(linkedList_t l) {
     return ret;
 }
 
-int linkedList_removeByValue(linkedList_t l, void * value, int limit) {
-    if (linkedList_isEmpty(l)) return NULL;
+int linkedList_removeByValue(linkedList_t l, void* value, int limit) {
+    if (linkedList_isEmpty(l)) return 0;
 
     node_t aux = l->first, auxDelete;
     int deleted = 0;
 
-    while(aux != NULL && deleted < limit) {
-        if(aux->data == value) {
-            if(aux != l->first)
+    while (aux != NULL && deleted < limit) {
+        if (aux->data == value) {
+            if (aux != l->first)
                 aux->prev->next = aux->next;
             else
                 l->first = aux->next;
 
-            if(aux != l->last)
+            if (aux != l->last)
                 aux->next->prev = aux->prev;
             else
                 l->last = aux->prev;

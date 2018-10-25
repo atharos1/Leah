@@ -65,8 +65,9 @@ void scheduler_dequeue_process(int pid) {
     process_t *p = getProcessByPID(pid);
 
     for (int i = 0; i < MAX_THREAD_COUNT; i++)
-        if (p->threadList[i] != NULL)
+        if (p->threadList[i] != NULL) {
             scheduler_dequeue_thread(p->threadList[i]);
+        }
 }
 
 thread_t *scheduler_dequeue_current() {

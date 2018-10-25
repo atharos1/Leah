@@ -42,13 +42,10 @@ int rrwp_removeThread(SCHEDULER_QUEUE* q, thread_t* t) {
 }
 
 int calculateMaxTimeSlice(SCHEDULER_QUEUE* q, thread_t* t) {
-    data_RoundRobinWithPriority* data = q->queueData;
-
     return getProcessByPID(t->process)->nice + 3;
 }
 
 int shouldCurrentBeEvicted(SCHEDULER_QUEUE* q) {
-    data_RoundRobinWithPriority* data = q->queueData;
     thread_t* t = getCurrentThread();
 
     if (t->currTimeSlice % calculateMaxTimeSlice(q, t) == 0)
@@ -65,7 +62,6 @@ thread_t* getNext(SCHEDULER_QUEUE* q) {
     linkedList_t aux;
 
     int currPriority = data->currentPriority;
-    int basePriority = currPriority;
     if (linkedList_count(data->queues[currPriority]) == 0 &&
         linkedList_count(data->backupQueue) > 0) {
         aux = data->queues[currPriority];
@@ -94,13 +90,14 @@ thread_t* getNext(SCHEDULER_QUEUE* q) {
 }
 
 thread_t* rrwp_queueSchedule(SCHEDULER_QUEUE* q, int force) {
-    data_RoundRobinWithPriority* data = q->queueData;
     if (q->threadCount == 0) return NULL;
 
     thread_t* current = getCurrentThread();
 
-    if (current->queueID == 0 && !shouldCurrentBeEvicted(q) && !force)
+    if (current->queueID == 0 && !shouldCurrentBeEvicted(q) && !force) {
+        current->currTimeSlice++;
         return current;
+    }
 
     return getNext(q);
 }
