@@ -257,7 +257,7 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBack
     int currArg = 0;
     int quoteEnabled = FALSE;
     int foundArg = FALSE;
-    *runInBackground = 1;
+    *runInBackground = 0;
 
     // TODO: \0 DENTRO DEL PARAMETRO ENTRE COMILLAS
 
@@ -265,7 +265,7 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBack
     {
         if (cmd[i] == '&' && cmd[i + 1] == 0)
         {
-            *runInBackground = 0;
+            *runInBackground = 1;
             cmd[i] = 0;
         }
         else
@@ -417,7 +417,7 @@ int commandParser(char *cmd, int length)
         }
     }
 
-    if (!runInBackground[i])
+    if (!runInBackground[0])
     {
         for (int i = 0; i < commandCount; i++)
         {
