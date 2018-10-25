@@ -16,6 +16,6 @@ int execv(char * name, int (*start_routine) (), char ** args, int foreground, in
     return sys_newProcess(name, start_routine, args, fdReplace);
 }
 
-int dup2(int oldFd, int newFd) {
-    return sys_dup2(oldFd, newFd);
+void dup2(int oldFd, int newFd) {
+    sys_dup2(oldFd, newFd);
 }

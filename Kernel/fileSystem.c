@@ -27,6 +27,7 @@ static void removeRegularFile(file_t *file);
 static void removeSemaphore(file_t *file);
 static void removeMutex(file_t *file);
 static void removeExecutable(file_t *file);
+static int isFileOpened(file_t * file);
 
 static file_t *newFile(char name[], int type);
 
@@ -276,21 +277,22 @@ static file_t *removeFileR(file_t *currFile, file_t *targetFile) {
     return currFile;
 }
 
-void removeFile(file_t *file) {
-    if (file == NULL) return;
+int removeFile(file_t *file) {
+    if (file == NULL || isFileOpened(file)) return -1;
 
     directory_t *dir = (directory_t *)(file->directory->implementation);
     if (file->type == DIRECTORY) {
         file_t *currFile = ((directory_t *)(file->implementation))->first;
         while (currFile != NULL) {
-            removeFile(currFile);
-            currFile = currFile->next;
+            file_t * aux = currFile->next;
+            if (removeFile(currFile) ==  -1) return -1;
+            currFile = aux;
         }
     }
     dir->first = removeFileR(dir->first, file);
 }
 
-void removeFileFromPath(char *path) { removeFile(getFile(path)); }
+int removeFileFromPath(char *path) { return removeFile(getFile(path)); }
 
 static void removeDirectory(file_t *file) { free(file->implementation); }
 
@@ -511,6 +513,17 @@ static void closeBuffer(opened_buffer_t *openedBuffer) {
     sem_delete(openedBuffer->writerSem);
 
     free(openedBuffer);
+}
+
+static int isFileOpened(file_t * file) {
+    opened_file_t * currentOpenedFile = firstOpenedFile;
+    while (currentOpenedFile != NULL) {
+      if (currentOpenedFile->file == file)
+        return 1;
+      currentOpenedFile = currentOpenedFile->next;
+    }
+
+    return 0;
 }
 
 void openUnnamedPipe(int fd[2]) {

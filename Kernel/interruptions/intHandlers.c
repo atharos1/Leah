@@ -142,7 +142,7 @@ int int80Handler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_
             makeFile((char*)rsi, rdx);
             break;
         case 20:  // sys_removeFile
-            removeFileFromPath((char*)rsi);
+            return removeFileFromPath((char*)rsi);
             break;
         case 21:  // sys_open
             return openFileFromPathToFD((char*)rsi, rdx);

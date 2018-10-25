@@ -14,7 +14,7 @@ int toUppercase() {
   sys_mkFifo("pipe1");
   sys_mkFifo("pipe2");
 
-  execv("Slave", slave, 0, 1, 0);
+  execv("Slave", slave, 0, 0, 0);
 
 	int fd1 = sys_open("pipe1", O_WRONLY);
   int fd2 = sys_open("pipe2", O_RDONLY);
@@ -84,7 +84,7 @@ int slave() {
       if (buff[i] >= 'a' && buff[i] <= 'z')
         buff[i] -= ('a' - 'A');
     }
-    sys_write(fd2, buff, MAX_LENGTH);;
+    sys_write(fd2, buff, MAX_LENGTH);
   }
 
   sys_close(fd1);

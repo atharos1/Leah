@@ -12,7 +12,7 @@ fd_t* stdin = NULL;
 
 // Non-Shifted scan codes to ASCII:
 static unsigned char asciiNonShift[] = {
-    NULL, ESC,   '1',  '2',   '3',       '4',   '5', '6',    '7',   '8',
+    KBNULL, ESC,   '1',  '2',   '3',       '4',   '5', '6',    '7',   '8',
     '9',  '0',   '-',  '=',   BACKSPACE, TAB,   'q', 'w',    'e',   'r',
     't',  'y',   'u',  'i',   'o',       'p',   '[', ']',    ENTER, 0,
     'a',  's',   'd',  'f',   'g',       'h',   'j', 'k',    'l',   ';',
@@ -24,7 +24,7 @@ static unsigned char asciiNonShift[] = {
 
 // Shifted scan codes to ASCII:
 static unsigned char asciiShift[] = {
-    NULL, ESC,   '!',  '@',   '#',       '$',   '%', '^',    '&',   '*',
+    KBNULL, ESC,   '!',  '@',   '#',       '$',   '%', '^',    '&',   '*',
     '(',  ')',   '_',  '+',   BACKSPACE, TAB,   'Q', 'W',    'E',   'R',
     'T',  'Y',   'U',  'I',   'O',       'P',   '{', '}',    ENTER, 0,
     'A',  'S',   'D',  'F',   'G',       'H',   'J', 'K',    'L',   ':',

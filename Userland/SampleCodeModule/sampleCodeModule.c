@@ -175,9 +175,6 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit)
     int quoteEnabled = FALSE;
     int isEscaped = FALSE;
 
-    int internalCmdCount = 0;
-    int isProgram = FALSE;
-
     while (i < cmdLength && lastCommand < commandLimit)
     {
         while (cmd[i] == ' ' && !quoteEnabled)
@@ -263,7 +260,7 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBack
 
     for (int i = 0; cmd[i] != 0 && currArg < maxArgs; i++)
     {
-        if (cmd[i] == '&' && cmd[i + 1] == 0)
+        if (cmd[i] == '&' && (cmd[i + 1] == 0 || cmd[i + 1] == ' ' || cmd[i] == '\t'))
         {
             *runInBackground = 1;
             cmd[i] = 0;
@@ -315,7 +312,7 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBack
         }
 }*/
 
-typedef char *argv[MAX_ARGS];
+typedef char * argv[MAX_ARGS];
 
 int commandParser(char *cmd, int length)
 {
@@ -326,10 +323,10 @@ int commandParser(char *cmd, int length)
     int commandCount =
         parseCommands(cmd, length, cmdList, MAX_FUNCTION_IN_COMMAND);
 
-    char cmdName[MAX_COMMAND_NAME_LENGTH];
-    argv argvList[commandCount];
+    argv argvList[MAX_FUNCTION_IN_COMMAND];
     int paramCount = 0;
     int runInBackground[MAX_COMMAND_NAME_LENGTH];
+    int fullScreen = FALSE;
 
     int fdList[MAX_FUNCTION_IN_COMMAND][2];
     int pidList[MAX_FUNCTION_IN_COMMAND];
@@ -359,6 +356,18 @@ int commandParser(char *cmd, int length)
                 printf("\n");
                 return 0;
             }
+        }
+
+        if (getIsFullscreen(cmdList[i])) {
+          if (commandCount > 1) {
+              printf("No se pueden utilizar pipes con programas en pantalla completa\n");
+              return -1;
+          }
+          if (runInBackground[i]) {
+              printf("No se pueden correr en background programas en pantalla completa\n");
+              return -1;
+          }
+          fullScreen = TRUE;
         }
 
         if (commandCount - i > 1) // Hay pipes
@@ -417,17 +426,13 @@ int commandParser(char *cmd, int length)
         }
     }
 
-    if (!runInBackground[0])
-    {
-        for (int i = 0; i < commandCount; i++)
-        {
-            if (!runInBackground[i])
-                sys_waitPID(pidList[i]);
-        }
+    for (int i = 0; i < commandCount; i++) {
+        if (!runInBackground[i])
+            sys_waitPID(pidList[i]);
     }
 
-    // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
-    // NO CORRA EL SNAKE O DIGITAL-CLOCK CON PIPES
+    if (fullScreen)
+      cmd_resetScreen();
 
     printf("\n");
 
@@ -777,7 +782,10 @@ void cmd_killProcess(char **args)
     sys_waitPID(atoi(args[0]));
 }
 
-void cmd_removeFile(char **args) { sys_removeFile(args[0]); }
+void cmd_removeFile(char **args) {
+  //if (sys_removeFile(args[0]) == -1)
+  //  printf("No se pudo eliminar el archivo.");
+}
 
 void cmd_writeTo(char **args)
 {
@@ -838,32 +846,19 @@ void program_digitalClock()
     cmd_resetScreen();
 }
 
-void program_toUppercase()
+int prog_prueba(char **args)
 {
-    int pid = execv("To Uppercase", (process_t)toUppercase, NULL, TRUE, NULL);
-
-    sys_waitPID(pid);
-
-    // cmd_resetScreen();
-    puts("\n");
-}
-
-int prog(char **args)
-{
-    printf("Jelou");
     char c;
     while (c = getchar(), c != -1)
     {
         printf("1%c", c);
     }
+    return 0;
 }
 
-int prog_echo(char **args) { printf("%s\n", args[0]); }
-
-void cmd_p(char **args)
-{
-    int pid = execv("To Uppercase", (process_t)prog, NULL, TRUE, NULL);
-    sys_setForeground(pid);
+int prog_echo(char **args) {
+  printf("%s\n", args[0]);
+  return 0;
 }
 
 int prog_cat(char **args)
@@ -1002,7 +997,7 @@ int main()
                      FALSE, FALSE);
     command_register("writeTo", cmd_writeTo,
                      "Escribe en el archivo especificado", FALSE, FALSE);
-    command_register("cat", prog_cat, "Imprime el archivo especificado", TRUE,
+    command_register("cat", (function)prog_cat, "Imprime el archivo especificado", TRUE,
                      FALSE);
     command_register("ps", cmd_ps,
                      "Lista los procesos con su informacion asociada", TRUE,
@@ -1027,8 +1022,8 @@ int main()
     command_register("testforeground", (function)testForeground,
                      "Prueba de foreground. Pide un texto y lo imprime", TRUE,
                      FALSE);
-    command_register("echo", prog_echo, "Echo como programa", TRUE, FALSE);
-    command_register("prueba", prog, "Para correr con echo", TRUE, FALSE);
+    command_register("echo", (function)prog_echo, "Echo como programa", TRUE, FALSE);
+    command_register("prueba", (function)prog_prueba, "Para correr con echo", TRUE, FALSE);
     command_register("exit", cmd_exit, "Cierra la Shell", FALSE, FALSE);
 
     while (programStatus != 1)

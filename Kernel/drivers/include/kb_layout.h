@@ -6,7 +6,7 @@
  * http://www.henkessoft.de/OS_Dev/OS_Dev1.htm#mozTocId185043
  */
 
-#define NULL 0
+#define KBNULL 0
 #define ESC    27
 #define BELL      '\7'
 #define BACKSPACE '\b'

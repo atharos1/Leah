@@ -54,7 +54,7 @@ void sys_makeRegFile(char *path) { _systemCall(19, path, REGULAR_FILE, 0, 0); }
 
 void sys_mkFifo(char *path) { _systemCall(19, path, BUFFER, 0, 0); }
 
-void sys_removeFile(char *path) { _systemCall(20, path, 0, 0, 0); }
+int sys_removeFile(char *path) { return _systemCall(20, path, 0, 0, 0); }
 
 int sys_open(char *path, int mode) { return _systemCall(21, path, mode, 0, 0); }
 

@@ -48,8 +48,8 @@ void getCWDPath(char* pathBuff);
 file_t* makeFile(char* path, int type);
 file_t* getFile(char* path);
 
-void removeFile(file_t* file);
-void removeFileFromPath(char* path);
+int removeFile(file_t* file);
+int removeFileFromPath(char* path);
 
 fd_t* openFileFromPath(char* path, int mode);
 int openFileToFD(file_t* file, int mode);
