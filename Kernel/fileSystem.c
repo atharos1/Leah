@@ -453,7 +453,12 @@ void closeFile(fd_t *fd) {
     if (mode == O_WRONLY || mode == O_RDWR) {
         openedFile->writers--;
         if (openedFile->writers == 0 && openedFile->file->type == BUFFER) {
-            ((opened_buffer_t *)(openedFile->implementation))->hasEOF = 1;
+            opened_buffer_t *openedBuffer = (opened_buffer_t*)(openedFile->implementation);
+            openedBuffer->hasEOF = 1;
+            if (openedBuffer->allowReaders == 0) {
+                openedBuffer->allowReaders = 1;
+                sem_signal(openedBuffer->readerSem);
+            }
         }
     }
 

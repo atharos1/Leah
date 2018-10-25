@@ -14,7 +14,7 @@ int toUppercase() {
   sys_mkFifo("pipe1");
   sys_mkFifo("pipe2");
 
-  execv("Slave", slave, 0, 0, 0);
+  int pid = execv("Slave", slave, 0, 0, 0);
 
 	int fd1 = sys_open("pipe1", O_WRONLY);
   int fd2 = sys_open("pipe2", O_RDONLY);
@@ -62,6 +62,8 @@ int toUppercase() {
 
 	sys_close(fd1);
   sys_close(fd2);
+
+  sys_waitPID(pid);
 
   return 0;
 }

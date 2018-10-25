@@ -5,7 +5,7 @@ typedef void (*function)();
 int _systemCall();
 
 int sys_read(int fileDescriptor, void *buff, int length) {
-    _systemCall(3, fileDescriptor, buff, length, 0);
+    return _systemCall(3, fileDescriptor, buff, length, 0);
 }
 
 int sys_write(int fileDescriptor, void *buff, int length) {
