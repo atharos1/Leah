@@ -36,6 +36,7 @@ typedef struct thread_t {
     int queueID;
     void *queue;
     int usedProcessor;
+    int currTimeSlice;
 } thread_t;
 
 typedef struct process_t {
@@ -86,7 +87,7 @@ void eraseTCB(thread_t *thread);
 void *getHeapBase(int pid);
 int getHeapSize(int pid);
 int isValidProcess(int pid);
-void setNiceness(int pid);
+int setNiceness(int pid, int nice);
 void dup2(int fdFrom, int fdTo);
 
 #endif

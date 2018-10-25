@@ -4,10 +4,9 @@
 #include "scheduler.h"
 
 typedef struct {
-    int quantum;
-    int currQuantum;
+    NODE* queue;
 } data_RoundRobin;
 
-SCHEDULER_QUEUE * roundRobin_newQueue(int quantum);
+SCHEDULER_QUEUE* roundRobin_newQueue(int queueQuantum, int nextQueueID);
 
 #endif

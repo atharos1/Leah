@@ -136,6 +136,10 @@ void sys_joinThread(pthread_t thread, void **retVal) {
 
 void sys_cancelThread(pthread_t thread) { _systemCall(52, thread, 0, 0); }
 
+void sys_setNiceness(int pid, int nice) {
+    return _systemCall(53, pid, nice, 0);
+}
+
 void sys_beep(int nFrequence, unsigned char duration) {
     _systemCall(102, nFrequence, duration, 0, 0);
 }

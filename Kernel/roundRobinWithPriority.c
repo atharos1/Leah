@@ -1,134 +1,128 @@
 #include "include/roundRobinWithPriority.h"
 #include "drivers/include/console.h"
 #include "include/comparators.h"
-#include "include/linkedList.h"
 #include "include/malloc.h"
+#include "include/scheduler.h"
 
-void roundRobinWithPriority_addToQueue(SCHEDULER_QUEUE* q, thread_t* t);
+void rrwp_enqueueThread(SCHEDULER_QUEUE* q, thread_t* t);
+int rrwp_removeThread(SCHEDULER_QUEUE* q, thread_t* t);
+int rrwp_calculateMaxTimeSlice(SCHEDULER_QUEUE* q, thread_t* t);
+int rrwp_shouldCurrentBeEvicted(SCHEDULER_QUEUE* q);
+thread_t* getNext(SCHEDULER_QUEUE* q);
 
-int roundRobinWithPriority_getMaxPriority(SCHEDULER_QUEUE* q) {
+void rrwp_enqueueThread(SCHEDULER_QUEUE* q, thread_t* t) {
     data_RoundRobinWithPriority* data = q->queueData;
 
-    for (int i = data->currentMaxPriority; i >= 0; i--)
-        if (data->priorityArray[i] != NULL) return i;
-
-    return -1;
-}
-
-void roundRobinWithPriority_ageThreads(SCHEDULER_QUEUE* q) {
-    data_RoundRobinWithPriority* data = q->queueData;
-    NODE* n;
-    thread_t* t;
-    for (int i = 0; i < data->currentMaxPriority; i++) {
-        n = data->priorityArray[i];
-        while (n != NULL) {
-            t = getFirst(n);
-
-            if (t->usedProcessor == 0) {
-                // AGE
-            }
-
-            t->usedProcessor = 0;
-
-            n = next(n);
-        }
-    }
-}
-
-int roundRobinWithPriority_removeThread(SCHEDULER_QUEUE* q, thread_t* t) {
-    data_RoundRobinWithPriority* data = q->queueData;
-    int status = 0;
     int currNice = getProcessByPID(t->process)->nice;
 
-    data->priorityArray[currNice] = deleteByValue(data->priorityArray[currNice],
-                                                  t, pointer_cmp, &status, 1);
-
-    return status;
-}
-
-thread_t* roundRobinWithPriority_nextThread(SCHEDULER_QUEUE* q) {
-    data_RoundRobinWithPriority* data = q->queueData;
-
-    if (data->currentMaxPriority == -1 ||
-        data->priorityArray[data->currentMaxPriority] == NULL)
-        return NULL;
-
-    thread_t* t = getFirst(data->priorityArray[data->currentMaxPriority]);
-
-    data->priorityArray[data->currentMaxPriority] =
-        deleteHead(data->priorityArray[data->currentMaxPriority]);
-
-    if (data->currentMaxPriority == 0) {
-        if (data->nextQueue != NULL) {
-            data->nextQueue->addToQueue(data->nextQueue, t);
-            t = roundRobinWithPriority_nextThread(q);
-        }
-    } else {
-        getProcessByPID(t->process)->nice--;
-        data->currentMaxPriority = roundRobinWithPriority_getMaxPriority(q);
+    if (currNice == 0) {
+        scheduler_enqueue(t, q->nextQueue);
+        return;
     }
 
-    roundRobinWithPriority_addToQueue(q, t);
+    if (data->currentPriority == currNice - 1)
+        linkedList_offer(data->backupQueue, t);
+    else
+        linkedList_offer(data->queues[currNice - 1], t);
 
-    data->currQuantum = 0;
+    q->threadCount++;
+}
 
-    t->usedProcessor++;
+int rrwp_removeThread(SCHEDULER_QUEUE* q, thread_t* t) {
+    data_RoundRobinWithPriority* data = q->queueData;
+    int currNice = getProcessByPID(t->process)->nice;
+
+    int removed = linkedList_removeByValue(data->queues[currNice - 1], t, 1);
+    if (removed == 0 && data->currentPriority == currNice - 1)
+        removed += linkedList_removeByValue(data->backupQueue, t, 1);
+
+    q->threadCount -= removed;
+
+    return removed;
+}
+
+int calculateMaxTimeSlice(SCHEDULER_QUEUE* q, thread_t* t) {
+    data_RoundRobinWithPriority* data = q->queueData;
+
+    return getProcessByPID(t->process)->nice + 3;
+}
+
+int shouldCurrentBeEvicted(SCHEDULER_QUEUE* q) {
+    data_RoundRobinWithPriority* data = q->queueData;
+    thread_t* t = getCurrentThread();
+
+    if (t->currTimeSlice % calculateMaxTimeSlice(q, t) == 0)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+thread_t* getNext(SCHEDULER_QUEUE* q) {
+    // printf("ARRIBA");
+    data_RoundRobinWithPriority* data = q->queueData;
+
+    thread_t* t = NULL;
+    linkedList_t aux;
+
+    int currPriority = data->currentPriority;
+    int basePriority = currPriority;
+    if (linkedList_count(data->queues[currPriority]) == 0 &&
+        linkedList_count(data->backupQueue) > 0) {
+        aux = data->queues[currPriority];
+        data->queues[currPriority] = data->backupQueue;
+        data->backupQueue = aux;
+        currPriority--;
+
+        if (currPriority < 0) currPriority = MAX_PRIORITY - 1;
+    }
+
+    while (q->threadCount > 0 && t == NULL) {
+        if (linkedList_count(data->queues[currPriority]) > 0) {
+            data->currentPriority = currPriority;
+            t = linkedList_poll(data->queues[currPriority]);
+            t->currTimeSlice = 0;  // TODO: MOVER
+            linkedList_offer(data->backupQueue, t);
+        }
+
+        currPriority--;
+        if (currPriority < 0) currPriority = MAX_PRIORITY - 1;
+    }
+
+    // printf("ABAJO");
 
     return t;
 }
 
-void roundRobinWithPriority_addToQueue(SCHEDULER_QUEUE* q, thread_t* t) {
+thread_t* rrwp_queueSchedule(SCHEDULER_QUEUE* q, int force) {
     data_RoundRobinWithPriority* data = q->queueData;
+    if (q->threadCount == 0) return NULL;
 
-    int currNice = getProcessByPID(t->process)->nice;
+    thread_t* current = getCurrentThread();
 
-    data->priorityArray[currNice] =
-        insertAtEnd(data->priorityArray[currNice], t);
+    if (current->queueID == 0 && !shouldCurrentBeEvicted(q) && !force)
+        return current;
 
-    if (data->currentMaxPriority < currNice)
-        data->currentMaxPriority = currNice;
-}
-
-int roundRobinWithPriority_checkEvict(SCHEDULER_QUEUE* q) {
-    data_RoundRobinWithPriority* data = q->queueData;
-
-    data->currQuantum++;
-
-    if (data->currQuantum % data->quantum == 0) {
-        data->currQuantum = 0;
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-void roundRobinWithPriority_restartEvict(SCHEDULER_QUEUE* q) {
-    data_RoundRobinWithPriority* data = q->queueData;
-    data->currQuantum =
-        data->quantum -
-        1;  // Garantizo que checkEvict retorne true en la próxima ejecución
+    return getNext(q);
 }
 
 SCHEDULER_QUEUE* roundRobinWithPriority_newQueue(int queueQuantum,
-                                                 SCHEDULER_QUEUE* nextQueue) {
+                                                 int nextQueueID) {
     SCHEDULER_QUEUE* q = malloc(sizeof(SCHEDULER_QUEUE));
     data_RoundRobinWithPriority* data =
         malloc(sizeof(data_RoundRobinWithPriority));
 
-    q->nextThreadFunction = roundRobinWithPriority_nextThread;
-    q->checkEvictFunction = roundRobinWithPriority_checkEvict;
-    q->restartEvictFunction = roundRobinWithPriority_restartEvict;
-    q->addToQueue = roundRobinWithPriority_addToQueue;
-    q->removeThread = roundRobinWithPriority_removeThread;
-    // q->ageThreads = roundRobinWithPriority_ageThreads;
+    q->queueSchedule = rrwp_queueSchedule;
+    q->removeThread = rrwp_removeThread;
+    q->enqueueThread = rrwp_enqueueThread;
 
     q->queueQuantum = queueQuantum;
-    q->currQueueQuantum = 0;
+    q->threadCount = 0;
+    q->nextQueue = nextQueueID;
 
-    data->nextQueue = nextQueue;
-    data->quantum = queueQuantum;
-    data->currQuantum = 0;
-    data->currentMaxPriority = -1;
+    for (int i = 0; i < MAX_PRIORITY; i++) data->queues[i] = linkedList_new();
+
+    data->backupQueue = linkedList_new();
+    data->currentPriority = MAX_PRIORITY - 1;
 
     q->queueData = data;
 

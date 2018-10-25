@@ -20,6 +20,7 @@
         "filesystem.h": "c",
         "list.h": "c",
         "stdlib.h": "c",
-        "kb_driver.h": "c"
+        "kb_driver.h": "c",
+        "lib.h": "c"
     }
 }

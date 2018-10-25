@@ -82,6 +82,8 @@ void sys_killProcess(int pid);
 void sys_exit(int retVal);
 void sys_setForeground(int pid);
 void sys_dup2(int oldFd, int newFd);
+void sys_setNiceness(int pid, int nice);
+
 
 pthread_t sys_newThread(void *(*start_routine)(void *), void *arg);
 void sys_joinThread(pthread_t thread, void **retVal);

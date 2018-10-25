@@ -155,19 +155,6 @@ static void insert(char c) {
 
 char getChar() {
     if (stdin != NULL) {
-        /*if (getCurrentPID() != foregroundPID) {  // No es el current
-            thread_t* current = scheduler_dequeue_current();
-
-            bgNode n = getMemory(sizeof(struct bgnode));
-            n->thread = current;
-            if (bgQueue == NULL)
-                bgQueue = n;
-            else
-                bgQueue->next = n;
-
-            _force_scheduler();
-        }*/
-
         char c;
         if (readFile(stdin, &c, 1) == 0) return -1;
         return c;

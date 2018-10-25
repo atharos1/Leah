@@ -90,15 +90,14 @@ int createProcess(char *name, void *code, char **args, int stack_size,
     purgeFdList(process, FALSE);
     purgeThreadList(process, FALSE, FALSE);
 
-    if(fdReplace != NULL){
+    if (fdReplace != NULL) {
         for (int i = 0; fdReplace[i][0] != -1 && fdReplace[i][1] != -1; i++) {
             cloneFD(fdReplace[i][0], fdReplace[i][1], process);
         }
     }
 
-    if(process->fd_table[0] == NULL)
-      process->fd_table[0] = openFileFromPath("/dev/stdin", O_RDWR);
-
+    if (process->fd_table[0] == NULL)
+        process->fd_table[0] = openFileFromPath("/dev/stdin", O_RDWR);
 
     process->cwd = getRoot();
 
@@ -173,6 +172,25 @@ int threadCount(int pid) {
 
 int isValidProcess(int pid) {
     return !(pid >= MAX_PROCESS_COUNT || pid < 0 || processList[pid] == NULL);
+}
+
+int setNiceness(int pid, int nice) {
+    if (pid == 0 || !isValidProcess(pid)) return -1;
+
+    if (nice > 5 || nice < 0) return -1;
+
+    if (processList[pid]->nice == nice) return 0;
+
+    processList[pid]->nice = nice;
+
+    scheduler_dequeue_process(pid);
+    for (int i = 0; i < MAX_THREAD_COUNT; i++)
+        if (processList[pid]->threadList[i] != NULL)
+            scheduler_enqueue(processList[pid]->threadList[i], 0);
+
+    if (pid == getCurrentPID()) {
+        FORCE = TRUE;
+    }
 }
 // ** MANEJO DE PROCESOS ** //
 

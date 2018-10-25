@@ -14,19 +14,26 @@
 
 SCHEDULER_QUEUE *Queues[MAX_QUEUE_COUNT];
 int queueCount = 0;
+int currQueue;
+int currTimeSlice = 0;
 
 int FORCE = FALSE;
 
 thread_t *currentThread;
+
+void resetCurrentThread() { currentThread = NULL; }
+
+thread_t *getCurrentThread() { return currentThread; }
 
 void *scheduler_nextTask(void *oldRSP);
 
 void scheduler_init() {
     currentThread = NULL;
 
-    Queues[1] = roundRobin_newQueue(4);
-    Queues[0] = roundRobinWithPriority_newQueue(3, Queues[0]);
+    Queues[1] = roundRobin_newQueue(3, -1);
+    Queues[0] = roundRobinWithPriority_newQueue(8, 1);
     queueCount = 2;
+    currQueue = 0;
 
     purgeProcessList(FALSE);  // Esto va acá?
 
@@ -34,27 +41,24 @@ void scheduler_init() {
                          PIT_FREQUENCY * 10);  // Cada 10 segundos*/
 }
 
-void scheduler_midTerm() {
+/*void scheduler_midTerm() {
     for (int currQueue = 0; currQueue < queueCount; currQueue++)
         if (Queues[currQueue]->ageThreads != NULL)
             Queues[currQueue]->ageThreads(Queues[currQueue]);
-}
+}*/
 
 void scheduler_enqueue(thread_t *thread, int queue) {
     if (thread == NULL) return;
 
     thread->queueID = queue;
-
     SCHEDULER_QUEUE *q = Queues[queue];
-
-    q->addToQueue(q, thread);
-    thread->queue = q;
+    q->enqueueThread(q, thread);
 }
 
 int scheduler_dequeue_thread(thread_t *t) {
     if (t == currentThread) return (t == scheduler_dequeue_current());
 
-    return ((SCHEDULER_QUEUE *)(t->queue))->removeThread(t->queue, t);
+    return Queues[t->queueID]->removeThread(Queues[t->queueID], t);
 }
 
 void scheduler_dequeue_process(int pid) {
@@ -66,54 +70,63 @@ void scheduler_dequeue_process(int pid) {
 }
 
 thread_t *scheduler_dequeue_current() {
-    if (((SCHEDULER_QUEUE *)(currentThread->queue))
-            ->removeThread(currentThread->queue, currentThread) >= 1) {
+    if (Queues[currentThread->queueID]->removeThread(
+            Queues[currentThread->queueID], currentThread) >= 1) {
+        thread_t *ret = currentThread;
         FORCE = TRUE;
-        return currentThread;
+        // resetCurrentThread();
+        return ret;
     } else {
         return NULL;
     }
 }
 
-thread_t *getCurrentThread() { return currentThread; }
-
 int getCurrentPID() { return currentThread->process; }
 
 void *scheduler_shortTerm(void *oldRSP) {
-    if (FORCE == TRUE) {
-        if (currentThread != NULL)
-            ((SCHEDULER_QUEUE *)(currentThread->queue))
-                ->restartEvictFunction(currentThread->queue);
-        FORCE = FALSE;
+    thread_t *t = NULL;
+
+    if (aliveProcessCount() == 0) return oldRSP;
+
+    int forced = FORCE;
+
+    if (currTimeSlice > Queues[currQueue]->queueQuantum) {
+        if (currQueue == queueCount - 1)
+            currQueue = 0;
+        else
+            currQueue++;
+        currTimeSlice = 0;
     }
 
-    if (aliveProcessCount() > 0 &&
-        (currentThread == NULL ||
-         ((SCHEDULER_QUEUE *)(currentThread->queue))
-             ->checkEvictFunction(currentThread->queue)))
-        return scheduler_nextTask(oldRSP);
-    else
-        return oldRSP;
-}
+    if (!forced) currTimeSlice++;
 
-void *scheduler_nextTask(void *oldRSP) {
-    if (currentThread != NULL) currentThread->stack.current = oldRSP;
+    if (currentThread != NULL) {
+        currentThread->stack.current = oldRSP;
+    }
 
-    thread_t *nextThread = NULL;
+    if (Queues[currQueue]->queueQuantum)
 
-    int currQueue;
-    for (currQueue = 0; currQueue < queueCount; currQueue++) {
-        nextThread = Queues[currQueue]->nextThreadFunction(Queues[currQueue]);
+        for (int i = 0; i < queueCount; i++) {
+            t = Queues[currQueue]->queueSchedule(Queues[currQueue], forced);
 
-        if (nextThread != NULL) {
-            currentThread = nextThread;
+            if (t != NULL) break;
 
-            if (aliveProcessCount() <= 2) giveForeground(nextThread->process);
-
-            return nextThread->stack.current;
+            if (currQueue == queueCount - 1)
+                currQueue = 0;
+            else
+                currQueue++;
         }
+
+    if (t != NULL) {
+        currentThread = t;
+        if (aliveProcessCount() <= 2) giveForeground(t->process);
+    } else {
+        if (currentThread == NULL)
+            getProcessByPID(0)->threadList[0]->stack.current = oldRSP;
+        currentThread = getProcessByPID(0)->threadList[0];
     }
 
-    currentThread = getProcessByPID(0)->threadList[0];
-    return currentThread->stack.current;  // Se ejecuta init
+    FORCE = FALSE;
+
+    return currentThread->stack.current;
 }
