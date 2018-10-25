@@ -783,8 +783,8 @@ void cmd_killProcess(char **args)
 }
 
 void cmd_removeFile(char **args) {
-  //if (sys_removeFile(args[0]) == -1)
-  //  printf("No se pudo eliminar el archivo.");
+  if (sys_removeFile(args[0]) == -1)
+    printf("No se pudo eliminar el archivo.");
 }
 
 void cmd_writeTo(char **args)
