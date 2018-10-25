@@ -76,11 +76,11 @@ static file_t *makeFileR(char path[], file_t *dir, int type,
                          int pathLength) {
     int i;
 
-    for (i = 0; path[i] != '/' && path[i] != 0 && i <= MAX_NAME_LENGTH; i++) {
+    for (i = 0; path[i] != '/' && path[i] != 0 && i < MAX_NAME_LENGTH; i++) {
         name[i] = path[i];
     }
 
-    if (i > MAX_NAME_LENGTH || pathLength + i > MAX_PATH_LENGTH) return NULL;
+    if (i >= MAX_NAME_LENGTH || pathLength + i > MAX_PATH_LENGTH) return NULL;
 
     name[i] = 0;
 
