@@ -159,8 +159,8 @@ void terminateAllPhi() {
 			pthread_cancel((phis[i]).phi);
 	}
 
-  free(eatingList);
-  free(thinkingList);
+  integerList_destroy(eatingList);
+  integerList_destroy(thinkingList);
 
   mutex_unlock(pMutex);
 }

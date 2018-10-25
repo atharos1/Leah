@@ -73,3 +73,13 @@ int countSpaces(Node * head) {
 	}
 	return spaces;
 }
+
+void integerList_destroy(Node * head) {
+    Node * n = head, * aux;
+
+    while (n != NULL) {
+        aux = n;
+        n = n->next;
+        free(aux);
+    }
+}
