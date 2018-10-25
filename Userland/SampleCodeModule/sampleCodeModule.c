@@ -257,14 +257,17 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBack
     int currArg = 0;
     int quoteEnabled = FALSE;
     int foundArg = FALSE;
-    *runInBackground = 0;
+    *runInBackground = 1;
 
     // TODO: \0 DENTRO DEL PARAMETRO ENTRE COMILLAS
 
     for (int i = 0; cmd[i] != 0 && currArg < maxArgs; i++)
     {
         if (cmd[i] == '&' && cmd[i + 1] == 0)
-            *runInBackground = 1;
+        {
+            *runInBackground = 0;
+            cmd[i] = 0;
+        }
         else
         {
             if (foundArg && cmd[i] != ' ' && cmd[i] != '\t')
@@ -414,10 +417,13 @@ int commandParser(char *cmd, int length)
         }
     }
 
-    for (int i = 0; i < commandCount; i++)
+    if (!runInBackground[i])
     {
-        if (!runInBackground[i])
-            sys_waitPID(pidList[i]);
+        for (int i = 0; i < commandCount; i++)
+        {
+            if (!runInBackground[i])
+                sys_waitPID(pidList[i]);
+        }
     }
 
     // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
