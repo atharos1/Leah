@@ -252,30 +252,36 @@ int parseCommands(char *cmd, int cmdLength, char *cmdList[], int commandLimit)
     return lastCommand;
 }
 
-int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs)
+int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs, int *runInBackground)
 {
     int currArg = 0;
     int quoteEnabled = FALSE;
     int foundArg = FALSE;
+    *runInBackground = 0;
 
     // TODO: \0 DENTRO DEL PARAMETRO ENTRE COMILLAS
 
-    for (int i = 0; i < cmd[i] != 0 && currArg < maxArgs; i++)
+    for (int i = 0; cmd[i] != 0 && currArg < maxArgs; i++)
     {
-        if (foundArg && cmd[i] != ' ' && cmd[i] != '\t')
+        if (cmd[i] == '&' && cmd[i + 1] == 0)
+            *runInBackground = 1;
+        else
         {
-            argv[currArg] = cmd + i;
-            currArg++;
-            foundArg = FALSE;
-        }
+            if (foundArg && cmd[i] != ' ' && cmd[i] != '\t')
+            {
+                argv[currArg] = cmd + i;
+                currArg++;
+                foundArg = FALSE;
+            }
 
-        if (cmd[i] == '\"' || cmd[i] == '\'')
-            quoteEnabled = !quoteEnabled;
+            if (cmd[i] == '\"' || cmd[i] == '\'')
+                quoteEnabled = !quoteEnabled;
 
-        if ((cmd[i] == ' ' || cmd[i] == '\t') && !quoteEnabled)
-        {
-            cmd[i] = 0;
-            foundArg = TRUE;
+            if ((cmd[i] == ' ' || cmd[i] == '\t') && !quoteEnabled)
+            {
+                cmd[i] = 0;
+                foundArg = TRUE;
+            }
         }
     }
 
@@ -306,26 +312,12 @@ int parseArgs(char *cmd, int cmdLength, char **argv, int maxArgs)
         }
 }*/
 
-int checkBackground(char *cmd)
-{
-    int quoteEnabled = FALSE;
-
-    for (int i = 0; cmd[i] != 0; i++)
-    {
-        if (cmd[i] == '\"' || cmd[i] == '\'')
-            quoteEnabled = !quoteEnabled;
-
-        if (cmd[i] == '&' && !quoteEnabled)
-            return TRUE;
-    }
-
-    return FALSE;
-}
-
 typedef char *argv[MAX_ARGS];
 
-int commandParser(char *cmd, int length) {
-    if (*cmd == '\0') return -1;
+int commandParser(char *cmd, int length)
+{
+    if (*cmd == '\0')
+        return -1;
 
     char *cmdList[MAX_FUNCTION_IN_COMMAND];
     int commandCount =
@@ -334,18 +326,19 @@ int commandParser(char *cmd, int length) {
     char cmdName[MAX_COMMAND_NAME_LENGTH];
     argv argvList[commandCount];
     int paramCount = 0;
-    int runInBackground = FALSE;
+    int runInBackground[MAX_COMMAND_NAME_LENGTH];
 
     int fdList[MAX_FUNCTION_IN_COMMAND][2];
     int pidList[MAX_FUNCTION_IN_COMMAND];
 
     for (int i = 0; i < commandCount; i++)
     {
-        paramCount = parseArgs(cmdList[i], length, argvList[i], MAX_ARGS);
+        paramCount = parseArgs(cmdList[i], length, argvList[i], MAX_ARGS, runInBackground + i);
         if (paramCount == -1)
             return -1;
 
-        if (getCommandFunction(cmdList[i]) == NULL) {
+        if (getCommandFunction(cmdList[i]) == NULL)
+        {
             printf("Comando '%s' desconocido\n", cmdList[i]);
             return -1;
         }
@@ -373,8 +366,6 @@ int commandParser(char *cmd, int length) {
     {
         if (i == 0)
         {
-            runInBackground = checkBackground(cmdList[i]);
-
             if (commandCount > 1)
             {
                 int fdReplace[2][2] = {{fdList[i][1], 1}, {-1, -1}};
@@ -393,7 +384,7 @@ int commandParser(char *cmd, int length) {
                           (process_t)getCommandFunction(cmdList[i]),
                           argvList[i], FALSE, NULL);
 
-            if (!runInBackground)
+            if (!runInBackground[i])
             {
                 sys_setForeground(pidList[i]);
             }
@@ -423,12 +414,10 @@ int commandParser(char *cmd, int length) {
         }
     }
 
-    if (!runInBackground)
+    for (int i = 0; i < commandCount; i++)
     {
-        for (int i = 0; i < commandCount; i++)
-        {
+        if (!runInBackground[i])
             sys_waitPID(pidList[i]);
-        }
     }
 
     // if (getIsFullscreen(cmdList[0])) cmd_resetScreen(); //TODO: QUE
@@ -853,7 +842,8 @@ void program_toUppercase()
     puts("\n");
 }
 
-int prog(char **args) {
+int prog(char **args)
+{
     printf("Jelou");
     char c;
     while (c = getchar(), c != -1)
