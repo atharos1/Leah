@@ -1,31 +1,22 @@
-x64BareBones is a basic setup to develop operating systems for the Intel 64 bits architecture.
+Simple C-written Intel x64 operating system based on x64BareBones by Rodrigo Rearden (RowDaBoat), in collaboration with Augusto Nizzo McIntosh.
 
-The final goal of the project is to provide an entry point for a kernel and the possibility to load extra binary modules separated from the main kernel.
+Dependencies to compile: nasm, qemu, gcc, make.
 
-Environment setup:
-1- Install the following packages before building the Toolchain and Kernel:
+How to compile:
 
-nasm qemu gcc make
+Execute the following commands on the project's root directory:
 
-2- Build the Toolchain
+$ cd Toolchain
 
-Execute the following commands on the x64BareBones project directory:
+$ make all
 
-  user@linux:$ cd Toolchain
-  user@linux:$ make all
+$ cd ..
 
-3- Build the Kernel
-
-From the x64BareBones project directory run:
-
-  user@linux:$ make all
-
-4- Run the kernel
-
-From the x64BareBones project directory run:
-
-  user@linux:$ ./run.sh
+$ make all
 
 
-Author: Rodrigo Rearden (RowDaBoat)
-Collaborator: Augusto Nizzo McIntosh
+How to run:
+
+Execute, from the project's root directory:
+
+$ ./run.sh
